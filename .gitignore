@@ -1,0 +1,10 @@
+node_modules/
+cache/
+artifacts/
+.env
+coverage/
+coverage.json
+typechain/
+typechain-types/
+mcp-server/node_modules/
+mcp-server/addresses.json
