@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import MarketCard from '../components/MarketCard';
-import { Activity, Zap, Shield, ChevronRight, LayoutDashboard, TrendingUp, Trophy, BookOpen, Wallet, Gift, Users, Heart, Menu, X as XIcon } from 'lucide-react';
+import { Activity, Zap, Shield, ChevronRight, LayoutDashboard, TrendingUp, Trophy, BookOpen, Wallet, Gift, Users, Heart, Sparkles, Settings, User } from 'lucide-react';
 import { getProvider, getContracts } from '../lib/contracts';
 import { ethers } from 'ethers';
 
@@ -10,7 +10,6 @@ export default function Home() {
   const [wallet, setWallet] = useState(null);
   const [markets, setMarkets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
     fetchMarkets();
@@ -113,102 +112,79 @@ export default function Home() {
   };
 
   return (
-    <main className="flex h-screen w-full overflow-hidden">
-      {/* Sidebar */}
-      <aside 
-        className={`flex flex-col h-full transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-0 overflow-hidden'}`} 
-        style={{ backgroundColor: 'var(--bg-sidebar)', borderRight: '2px solid var(--accent-secondary)' }}
-      >
-        <div className="p-6 flex items-center gap-3 mb-6" style={{ minWidth: '16rem' }}>
-          <Zap size={28} color="white" />
-          <span className="text-2xl font-bold tracking-tight text-white">XotMarkets.</span>
+    <main className="flex h-screen w-full overflow-hidden relative">
+      
+      {/* Fixed Background Hero */}
+      <div className="hero-container">
+        <div className="giant-x">X</div>
+        <div className="text-ring">
+          {[...Array(12)].map((_, i) => (
+            <span key={i} style={{ transform: `rotateY(${i * 30}deg) translateZ(250px)` }}>
+              AGENT#0x{Math.floor(Math.random() * 4096).toString(16).padStart(3, '0').toUpperCase()}
+            </span>
+          ))}
         </div>
         
-        <nav className="flex-1 px-4 flex flex-col gap-2" style={{ minWidth: '16rem' }}>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 font-bold bg-white text-black border-2 border-black">
-            <LayoutDashboard size={20} /> Dashboard
+        {/* Floating Boxes */}
+        <div className="floating-box" style={{ top: '10%', left: '15%' }}>
+          XOT MARKETS
+        </div>
+        <div className="floating-box vertical-text" style={{ bottom: '10%', right: '10%' }}>
+          BUILT ON XLAYER
+        </div>
+      </div>
+
+      {/* Ultra-Minimal Icon Sidebar */}
+      <aside 
+        className="flex flex-col h-full w-16 items-center py-6 z-50 shrink-0" 
+        style={{ backgroundColor: '#09090b', borderRight: '1px solid #27272a' }}
+      >
+        <div className="mb-8">
+          <Sparkles size={24} color="#3b82f6" fill="#3b82f6" />
+        </div>
+        
+        <nav className="flex-1 flex flex-col gap-8 w-full items-center">
+          <a href="#" className="text-white hover:text-gray-300 transition-colors">
+            <LayoutDashboard size={20} />
           </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 font-medium text-white hover:bg-white hover:text-black hover:border-black border-2 border-transparent transition-colors">
-            <TrendingUp size={20} /> Markets
+          <a href="#" className="text-gray-500 hover:text-white transition-colors">
+            <TrendingUp size={20} />
           </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 font-medium text-white hover:bg-white hover:text-black hover:border-black border-2 border-transparent transition-colors">
-            <Trophy size={20} /> Leaderboard
+          <a href="#" className="text-gray-500 hover:text-white transition-colors">
+            <Trophy size={20} />
           </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 font-medium text-white hover:bg-white hover:text-black hover:border-black border-2 border-transparent transition-colors">
-            <BookOpen size={20} /> Docs
+          <a href="#" className="text-gray-500 hover:text-white transition-colors">
+            <BookOpen size={20} />
           </a>
         </nav>
 
-        {/* Personal Hub */}
-        <div className="p-4 mt-auto" style={{ minWidth: '16rem' }}>
-          <div className="p-5 border-2 border-white" style={{ background: 'var(--gradient-hub)' }}>
-            <div className="flex items-center gap-2 mb-2">
-              <Wallet size={18} className="text-white" />
-              <span className="font-bold text-white text-sm uppercase">Wallet</span>
-            </div>
-            
-            {wallet ? (
-              <div className="flex flex-col gap-2 mt-3">
-                <div className="flex justify-between items-center text-white text-xs">
-                  <span>BAL</span>
-                  <span className="font-bold">{usdcBalance} USDC</span>
-                </div>
-                <button 
-                  onClick={disconnectWallet}
-                  className="w-full py-2 mt-2 text-xs font-bold text-white border border-white hover:bg-white hover:text-black transition-colors uppercase"
-                >
-                  {wallet.substring(0, 6)}...{wallet.substring(38)} [X]
-                </button>
-              </div>
-            ) : (
-              <div className="mt-3">
-                <button 
-                  onClick={connectWallet}
-                  className="w-full py-2 bg-white text-black font-bold text-sm border-2 border-black hover:bg-black hover:text-white transition-all uppercase"
-                >
-                  Connect
-                </button>
-              </div>
-            )}
-          </div>
+        <div className="flex flex-col items-center gap-6 mt-auto">
+          <button className="text-gray-500 hover:text-white transition-colors">
+            <Settings size={20} />
+          </button>
+          
+          {wallet ? (
+            <button onClick={disconnectWallet} className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-xs text-white border-2 border-transparent hover:border-red-500 overflow-hidden" title="Disconnect">
+              <User size={16} />
+            </button>
+          ) : (
+            <button onClick={connectWallet} className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs text-white hover:bg-blue-500" title="Connect Wallet">
+              <Wallet size={16} />
+            </button>
+          )}
         </div>
       </aside>
 
-      {/* Main Content */}
-      <section className="flex-1 flex flex-col h-full overflow-y-auto relative bg-[var(--bg-primary)]">
+      {/* Main Scrollable Content */}
+      <section className="flex-1 flex flex-col h-full overflow-y-auto relative z-10">
         
-        {/* Toggle Button */}
-        <button 
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
-          className="absolute top-6 left-6 z-50 p-2 bg-white text-black border-2 border-black hover:bg-black hover:text-white transition-colors"
-        >
-          {isSidebarOpen ? <XIcon size={24} /> : <Menu size={24} />}
-        </button>
-
-        {/* Hero Section */}
-        <div className="hero-container relative w-full border-b-2 border-black" style={{ minHeight: '60vh' }}>
-          <div className="giant-x">X</div>
-          <div className="text-ring">
-            {[...Array(12)].map((_, i) => (
-              <span key={i} style={{ transform: `rotateY(${i * 30}deg) translateZ(400px)` }}>
-                AGENT#0x{Math.floor(Math.random() * 4096).toString(16).padStart(3, '0').toUpperCase()}
-              </span>
-            ))}
-          </div>
-          
-          {/* Floating Boxes */}
-          <div className="floating-box" style={{ top: '10%', left: '15%' }}>
-            XOT MARKETS
-          </div>
-          <div className="floating-box vertical-text" style={{ bottom: '10%', right: '10%' }}>
-            BUILT ON XLAYER
-          </div>
-        </div>
+        {/* Spacer to push markets below the fold so the fixed hero is visible initially */}
+        <div style={{ minHeight: '65vh' }} className="w-full pointer-events-none"></div>
 
         {/* Markets Section */}
-        <div className="p-10">
-          <div className="mb-8">
-            <h2 className="text-3xl font-black text-black uppercase tracking-tighter">LIVE MARKETS //</h2>
+        <div className="p-10 bg-[var(--bg-primary)] min-h-screen border-t-4 border-black" style={{ boxShadow: '0 -20px 40px rgba(0,0,0,0.5)' }}>
+          <div className="mb-8 flex items-center justify-between">
+            <h2 className="text-3xl font-black text-black uppercase tracking-tighter bg-white inline-block px-4 py-2 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">LIVE MARKETS //</h2>
           </div>
 
           {loading ? (
