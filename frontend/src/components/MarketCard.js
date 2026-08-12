@@ -91,37 +91,37 @@ export default function MarketCard({ market, signerAddress }) {
 
   return (
     <div 
-      className="glass-panel market-card p-6 flex flex-col justify-between"
+      className="market-card p-6 flex flex-col justify-between bg-white text-black border-4 border-black"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      style={{ height: '100%' }}
+      style={{ height: '100%', boxShadow: '8px 8px 0px black' }}
     >
       <div>
-        <div className="flex justify-between items-center mb-4">
-          <span className="text-xs font-bold" style={{ color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+        <div className="flex justify-between items-center mb-4 border-b-2 border-black pb-2">
+          <span className="text-xs font-black" style={{ textTransform: 'uppercase', letterSpacing: '1px' }}>
             {market.agentName}
           </span>
-          <span className="flex items-center gap-2 text-xs text-secondary">
+          <span className="flex items-center gap-2 text-xs font-bold bg-black text-white px-2 py-1">
             <Clock size={12} /> {market.expiresIn}
           </span>
         </div>
         
-        <h3 className="text-lg font-bold mb-6">Will agent hit {market.metric}?</h3>
+        <h3 className="text-xl font-black mb-6 uppercase leading-tight">Will agent hit {market.metric}?</h3>
         
         <div className="mb-6">
-          <div className="flex justify-between text-sm mb-2 font-medium">
-            <span style={{ color: 'var(--success)' }}>Yes {yesPercent}%</span>
-            <span style={{ color: 'var(--danger)' }}>No {noPercent}%</span>
+          <div className="flex justify-between text-sm mb-2 font-black uppercase">
+            <span>Yes {yesPercent}%</span>
+            <span>No {noPercent}%</span>
           </div>
-          <div className="progress-bar-bg">
+          <div className="progress-bar-bg border-2 border-black" style={{ height: '16px' }}>
             <div className="progress-yes" style={{ width: `${yesPercent}%` }}></div>
             <div className="progress-no" style={{ width: `${noPercent}%` }}></div>
           </div>
         </div>
       </div>
       
-      <div className="flex justify-between items-center mt-4 pt-4" style={{ borderTop: '1px solid var(--border-glass)' }}>
-        <div className="text-xs text-muted font-medium">
+      <div className="flex justify-between items-center mt-4 pt-4 border-t-2 border-black">
+        <div className="text-sm font-black uppercase">
           Pool: ${(totalPool).toLocaleString()}
         </div>
         
@@ -131,51 +131,35 @@ export default function MarketCard({ market, signerAddress }) {
               type="number" 
               value={betAmount} 
               onChange={(e) => setBetAmount(e.target.value)}
-              className="bg-transparent border-b border-gray-600 text-white text-sm w-16 px-1 focus:outline-none focus:border-[var(--accent-primary)]"
+              className="bg-transparent border-b-2 border-black text-black text-sm w-16 px-1 focus:outline-none font-bold"
               style={{ textAlign: 'center' }}
             />
-            <span className="text-xs text-muted mr-2">USDC</span>
+            <span className="text-xs font-black mr-2">USDC</span>
             <button 
-              className="btn font-bold transition-all" 
+              className="btn font-black transition-all border-2 border-black hover:bg-black hover:text-white" 
               onClick={() => buyShares(true)}
               disabled={loading}
-              style={{ 
-                padding: '0.5rem 1rem', 
-                fontSize: '0.8rem', 
-                backgroundColor: 'var(--success-bg)', 
-                color: 'var(--success)', 
-                border: '1px solid var(--success)',
-                opacity: loading ? 0.5 : 1,
-                borderRadius: '8px'
-              }}
+              style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', opacity: loading ? 0.5 : 1 }}
             >
-              {loading ? 'Tx...' : 'YES'}
+              {loading ? 'WAIT' : 'YES'}
             </button>
             <button 
-              className="btn font-bold transition-all" 
+              className="btn font-black transition-all border-2 border-black bg-black text-white hover:bg-white hover:text-black" 
               onClick={() => buyShares(false)}
               disabled={loading}
-              style={{ 
-                padding: '0.5rem 1rem', 
-                fontSize: '0.8rem', 
-                backgroundColor: 'var(--danger-bg)', 
-                color: 'var(--danger)', 
-                border: '1px solid var(--danger)',
-                opacity: loading ? 0.5 : 1,
-                borderRadius: '8px'
-              }}
+              style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', opacity: loading ? 0.5 : 1 }}
             >
-              {loading ? 'Tx...' : 'NO'}
+              {loading ? 'WAIT' : 'NO'}
             </button>
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold mr-2" style={{ color: market.outcome === 1 ? 'var(--success)' : market.outcome === 2 ? 'var(--danger)' : 'gray' }}>
+            <span className="text-sm font-black mr-2 uppercase bg-black text-white px-2 py-1">
               {market.outcome === 1 ? "YES WON" : market.outcome === 2 ? "NO WON" : "VOIDED"}
             </span>
             {eligibility.canClaim ? (
               <button 
-                className="btn btn-primary" 
+                className="btn font-black transition-all border-2 border-black bg-white text-black hover:bg-black hover:text-white" 
                 onClick={claimWinnings}
                 disabled={loading || eligibility.hasClaimed}
                 style={{ 
@@ -185,10 +169,10 @@ export default function MarketCard({ market, signerAddress }) {
                   cursor: eligibility.hasClaimed ? 'not-allowed' : 'pointer'
                 }}
               >
-                {eligibility.hasClaimed ? 'Claimed' : (loading ? 'Tx...' : 'Claim Winnings')}
+                {eligibility.hasClaimed ? 'CLAIMED' : (loading ? 'WAIT' : 'CLAIM WINNINGS')}
               </button>
             ) : (
-               <span className="text-xs text-muted italic">No winnings</span>
+               <span className="text-xs font-bold italic">NO WINNINGS</span>
             )}
           </div>
         )}

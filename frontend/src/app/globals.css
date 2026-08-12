@@ -1,27 +1,26 @@
 :root {
-  /* Dazzardo Dashboard Theme */
-  --bg-primary: #1e1e2d; /* Main background */
-  --bg-sidebar: #242435; /* Sidebar background */
-  --bg-card: #2b2b3d; /* Card panels */
-  --bg-glass: rgba(43, 43, 61, 0.8);
+  /* Brutalist Glitch Theme */
+  --bg-primary: #a3a3a3; /* Mid-grey background */
+  --bg-sidebar: #171717; /* Stark black for sidebar when open */
+  --bg-card: #262626; /* Dark gray for cards */
+  --bg-glass: rgba(0, 0, 0, 0.4);
   
   --text-primary: #ffffff;
-  --text-secondary: #9ca3af;
-  --text-muted: #6b7280;
+  --text-inverse: #000000;
+  --text-secondary: #e5e7eb;
+  --text-muted: #a3a3a3;
   
-  --accent-primary: #dfff00; /* Neon Yellow/Lime */
-  --accent-secondary: #00e5ff; /* Cyan */
-  --accent-tertiary: #ff477e; /* Pinkish red for variety */
+  --accent-primary: #ffffff; 
+  --accent-secondary: #000000;
   
-  --border-glass: rgba(255, 255, 255, 0.05);
+  --border-glass: rgba(255, 255, 255, 0.2);
   
-  --success: #dfff00; /* Use the neon yellow as the primary "YES" / success color */
-  --success-bg: rgba(223, 255, 0, 0.15);
-  --danger: #ff477e; /* Pinkish red for "NO" / danger */
-  --danger-bg: rgba(255, 71, 126, 0.15);
+  --success: #ffffff; 
+  --success-bg: rgba(255, 255, 255, 0.1);
+  --danger: #000000;
+  --danger-bg: rgba(0, 0, 0, 0.1);
   
-  --gradient-primary: #dfff00;
-  --gradient-hub: linear-gradient(135deg, rgba(99, 102, 241, 0.8) 0%, rgba(168, 85, 247, 0.8) 100%); /* Purple gradient for the personal hub */
+  --gradient-hub: #171717;
 }
 
 * {
@@ -35,55 +34,120 @@ body {
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
-  background-image: 
-    radial-gradient(circle at 15% 50%, rgba(112, 0, 255, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 85% 30%, rgba(0, 240, 255, 0.08) 0%, transparent 50%);
-  background-attachment: fixed;
+  font-family: 'Courier New', Courier, monospace; /* Brutalist monospace */
+}
+
+/* Film Grain Overlay */
+body::after {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background-image: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 9999;
 }
 
 /* Typography */
 h1, h2, h3, h4 {
-  font-weight: 700;
-  letter-spacing: -0.03em;
+  font-family: 'Arial', sans-serif; /* Mix of stark sans-serif */
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.05em;
 }
 
-.text-gradient {
-  background: var(--accent-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Glassmorphism Container */
+/* Brutalist Panels */
 .glass-panel {
-  background: var(--bg-glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border-glass);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  background: var(--bg-card);
+  border: 2px solid var(--accent-secondary);
+  border-radius: 0; /* Sharp corners */
+  box-shadow: 4px 4px 0px var(--accent-secondary); /* Hard shadow */
+}
+
+/* 3D Revolving Text Animation */
+.hero-container {
+  perspective: 1000px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.giant-x {
+  font-size: 15rem;
+  font-weight: 900;
+  color: var(--accent-secondary);
+  font-family: 'Arial', sans-serif;
+  position: absolute;
+  z-index: 10;
+  /* Pixelation/Glitch effect on the X */
+  text-shadow: 
+    3px 0 0 rgba(255,255,255,0.5),
+    -3px 0 0 rgba(0,0,0,0.5);
+  animation: glitch-anim 3s infinite;
+}
+
+.text-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  animation: revolve 15s linear infinite;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 20;
+}
+
+.text-ring span {
+  position: absolute;
+  font-size: 3rem;
+  font-weight: 900;
+  color: white;
+  text-transform: uppercase;
+  font-family: 'Arial', sans-serif;
+  /* We will dynamically set transform in JS based on index to form a circle */
+  -webkit-text-stroke: 1px black; /* For that stark outline look */
+}
+
+@keyframes revolve {
+  0% { transform: rotateX(-15deg) rotateY(0deg); }
+  100% { transform: rotateX(-15deg) rotateY(360deg); }
+}
+
+@keyframes glitch-anim {
+  0% { transform: translate(0) skew(0deg); }
+  20% { transform: translate(-2px, 2px) skew(-2deg); }
+  40% { transform: translate(2px, -2px) skew(2deg); }
+  60% { transform: translate(-1px, -1px) skew(-1deg); }
+  80% { transform: translate(1px, 1px) skew(1deg); }
+  100% { transform: translate(0) skew(0deg); }
+}
+
+/* Floating Outlined Boxes */
+.floating-box {
+  position: absolute;
+  border: 1px solid white;
+  padding: 0.5rem 1rem;
+  color: white;
+  font-size: 0.75rem;
+  z-index: 30;
+  backdrop-filter: blur(2px);
+}
+
+.vertical-text {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
 }
 
 /* Layout Utilities */
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-}
-
-.grid {
-  display: grid;
-  gap: 1.5rem;
-}
-
+.container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+.grid { display: grid; gap: 1.5rem; }
 .grid-cols-auto { grid-template-columns: repeat(1, 1fr); }
-@media (min-width: 768px) {
-  .grid-cols-auto { grid-template-columns: repeat(2, 1fr); }
-}
-@media (min-width: 1024px) {
-  .grid-cols-auto { grid-template-columns: repeat(3, 1fr); }
-}
-
+@media (min-width: 768px) { .grid-cols-auto { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .grid-cols-auto { grid-template-columns: repeat(3, 1fr); } }
 .flex { display: flex; }
 .flex-col { flex-direction: column; }
 .items-center { align-items: center; }
@@ -92,94 +156,6 @@ h1, h2, h3, h4 {
 .gap-2 { gap: 0.5rem; }
 .gap-4 { gap: 1rem; }
 .gap-6 { gap: 1.5rem; }
-
-/* Buttons */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  border: none;
-  font-family: inherit;
-  font-size: 0.95rem;
-  text-decoration: none;
-}
-
-.btn-primary {
-  background: var(--accent-gradient);
-  color: white;
-  box-shadow: 0 4px 15px rgba(112, 0, 255, 0.3);
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 240, 255, 0.4);
-}
-
-.btn-outline {
-  background: transparent;
-  border: 1px solid var(--accent-primary);
-  color: var(--accent-primary);
-}
-
-.btn-outline:hover {
-  background: rgba(0, 240, 255, 0.1);
-}
-
-/* Market Card Animations */
-.market-card {
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.market-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: -100%;
-  width: 50%; height: 100%;
-  background: linear-gradient(to right, transparent, rgba(255,255,255,0.05), transparent);
-  transform: skewX(-25deg);
-  transition: 0.5s;
-}
-
-.market-card:hover {
-  transform: translateY(-5px);
-  border-color: rgba(0, 240, 255, 0.3);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 240, 255, 0.1);
-}
-
-.market-card:hover::before {
-  left: 200%;
-}
-
-/* Progress Bars */
-.progress-bar-bg {
-  width: 100%;
-  height: 8px;
-  background: var(--bg-secondary);
-  border-radius: 4px;
-  overflow: hidden;
-  display: flex;
-}
-
-.progress-yes {
-  height: 100%;
-  background: var(--success);
-  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.progress-no {
-  height: 100%;
-  background: var(--danger);
-  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Utility classes */
 .text-sm { font-size: 0.875rem; }
 .text-lg { font-size: 1.125rem; }
 .text-xl { font-size: 1.25rem; }
@@ -194,8 +170,39 @@ h1, h2, h3, h4 {
 .p-4 { padding: 1rem; }
 .p-6 { padding: 1.5rem; }
 .p-8 { padding: 2rem; }
-.rounded-lg { border-radius: 0.5rem; }
-.rounded-xl { border-radius: 1rem; }
+.rounded-lg { border-radius: 0; }
+.rounded-xl { border-radius: 0; }
 .text-center { text-align: center; }
 .w-full { width: 100%; }
 .block { display: block; }
+
+/* Brutalist Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.1s;
+  border: 2px solid var(--accent-secondary);
+  background: white;
+  color: black;
+  text-transform: uppercase;
+}
+
+.btn:hover {
+  background: black;
+  color: white;
+}
+
+.btn-primary { background: black; color: white; }
+.btn-primary:hover { background: white; color: black; }
+
+/* Progress Bars */
+.progress-bar-bg {
+  width: 100%; height: 8px; background: #404040; display: flex;
+}
+.progress-yes { height: 100%; background: white; border-right: 2px solid black; }
+.progress-no { height: 100%; background: black; }
