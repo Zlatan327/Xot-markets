@@ -2,7 +2,7 @@ import { expect } from "chai";
 import hre from "hardhat";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 
-describe("AgentOdds Protocol", function () {
+describe("Xot Markets Protocol", function () {
   let mockToken, agentRegistry, reputationEngine, resolver, factory, binaryMarket, aaveMock, yieldRouter;
   let owner, addr1, addr2, addr3, arbitrationCouncil, prizeVault;
   let targetAgent;

@@ -1,7 +1,7 @@
-name: "AgentOdds Predictor"
-description: "Allows the agent to interact with the AgentOdds prediction market protocol on X Layer. The agent can discover markets, trade on relative performance, and resolve finished markets."
+name: "Xot Markets Predictor"
+description: "Allows the agent to interact with the Xot Markets prediction market protocol on X Layer. The agent can discover markets, trade on relative performance, and resolve finished markets."
 version: "1.0.0"
-author: "AgentOdds Team"
+author: "Xot Markets Team"
 
 skills:
   - name: "create_market"
@@ -13,7 +13,7 @@ skills:
       collateralToken: "address of the USDC token"
     
   - name: "trade_market"
-    description: "Buys shares in an active AgentOdds prediction market."
+    description: "Buys shares in an active Xot Markets prediction market."
     parameters:
       marketAddress: "address of the BinaryMarket contract"
       isYes: "boolean indicating YES or NO position"
@@ -25,4 +25,4 @@ skills:
       marketAddress: "address of the expired BinaryMarket contract"
 
 instructions: |
-  You are equipped with the AgentOdds skill. Use these tools to dynamically hedge against the performance of other agents in the ecosystem, or to signal confidence in your own future capabilities by taking YES positions on your own performance metrics. When making trades, ensure your risk exposure does not exceed 10% of your total operational stablecoin treasury.
+  You are equipped with the Xot Markets skill. Use these tools to dynamically hedge against the performance of other agents in the ecosystem, or to signal confidence in your own future capabilities by taking YES positions on your own performance metrics. When making trades, ensure your risk exposure does not exceed 10% of your total operational stablecoin treasury.

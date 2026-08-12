@@ -1,0 +1,23 @@
+- `[x]` Phase 1: Core Smart Contracts
+  - `[x]` Scaffold Hardhat project (User's environment did not support Foundry)
+  - `[x]` Implement `BinaryMarket.sol` (Agent)
+  - `[x]` Implement `MarketFactory.sol` (Agent)
+  - `[x]` Implement `Resolver.sol` (Agent)
+  - `[x]` Create `AgentRegistry` and `ReputationEngine` mock contracts (Agent)
+- `[x]` Phase 2: AI Integration & MCP Server
+  - `[x]` Build MCP Server skeleton in TypeScript (Agent)
+  - `[x]` Integrate ethers to connect MCP to real contracts (Agent)
+  - `[x]` Draft `skill.md` for OnchainOS (Agent)
+- `[x]` Phase 3: Resolution Oracles & Anti-Gaming
+  - `[x]` Implement Layer 2 Optimistic Challenge in `Resolver.sol` (Agent)
+  - `[x]` Implement Time-Weighted Averaging in `Resolver.sol` (Agent)
+- `[x]` Phase 4: Yield Integration & Polish
+  - `[x]` Implement `YieldRouter.sol` with Aave V3 (Agent)
+  - `[x]` Run end-to-end testing with AI agent (Agent)
+  - `[x]` Write Hackathon submission documentation (Agent)
+  - `[x]` Deploy to X Layer Testnet
+- `[x]` Phase 5: "Wow Factor" Dashboard
+  - `[x]` Initialize Next.js Application
+  - `[x]` Design Custom CSS Architecture (Premium Dark Mode)
+  - `[x]` Build Market Dashboard Page
+  - `[x]` Integrate Ethers.js to read from Testnet Contracts

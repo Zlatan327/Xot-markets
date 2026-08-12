@@ -1,4 +1,4 @@
-AgentOdds
+Xot Markets
 On-Chain Prediction Markets for AI Agent Performance on X Layer
 
 Whitepaper v2.0
@@ -7,11 +7,11 @@ August 2026
 
 Abstract
 
-AgentOdds is a decentralized, MCP-enabled prediction market protocol built on X Layer that transforms the existing AI agent marketplace into a continuous, tradeable performance layer. Anyone — AI agents or humans — can create binary outcome markets on verifiable agent metrics: paid volume, reputation score changes, job completion rates, and relative rankings. Markets resolve automatically through a three-layer oracle architecture that reads directly from on-chain marketplace contracts, with an optimistic challenge mechanism and arbitration council fallback. Idle collateral and protocol fees are routed to Aave V3 for yield that fuels liquidity incentives and progressive prizes.
+Xot Markets is a decentralized, MCP-enabled prediction market protocol built on X Layer that transforms the existing AI agent marketplace into a continuous, tradeable performance layer. Anyone — AI agents or humans — can create binary outcome markets on verifiable agent metrics: paid volume, reputation score changes, job completion rates, and relative rankings. Markets resolve automatically through a three-layer oracle architecture that reads directly from on-chain marketplace contracts, with an optimistic challenge mechanism and arbitration council fallback. Idle collateral and protocol fees are routed to Aave V3 for yield that fuels liquidity incentives and progressive prizes.
 
-The protocol exposes all core functions via a Model Context Protocol (MCP) server, making AgentOdds natively accessible to any MCP-compatible AI agent. Agents are first-class participants: they discover markets, create positions on themselves or rivals, and trade autonomously — producing a self-reinforcing feedback loop unique to this protocol.
+The protocol exposes all core functions via a Model Context Protocol (MCP) server, making Xot Markets natively accessible to any MCP-compatible AI agent. Agents are first-class participants: they discover markets, create positions on themselves or rivals, and trade autonomously — producing a self-reinforcing feedback loop unique to this protocol.
 
-AgentOdds is designed for the BuildX AI Season Hackathon: AI at the core, X Layer testnet deployment during the event window (7–21 August 2026), subsequent mainnet launch, and a dedicated X account. The protocol requires no frontend for core interaction, generates real on-chain value through trading volume and yield, and is the first prediction market specialized for AI agent performance data.
+Xot Markets is designed for the BuildX AI Season Hackathon: AI at the core, X Layer testnet deployment during the event window (7–21 August 2026), subsequent mainnet launch, and a dedicated X account. The protocol requires no frontend for core interaction, generates real on-chain value through trading volume and yield, and is the first prediction market specialized for AI agent performance data.
 
 
 1. Problem
@@ -28,7 +28,7 @@ The X Layer agent marketplace already supports registration, x402 micropayments,
 
 5. Infrastructure mismatch. Existing prediction market infrastructure (Exchange OS outcome markets) is powerful but not yet specialized for the high-frequency, on-chain-resolvable agent performance data that the marketplace already produces. Exchange OS permissionless venue creation remains in staged rollout.
 
-Result: marketplace activity lacks a secondary market that amplifies engagement and capital efficiency. AgentOdds fills this gap.
+Result: marketplace activity lacks a secondary market that amplifies engagement and capital efficiency. Xot Markets fills this gap.
 
 
 2. Market Demand Validation
@@ -43,7 +43,7 @@ People are already speculating on AI agent performance — they are just doing i
 - AI meme coins (GOAT, TURBO, AI16Z, VIRTUAL) have seen billions in trading volume, demonstrating massive speculative appetite around AI agents.
 - x402 payment protocol processed over 140 million transactions and $43M+ in early 2026 alone, proving that agent-to-agent commerce is real and growing.
 
-AgentOdds offers a more structured, liquid, and transparent instrument: prediction markets tied to specific, verifiable performance metrics rather than opaque token prices.
+Xot Markets offers a more structured, liquid, and transparent instrument: prediction markets tied to specific, verifiable performance metrics rather than opaque token prices.
 
 2.2 Precedent from adjacent markets
 
@@ -53,7 +53,7 @@ AgentOdds offers a more structured, liquid, and transparent instrument: predicti
 
 2.3 No direct competitor
 
-No protocol currently offers prediction markets specifically for AI agent performance metrics. AgentOdds would be the first mover in this niche. The closest alternatives are:
+No protocol currently offers prediction markets specifically for AI agent performance metrics. Xot Markets would be the first mover in this niche. The closest alternatives are:
 
 - Virtuals Protocol agent tokens — overlapping audience but different mechanism (token vs. binary market)
 - Exchange OS outcome markets — planned but not yet agent-specific
@@ -74,7 +74,7 @@ The moderate scenario ($1M/month) is achievable within 6–9 months of mainnet l
 
 3. Solution Overview
 
-AgentOdds creates permissionless binary (Yes/No/Void) prediction markets whose underlying data is agent performance already recorded on X Layer.
+Xot Markets creates permissionless binary (Yes/No/Void) prediction markets whose underlying data is agent performance already recorded on X Layer.
 
 3.1 Core loop
 
@@ -146,11 +146,11 @@ V1 ships with custom pari-mutuel contracts, independent of Exchange OS. However,
   // V2: Exchange OS adapter (swap-in replacement)
   contract ExchangeOSAdapter is IMarketExchange { ... }
 
-Migration is a single contract swap, not a rewrite. AgentOdds is architecturally Exchange OS-ready from day one.
+Migration is a single contract swap, not a rewrite. Xot Markets is architecturally Exchange OS-ready from day one.
 
 4.3 MCP server specification
 
-AgentOdds exposes all core protocol functions via a Model Context Protocol (MCP) server, making the protocol natively accessible to any MCP-compatible AI agent (Claude, GPT, Gemini, custom agents). The MCP server provides five tools:
+Xot Markets exposes all core protocol functions via a Model Context Protocol (MCP) server, making the protocol natively accessible to any MCP-compatible AI agent (Claude, GPT, Gemini, custom agents). The MCP server provides five tools:
 
   create_market(agent, metric, expiry, collateral_token, amount)
     Creates a new binary prediction market on a registered agent's performance.
@@ -176,7 +176,7 @@ The MCP server enables a key differentiator: AI agents can autonomously discover
 
 4.4 Onchain OS skill
 
-A companion skill.md is published for Onchain OS / Agentic Wallet integration, enabling agents within the X Layer ecosystem to interact with AgentOdds via standard skill discovery. The skill wraps the same five functions as the MCP server and includes:
+A companion skill.md is published for Onchain OS / Agentic Wallet integration, enabling agents within the X Layer ecosystem to interact with Xot Markets via standard skill discovery. The skill wraps the same five functions as the MCP server and includes:
 - Automatic market discovery based on the calling agent's own registry address
 - Risk parameters (maximum position size, diversification requirements)
 - Natural language descriptions for AI-assisted decision making
@@ -194,7 +194,7 @@ A companion skill.md is published for Onchain OS / Agentic Wallet integration, e
           │              │              │              │
           ▼              ▼              ▼              ▼
   ┌─────────────────────────────────────────────────────────────┐
-  │                    AgentOdds Protocol                        │
+  │                    Xot Markets Protocol                        │
   │                                                             │
   │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
   │  │ MarketFactory│─▶│ BinaryMarket │─▶│ Resolver (3-layer)│ │
@@ -218,7 +218,7 @@ A companion skill.md is published for Onchain OS / Agentic Wallet integration, e
 
 5. Resolution Oracle Architecture
 
-Resolution is the most critical component of any prediction market. AgentOdds implements a three-layer resolution stack inspired by industry best practices from UMA/Polymarket (optimistic oracle), Augur (dispute escalation), and Gnosis/Reality.eth (bonded challenge games).
+Resolution is the most critical component of any prediction market. Xot Markets implements a three-layer resolution stack inspired by industry best practices from UMA/Polymarket (optimistic oracle), Augur (dispute escalation), and Gnosis/Reality.eth (bonded challenge games).
 
 5.1 Three-layer resolution flow
 
@@ -315,7 +315,7 @@ Wash trading: Trading fees (1% of volume) make wash trading unprofitable. Additi
 
 7. Revenue Model & Economics
 
-AgentOdds operates on a pure fee-and-yield model with no token at launch.
+Xot Markets operates on a pure fee-and-yield model with no token at launch.
 
 7.1 Fee structure
 
@@ -392,9 +392,9 @@ A portion of fees (20%) and yield (20%) flows into the Prize Vault:
   Kalshi            Regulated event contracts US (CEX)    None (different market)
   Virtuals Protocol Agent tokens (indirect)  Base        Medium (overlapping audience)
   Exchange OS       General prediction mkts  X Layer     Medium (future, not agent-specific)
-  AgentOdds         Agent performance mkts   X Layer     First mover — no direct competitor
+  Xot Markets         Agent performance mkts   X Layer     First mover — no direct competitor
 
-Key differentiation: AgentOdds is the only protocol where AI agents are simultaneously the subject of markets, the primary traders, and the market creators. This three-sided participation model produces a unique feedback loop: more real work → more interesting markets → more capital → more work → more data → better markets.
+Key differentiation: Xot Markets is the only protocol where AI agents are simultaneously the subject of markets, the primary traders, and the market creators. This three-sided participation model produces a unique feedback loop: more real work → more interesting markets → more capital → more work → more data → better markets.
 
 
 9. Bootstrap Strategy
@@ -424,7 +424,7 @@ Phase 3: Sustain (Month 3+)
 
 10.1 Market classification
 
-AgentOdds operates as a decentralized information market protocol. Markets produce binary outcome shares that resolve to 0 or 1 based on objectively verifiable on-chain performance data from existing X Layer smart contracts. The protocol does not offer financial derivatives, securities, or traditional gambling products.
+Xot Markets operates as a decentralized information market protocol. Markets produce binary outcome shares that resolve to 0 or 1 based on objectively verifiable on-chain performance data from existing X Layer smart contracts. The protocol does not offer financial derivatives, securities, or traditional gambling products.
 
 Key distinctions:
 
@@ -434,15 +434,15 @@ Not financial derivatives: Agent reputation scores and x402 payment volumes are 
 
 Not securities: No common enterprise, no expectation of profit from others' efforts. Outcome shares are non-transferable binary positions that redeem at 0 or 1. There is no secondary trading of shares, no token, and no equity-like instrument.
 
-Legal defensibility: Binary event contracts on verifiable, non-financial, on-chain performance data. The verifiable, deterministic nature of on-chain resolution distinguishes AgentOdds from speculative gambling (random outcomes) and financial derivatives (regulated underlyings). Supported by the Kalshi v. CFTC precedent (2023) expanding permissible event contract categories.
+Legal defensibility: Binary event contracts on verifiable, non-financial, on-chain performance data. The verifiable, deterministic nature of on-chain resolution distinguishes Xot Markets from speculative gambling (random outcomes) and financial derivatives (regulated underlyings). Supported by the Kalshi v. CFTC precedent (2023) expanding permissible event contract categories.
 
 10.2 Jurisdictional strategy
 
-AgentOdds is deployed as autonomous smart contracts on the X Layer blockchain. The protocol development team operates from a crypto-friendly jurisdiction (UAE/DIFC or Cayman Islands, to be determined).
+Xot Markets is deployed as autonomous smart contracts on the X Layer blockchain. The protocol development team operates from a crypto-friendly jurisdiction (UAE/DIFC or Cayman Islands, to be determined).
 
 Restricted jurisdictions: Access to any team-operated front-end interfaces is restricted in jurisdictions where binary event contracts are prohibited or require specific licensing, including but not limited to the United States, United Kingdom, and European Union member states. Restrictions are enforced through geo-blocking and Terms of Service.
 
-OKX independence: AgentOdds is an independent protocol built on X Layer. It is not an OKX product, does not use OKX branding, and maintains its own Terms of Service with clear jurisdiction restrictions.
+OKX independence: Xot Markets is an independent protocol built on X Layer. It is not an OKX product, does not use OKX branding, and maintains its own Terms of Service with clear jurisdiction restrictions.
 
 10.3 Compliance roadmap
 
@@ -536,24 +536,24 @@ Smart contract risk: All contracts will undergo internal review and are designed
 
 13. Conclusion
 
-AgentOdds converts the existing X Layer agent marketplace from a one-way earning venue into a two-sided performance economy. Agents earn, then trade views on each other and on the health of the marketplace itself. Capital stays productive via Aave V3 yield. Reputation gains economic weight as the underlying of tradeable markets. The entire loop is on-chain, agent-callable, MCP-accessible, and native to the infrastructure already live on X Layer.
+Xot Markets converts the existing X Layer agent marketplace from a one-way earning venue into a two-sided performance economy. Agents earn, then trade views on each other and on the health of the marketplace itself. Capital stays productive via Aave V3 yield. Reputation gains economic weight as the underlying of tradeable markets. The entire loop is on-chain, agent-callable, MCP-accessible, and native to the infrastructure already live on X Layer.
 
 The protocol satisfies the BuildX AI Season requirements cleanly: AI agents are simultaneously the subject, the traders, and the creators of markets — not a bolted-on feature. It ships as a focused MVP within the hackathon window, deploys to X Layer testnet with demonstrable agent interaction, and leaves a clear path to mainnet, deeper liquidity, Exchange OS integration, and sustained usage.
 
 The product is realistic. It does not invent new oracles — it reads existing contracts. It does not require massive TVL on day one — pari-mutuel pools work at any scale. It does not need a token — fees and yield sustain operations. It sits directly on top of contracts and activity that already exist and makes them more valuable.
 
-No one else is building prediction markets for AI agent performance. AgentOdds is the first.
+No one else is building prediction markets for AI agent performance. Xot Markets is the first.
 
 
 Appendix A: Glossary
 
 A2A (Agent-to-Agent Protocol): Open standard for AI agent interoperability, enabling agents to discover, communicate, and collaborate across different frameworks.
 
-MCP (Model Context Protocol): Open standard that allows AI agents to securely connect to external tools, smart contracts, and data sources. AgentOdds exposes its core functions as MCP tools.
+MCP (Model Context Protocol): Open standard that allows AI agents to securely connect to external tools, smart contracts, and data sources. Xot Markets exposes its core functions as MCP tools.
 
-Pari-mutuel: A market mechanism where all bets are pooled and payouts are calculated by sharing the pool among winners, proportional to their stake. Used by AgentOdds v1.
+Pari-mutuel: A market mechanism where all bets are pooled and payouts are calculated by sharing the pool among winners, proportional to their stake. Used by Xot Markets v1.
 
-LMSR (Logarithmic Market Scoring Rule): An automated market maker that provides continuous pricing and always-available liquidity. Planned for AgentOdds v2.
+LMSR (Logarithmic Market Scoring Rule): An automated market maker that provides continuous pricing and always-available liquidity. Planned for Xot Markets v2.
 
 x402: HTTP 402-based micropayment protocol used by AI agents on X Layer for service-to-service payments.
 
@@ -583,4 +583,4 @@ Appendix B: Contract Addresses (Testnet — to be populated during hackathon)
 
 Appendix C: Disclaimer
 
-This whitepaper is for informational purposes only and does not constitute financial, investment, legal, or tax advice. AgentOdds is not available to persons or entities in the United States, United Kingdom, European Union, or any jurisdiction where binary event contracts are restricted or prohibited. AgentOdds is a decentralized protocol deployed on the X Layer blockchain, operating autonomously via smart contracts and not controlled by any single entity. AgentOdds does not currently issue or plan to issue a governance or utility token. There is no expectation of profit from the purchase of any AgentOdds-related asset. Participation in prediction markets involves risk, including the potential loss of all deposited collateral. Past performance of AI agents does not guarantee future results.
+This whitepaper is for informational purposes only and does not constitute financial, investment, legal, or tax advice. Xot Markets is not available to persons or entities in the United States, United Kingdom, European Union, or any jurisdiction where binary event contracts are restricted or prohibited. Xot Markets is a decentralized protocol deployed on the X Layer blockchain, operating autonomously via smart contracts and not controlled by any single entity. Xot Markets does not currently issue or plan to issue a governance or utility token. There is no expectation of profit from the purchase of any Xot Markets-related asset. Participation in prediction markets involves risk, including the potential loss of all deposited collateral. Past performance of AI agents does not guarantee future results.

@@ -1,11 +1,11 @@
-# AgentOdds Protocol 🤖🎲
+# Xot Markets Protocol 🤖🎲
 
-**AgentOdds** is a pure on-chain prediction market protocol built on X Layer that turns the existing AI agent marketplace into a continuous, tradeable performance layer.
+**Xot Markets** is a pure on-chain prediction market protocol built on X Layer that turns the existing AI agent marketplace into a continuous, tradeable performance layer.
 
 *Built for the BuildX AI Season Hackathon 2026*
 
 ## Overview
-AI agents are already earning real stablecoins and building on-chain reputation. AgentOdds allows anyone—human or AI agent—to create binary outcome markets on verifiable agent metrics (paid volume, reputation score changes, job completion rates). 
+AI agents are already earning real stablecoins and building on-chain reputation. Xot Markets allows anyone—human or AI agent—to create binary outcome markets on verifiable agent metrics (paid volume, reputation score changes, job completion rates). 
 
 ## Key Features
 - **3-Layer Resolution Oracle**: Fully automated Layer 1 resolution using X Layer smart contracts, backed by a 4-hour Optimistic Challenge window, and falling back to an Arbitration Council. No centralized data feeds.
@@ -37,8 +37,8 @@ node index.js
 
 ## Hackathon Submission Details
 - **Track**: MCP / X Layer Arena
-- **Team**: AgentOdds
+- **Team**: Xot Markets
 - **Deployed Contracts (Testnet)**: *Coming soon*
 
 ---
-*AgentOdds transforms static reputation into a dynamic, tradeable asset class.*
+*Xot Markets transforms static reputation into a dynamic, tradeable asset class.*
