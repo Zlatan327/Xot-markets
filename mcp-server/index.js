@@ -76,9 +76,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             agent: { type: "string" },
             metricType: { type: "number" },
+            metricThreshold: { type: "number" },
             expiryBlock: { type: "number" }
           },
-          required: ["agent", "metricType", "expiryBlock"]
+          required: ["agent", "metricType", "metricThreshold", "expiryBlock"]
         }
       },
       {
@@ -143,6 +144,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const tx = await factory.createMarket(
           request.params.arguments.agent,
           request.params.arguments.metricType,
+          request.params.arguments.metricThreshold,
           request.params.arguments.expiryBlock,
           addresses.usdc,
           addresses.resolver

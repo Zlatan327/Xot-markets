@@ -33,7 +33,6 @@ contract Resolver {
         uint256 bondPosted;
     }
 
-    mapping(address => uint256) public marketVolumeThresholds;
     mapping(address => MarketResolution) public resolutions;
 
     event AutoResolved(address indexed market, BinaryMarket.Outcome outcome);
@@ -44,10 +43,6 @@ contract Resolver {
         registryAddress = _registryAddress;
         reputationAddress = _reputationAddress;
         arbitrationCouncil = _arbitrationCouncil;
-    }
-
-    function setVolumeThreshold(address market, uint256 threshold) external {
-        marketVolumeThresholds[market] = threshold;
     }
 
     // Layer 1: Auto-Resolution
@@ -63,7 +58,7 @@ contract Resolver {
 
         if (metricType == 0) { // Volume Metric (0)
             try IAgentRegistry(registryAddress).getAgentPaidVolume(targetAgent) returns (uint256 currentVolume) {
-                uint256 threshold = marketVolumeThresholds[marketAddress];
+                uint256 threshold = market.metricThreshold();
                 if (currentVolume >= threshold) {
                     outcome = BinaryMarket.Outcome.YES;
                 } else {

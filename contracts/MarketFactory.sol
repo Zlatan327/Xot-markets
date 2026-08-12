@@ -27,6 +27,7 @@ contract MarketFactory {
     function createMarket(
         address _targetAgent, 
         uint8 _metricType, 
+        uint256 _metricThreshold,
         uint256 _expiryBlock, 
         address _collateralToken, 
         address _resolver
@@ -36,6 +37,7 @@ contract MarketFactory {
         BinaryMarket newMarket = new BinaryMarket(
             _targetAgent,
             _metricType,
+            _metricThreshold,
             _expiryBlock,
             _collateralToken,
             _resolver,

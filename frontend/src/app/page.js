@@ -28,6 +28,7 @@ export default function Home() {
           
           const agent = await marketContract.targetAgent();
           const metricType = await marketContract.metricType();
+          const threshold = await marketContract.metricThreshold();
           const totalYes = await marketContract.totalYesPool();
           const totalNo = await marketContract.totalNoPool();
           
@@ -35,7 +36,7 @@ export default function Home() {
             id: address,
             marketAddress: address,
             agentName: "Agent " + agent.substring(0, 6),
-            metric: metricType == 1 ? "Volume > 10M" : metricType == 2 ? "APY > 15%" : "Executions > 500",
+            metric: metricType == 1 ? `Volume > ${Number(threshold).toLocaleString()}` : metricType == 2 ? `APY > ${Number(threshold)}%` : `Executions > ${Number(threshold)}`,
             poolYes: Number(ethers.formatEther(totalYes)),
             poolNo: Number(ethers.formatEther(totalNo)),
             expiresIn: "Live"

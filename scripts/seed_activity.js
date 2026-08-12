@@ -27,17 +27,17 @@ async function main() {
   console.log("Creating Market 1...");
   // Agent1 logic mapping
   const agent1 = "0x" + "11".repeat(20);
-  let tx = await factory.createMarket(agent1, 1, expiryBlock, addresses.usdc, addresses.resolver);
+  let tx = await factory.createMarket(agent1, 1, 10000000, expiryBlock, addresses.usdc, addresses.resolver);
   await tx.wait();
 
   console.log("Creating Market 2...");
   const agent2 = "0x" + "22".repeat(20);
-  tx = await factory.createMarket(agent2, 2, expiryBlock, addresses.usdc, addresses.resolver);
+  tx = await factory.createMarket(agent2, 2, 15, expiryBlock, addresses.usdc, addresses.resolver);
   await tx.wait();
 
   console.log("Creating Market 3...");
   const agent3 = "0x" + "33".repeat(20);
-  tx = await factory.createMarket(agent3, 3, expiryBlock, addresses.usdc, addresses.resolver);
+  tx = await factory.createMarket(agent3, 3, 500, expiryBlock, addresses.usdc, addresses.resolver);
   await tx.wait();
 
   // Fetch deployed markets

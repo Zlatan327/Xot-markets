@@ -4,7 +4,10 @@
 - `[x]` Phase 4: Yield Integration & Polish
 - `[x]` Phase 5: "Wow Factor" Dashboard (Design & Architecture)
 - `[x]` Phase 6: Live Testnet Migration & Ecosystem Polish
-  - `[x]` Write and execute `seed_activity.js` to generate on-chain transactions
-  - `[x]` Update Frontend to fetch real market data via `ethers.js`
-  - `[x]` Implement Web3 Wallet connection (OKX Wallet / MetaMask)
-  - `[x]` Update Whitepaper and README for BuildX AI Season alignment
+- `[/]` Phase 7: Security Audit & Architecture Fixes
+  - `[ ]` Patch `BinaryMarket.sol` (Add `metricThreshold` & `emergencyWithdrawFromAave`)
+  - `[ ]` Patch `MarketFactory.sol` (Pass threshold)
+  - `[ ]` Patch `Resolver.sol` (Remove vulnerable mapping, read threshold from market)
+  - `[ ]` Update `mcp-server/index.js` (Require `metricThreshold`)
+  - `[ ]` Update `frontend/src/app/page.js` (Dynamically render threshold)
+  - `[ ]` Update `scripts/seed_activity.js` and Re-deploy

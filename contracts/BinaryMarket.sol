@@ -19,6 +19,7 @@ contract BinaryMarket is ReentrancyGuard {
     
     address public targetAgent;
     uint8 public metricType;
+    uint256 public metricThreshold;
     uint256 public expiryBlock;
     
     Outcome public finalOutcome = Outcome.PENDING;
@@ -53,6 +54,7 @@ contract BinaryMarket is ReentrancyGuard {
     constructor(
         address _targetAgent,
         uint8 _metricType,
+        uint256 _metricThreshold,
         uint256 _expiryBlock,
         address _collateralToken,
         address _resolver,
@@ -62,6 +64,7 @@ contract BinaryMarket is ReentrancyGuard {
         factory = msg.sender;
         targetAgent = _targetAgent;
         metricType = _metricType;
+        metricThreshold = _metricThreshold;
         expiryBlock = _expiryBlock;
         collateralToken = IERC20(_collateralToken);
         resolver = _resolver;
@@ -164,5 +167,12 @@ contract BinaryMarket is ReentrancyGuard {
             collateralToken.safeTransfer(yieldRouter, yieldAmount);
             emit YieldHarvested(yieldAmount);
         }
+    }
+
+    // Emergency rescue to ensure winners can claim if YieldRouter goes offline
+    function emergencyWithdrawFromAave() external nonReentrant {
+        require(finalOutcome != Outcome.PENDING, "Market must be resolved to use emergency withdraw");
+        aavePool.withdraw(address(collateralToken), type(uint256).max, address(this));
+        emit WithdrawnFromAave(type(uint256).max);
     }
 }
