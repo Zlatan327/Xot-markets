@@ -2,7 +2,6 @@ self.__SERVER_FILES_MANIFEST={
   "version": 1,
   "config": {
     "env": {},
-    "webpack": null,
     "typescript": {
       "ignoreBuildErrors": false
     },
@@ -324,7 +323,8 @@ self.__SERVER_FILES_MANIFEST={
     "turbopack": {
       "root": "C:\\Users\\Admin\\Desktop\\repos\\agent odds"
     },
-    "distDirRoot": ".next"
+    "distDirRoot": ".next",
+    "supportsImmutableAssets": false
   },
   "appDir": "C:\\Users\\Admin\\Desktop\\repos\\agent odds\\frontend",
   "relativeAppDir": "frontend",
@@ -337,6 +337,8 @@ self.__SERVER_FILES_MANIFEST={
     ".next\\server\\functions-config-manifest.json",
     ".next\\server\\middleware-manifest.json",
     ".next\\server\\middleware-build-manifest.js",
+    ".next\\server\\middleware-react-loadable-manifest.js",
+    ".next\\react-loadable-manifest.json",
     ".next\\server\\app-paths-manifest.json",
     ".next\\app-path-routes-manifest.json",
     ".next\\server\\server-reference-manifest.js",

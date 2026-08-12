@@ -4,7 +4,10 @@ import factoryArtifact from "./MarketFactory.json";
 import marketArtifact from "./BinaryMarket.json";
 import usdcArtifact from "./MockERC20.json";
 
-export const getProvider = () => {
+export const getProvider = (walletProvider) => {
+  if (walletProvider) {
+    return new ethers.BrowserProvider(walletProvider);
+  }
   if (typeof window !== "undefined" && window.ethereum) {
     return new ethers.BrowserProvider(window.ethereum);
   }

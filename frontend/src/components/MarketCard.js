@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Clock, Activity } from 'lucide-react';
 import { getProvider, getContracts } from '../lib/contracts';
 import { ethers } from 'ethers';
+import { useAppKitProvider } from '@reown/appkit/react';
 
 export default function MarketCard({ market, signerAddress }) {
   const [approving, setApproving] = useState(false);
@@ -11,6 +12,7 @@ export default function MarketCard({ market, signerAddress }) {
   const [claiming, setClaiming] = useState(false);
   const [betAmount, setBetAmount] = useState("10");
   const [eligibility, setEligibility] = useState({ hasClaimed: false, canClaim: false });
+  const { walletProvider } = useAppKitProvider('eip155');
   
   const totalPool = market.poolYes + market.poolNo;
   const yesPercent = totalPool === 0 ? 50 : Math.round((market.poolYes / totalPool) * 100);
@@ -20,7 +22,7 @@ export default function MarketCard({ market, signerAddress }) {
     const checkEligibility = async () => {
       if (!signerAddress || market.outcome === 0) return;
       try {
-        const provider = getProvider();
+        const provider = getProvider(walletProvider);
         const { marketAbi } = await getContracts(provider);
         const marketContract = new ethers.Contract(market.marketAddress, marketAbi, provider);
         
@@ -43,7 +45,7 @@ export default function MarketCard({ market, signerAddress }) {
     if (!signerAddress) return alert("Please connect wallet first");
     setApproving(true);
     try {
-      const provider = getProvider();
+      const provider = getProvider(walletProvider);
       const signer = await provider.getSigner();
       const { usdc } = await getContracts(signer);
       
@@ -64,7 +66,7 @@ export default function MarketCard({ market, signerAddress }) {
     if (!signerAddress) return alert("Please connect wallet first");
     isYes ? setBuyingYes(true) : setBuyingNo(true);
     try {
-      const provider = getProvider();
+      const provider = getProvider(walletProvider);
       const signer = await provider.getSigner();
       const { marketAbi } = await getContracts(signer);
       
@@ -88,7 +90,7 @@ export default function MarketCard({ market, signerAddress }) {
     if (!signerAddress) return alert("Please connect wallet first");
     setClaiming(true);
     try {
-      const provider = getProvider();
+      const provider = getProvider(walletProvider);
       const signer = await provider.getSigner();
       const { marketAbi } = await getContracts(signer);
       

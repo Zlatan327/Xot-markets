@@ -5,9 +5,11 @@ import MarketCard from '../components/MarketCard';
 import { Activity, Zap, Shield, ChevronRight, LayoutDashboard, TrendingUp, Trophy, BookOpen, Wallet, Gift, Users, Heart, Sparkles, Settings, User, Bot, Coins, Cpu } from 'lucide-react';
 import { getProvider, getContracts } from '../lib/contracts';
 import { ethers } from 'ethers';
+import { useAppKit, useAppKitProvider, useAppKitAccount } from '@reown/appkit/react';
 
 export default function Home() {
-  const [wallet, setWallet] = useState(null);
+  const { address, isConnected } = useAppKitAccount();
+  const { walletProvider } = useAppKitProvider('eip155');
   const [markets, setMarkets] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -56,64 +58,25 @@ export default function Home() {
   };
 
   const [usdcBalance, setUsdcBalance] = useState("0");
-  const [isConnecting, setIsConnecting] = useState(false);
 
-  const connectWallet = async () => {
-    if (typeof window !== 'undefined' && window.ethereum) {
-      setIsConnecting(true);
-      try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        setWallet(accounts[0]);
-        
-        // Ensure connected to X Layer Testnet (Chain ID: 195 or 0xc3)
-        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-        if (chainId !== '0xc3') {
-          try {
-            await window.ethereum.request({
-              method: 'wallet_switchEthereumChain',
-              params: [{ chainId: '0xc3' }],
-            });
-          } catch (switchError) {
-            if (switchError.code === 4902) {
-              await window.ethereum.request({
-                method: 'wallet_addEthereumChain',
-                params: [{
-                  chainId: '0xc3',
-                  chainName: 'X Layer Testnet',
-                  rpcUrls: ['https://testrpc.xlayer.tech'],
-                  nativeCurrency: { name: 'OKB', symbol: 'OKB', decimals: 18 },
-                  blockExplorerUrls: ['https://www.okx.com/explorer/xlayer-test']
-                }],
-              });
-            } else {
-              console.error(switchError);
-              alert("Please switch to X Layer Testnet to use this dApp.");
-              setIsConnecting(false);
-              return;
-            }
-          }
+  useEffect(() => {
+    const fetchBalance = async () => {
+      if (isConnected && walletProvider && address) {
+        try {
+          const ethersProvider = new ethers.BrowserProvider(walletProvider);
+          const signer = await ethersProvider.getSigner();
+          const { usdc } = await getContracts(signer);
+          const bal = await usdc.balanceOf(address);
+          setUsdcBalance(Number(ethers.formatUnits(bal, 6)).toFixed(2));
+        } catch (e) {
+          console.error("Failed to fetch balance", e);
         }
-        
-        // Fetch USDC Balance
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        const { usdc } = await getContracts(signer);
-        const bal = await usdc.balanceOf(accounts[0]);
-        setUsdcBalance(Number(ethers.formatEther(bal)).toFixed(2));
-        
-      } catch (e) {
-        console.error("User rejected connection", e);
+      } else {
+        setUsdcBalance("0");
       }
-      setIsConnecting(false);
-    } else {
-      alert("Please install OKX Wallet or MetaMask!");
-    }
-  };
-
-  const disconnectWallet = () => {
-    setWallet(null);
-    setUsdcBalance("0");
-  };
+    };
+    fetchBalance();
+  }, [isConnected, walletProvider, address]);
 
   return (
     <>
@@ -134,20 +97,15 @@ export default function Home() {
         </div>
         
         <div className="flex items-center gap-4">
-          {wallet ? (
+          {isConnected && address ? (
             <div className="flex items-center gap-4">
               <span className="font-mono text-sm text-[var(--glow-green)] border border-[var(--glow-green)] px-3 py-1 rounded">
                 ${usdcBalance} USDC
               </span>
-              <button onClick={disconnectWallet} className="btn-outline flex items-center gap-2 text-red-400 hover:border-red-400 hover:text-red-400 hover:bg-transparent" title="Disconnect Wallet">
-                <User size={16} /> {wallet.substring(0, 6)}...{wallet.substring(38)}
-              </button>
+              <appkit-button />
             </div>
           ) : (
-            <button onClick={connectWallet} disabled={isConnecting} className="btn-primary flex items-center gap-2">
-              {isConnecting ? <Activity size={16} className="animate-spin" /> : <Wallet size={16} />}
-              {isConnecting ? 'CONNECTING...' : 'CONNECT'}
-            </button>
+            <appkit-button />
           )}
         </div>
       </nav>
@@ -197,7 +155,7 @@ export default function Home() {
           ) : (
             <div className="grid grid-cols-auto">
               {markets.map((market, idx) => (
-                <MarketCard key={idx} market={market} signerAddress={wallet} />
+                <MarketCard key={idx} market={market} signerAddress={isConnected ? address : null} />
               ))}
             </div>
           )}
