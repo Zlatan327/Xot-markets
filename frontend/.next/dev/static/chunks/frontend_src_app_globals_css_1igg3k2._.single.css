@@ -1,17 +1,20 @@
 /* [project]/frontend/src/app/globals.css [app-client] (css) */
 :root {
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #12121a;
-  --bg-glass: #14141c99;
+  --bg-primary: #0a0e17;
+  --bg-secondary: #121826;
+  --bg-glass: #121826b3;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent-primary: #3b82f6;
+  --accent-secondary: #6366f1;
   --border-glass: #ffffff14;
-  --accent-primary: #00f0ff;
-  --accent-secondary: #7000ff;
-  --accent-gradient: linear-gradient(135deg, #00f0ff 0%, #7000ff 100%);
-  --text-primary: #fff;
-  --text-secondary: #a0a0b0;
-  --text-muted: #606070;
-  --success: #0f8;
-  --danger: #f05;
+  --success: #10b981;
+  --success-bg: #10b98126;
+  --danger: #ef4444;
+  --danger-bg: #ef444426;
+  --gradient-primary: #3b82f6;
+  --gradient-glass: linear-gradient(180deg, #1e293b99 0%, #0f172acc 100%);
 }
 
 * {

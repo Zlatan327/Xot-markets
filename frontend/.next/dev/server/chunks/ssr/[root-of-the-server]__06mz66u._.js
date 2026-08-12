@@ -145,6 +145,10 @@ function Home() {
             alert("Please install OKX Wallet or MetaMask!");
         }
     };
+    const disconnectWallet = ()=>{
+        setWallet(null);
+        setUsdcBalance("0");
+    };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
         className: "container",
         children: [
@@ -159,7 +163,7 @@ function Home() {
                                 color: "var(--accent-primary)"
                             }, void 0, false, {
                                 fileName: "[project]/frontend/src/app/page.js",
-                                lineNumber: 113,
+                                lineNumber: 118,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -167,13 +171,13 @@ function Home() {
                                 children: "Xot Markets"
                             }, void 0, false, {
                                 fileName: "[project]/frontend/src/app/page.js",
-                                lineNumber: 114,
+                                lineNumber: 119,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/frontend/src/app/page.js",
-                        lineNumber: 112,
+                        lineNumber: 117,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -191,28 +195,31 @@ function Home() {
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/frontend/src/app/page.js",
-                                    lineNumber: 119,
+                                    lineNumber: 124,
                                     columnNumber: 15
                                 }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                    className: "btn btn-outline",
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                    className: "btn btn-outline hover:border-[var(--danger)] hover:text-[var(--danger)] transition-colors",
                                     style: {
                                         padding: '0.4rem 0.8rem'
                                     },
+                                    onClick: disconnectWallet,
+                                    title: "Click to Disconnect",
                                     children: [
                                         wallet.substring(0, 6),
                                         "...",
-                                        wallet.substring(38)
+                                        wallet.substring(38),
+                                        " ⏏"
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/frontend/src/app/page.js",
-                                    lineNumber: 122,
+                                    lineNumber: 127,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/frontend/src/app/page.js",
-                            lineNumber: 118,
+                            lineNumber: 123,
                             columnNumber: 13
                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                             className: "btn btn-primary",
@@ -220,18 +227,18 @@ function Home() {
                             children: "Connect Wallet"
                         }, void 0, false, {
                             fileName: "[project]/frontend/src/app/page.js",
-                            lineNumber: 127,
+                            lineNumber: 137,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/frontend/src/app/page.js",
-                        lineNumber: 116,
+                        lineNumber: 121,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/frontend/src/app/page.js",
-                lineNumber: 111,
+                lineNumber: 116,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -246,7 +253,7 @@ function Home() {
                         children: "Live on X Layer Testnet"
                     }, void 0, false, {
                         fileName: "[project]/frontend/src/app/page.js",
-                        lineNumber: 135,
+                        lineNumber: 145,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -258,12 +265,32 @@ function Home() {
                         children: "Trade on real autonomous AI agents operating on X Layer. Secured by optimistic oracles, powered by OKB, and integrated with OKX Wallet."
                     }, void 0, false, {
                         fileName: "[project]/frontend/src/app/page.js",
-                        lineNumber: 138,
+                        lineNumber: 148,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "flex justify-center gap-4",
-                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                        children: wallet ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                            className: "btn btn-primary flex items-center gap-2",
+                            onClick: ()=>window.scrollTo({
+                                    top: document.getElementById('markets').offsetTop,
+                                    behavior: 'smooth'
+                                }),
+                            children: [
+                                "Explore Markets ",
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$frontend$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$right$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronRight$3e$__["ChevronRight"], {
+                                    size: 18
+                                }, void 0, false, {
+                                    fileName: "[project]/frontend/src/app/page.js",
+                                    lineNumber: 154,
+                                    columnNumber: 31
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/frontend/src/app/page.js",
+                            lineNumber: 153,
+                            columnNumber: 13
+                        }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                             className: "btn btn-primary flex items-center gap-2",
                             onClick: connectWallet,
                             children: [
@@ -272,27 +299,28 @@ function Home() {
                                     size: 18
                                 }, void 0, false, {
                                     fileName: "[project]/frontend/src/app/page.js",
-                                    lineNumber: 143,
-                                    columnNumber: 32
+                                    lineNumber: 158,
+                                    columnNumber: 34
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/frontend/src/app/page.js",
-                            lineNumber: 142,
-                            columnNumber: 11
+                            lineNumber: 157,
+                            columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/frontend/src/app/page.js",
-                        lineNumber: 141,
+                        lineNumber: 151,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/frontend/src/app/page.js",
-                lineNumber: 134,
+                lineNumber: 144,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
+                id: "markets",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "flex justify-between items-center mb-6",
@@ -305,14 +333,14 @@ function Home() {
                                         color: "var(--accent-secondary)"
                                     }, void 0, false, {
                                         fileName: "[project]/frontend/src/app/page.js",
-                                        lineNumber: 151,
+                                        lineNumber: 167,
                                         columnNumber: 13
                                     }, this),
                                     "Active Markets"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/frontend/src/app/page.js",
-                                lineNumber: 150,
+                                lineNumber: 166,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -324,13 +352,13 @@ function Home() {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/frontend/src/app/page.js",
-                                lineNumber: 154,
+                                lineNumber: 170,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/frontend/src/app/page.js",
-                        lineNumber: 149,
+                        lineNumber: 165,
                         columnNumber: 9
                     }, this),
                     loading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -338,7 +366,7 @@ function Home() {
                         children: "Fetching live data from X Layer blockchain..."
                     }, void 0, false, {
                         fileName: "[project]/frontend/src/app/page.js",
-                        lineNumber: 158,
+                        lineNumber: 174,
                         columnNumber: 11
                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "grid grid-cols-auto",
@@ -347,28 +375,28 @@ function Home() {
                                 signerAddress: wallet
                             }, idx, false, {
                                 fileName: "[project]/frontend/src/app/page.js",
-                                lineNumber: 162,
+                                lineNumber: 178,
                                 columnNumber: 15
                             }, this))
                     }, void 0, false, {
                         fileName: "[project]/frontend/src/app/page.js",
-                        lineNumber: 160,
+                        lineNumber: 176,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/frontend/src/app/page.js",
-                lineNumber: 148,
+                lineNumber: 164,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("footer", {
                 className: "mt-8 text-center text-muted text-sm p-6 glass-panel",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        children: "Built for BuildX AI Season Hackathon on X Layer."
+                        children: "Built natively on X Layer."
                     }, void 0, false, {
                         fileName: "[project]/frontend/src/app/page.js",
-                        lineNumber: 169,
+                        lineNumber: 185,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -378,26 +406,26 @@ function Home() {
                                 size: 14
                             }, void 0, false, {
                                 fileName: "[project]/frontend/src/app/page.js",
-                                lineNumber: 171,
+                                lineNumber: 187,
                                 columnNumber: 11
                             }, this),
                             " Secured by Optimistic Oracles"
                         ]
                     }, void 0, true, {
                         fileName: "[project]/frontend/src/app/page.js",
-                        lineNumber: 170,
+                        lineNumber: 186,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/frontend/src/app/page.js",
-                lineNumber: 168,
+                lineNumber: 184,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/frontend/src/app/page.js",
-        lineNumber: 110,
+        lineNumber: 115,
         columnNumber: 5
     }, this);
 }

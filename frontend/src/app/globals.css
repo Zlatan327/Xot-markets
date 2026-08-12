@@ -1,16 +1,26 @@
 :root {
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #12121a;
-  --bg-glass: rgba(20, 20, 28, 0.6);
+  /* Institutional Dark Theme */
+  --bg-primary: #0a0e17; /* Very deep charcoal/navy */
+  --bg-secondary: #121826; /* Dark slate */
+  --bg-glass: rgba(18, 24, 38, 0.7);
+  
+  --text-primary: #f8fafc; /* Crisp white */
+  --text-secondary: #94a3b8; /* Slate gray */
+  --text-muted: #64748b;
+  
+  --accent-primary: #3b82f6; /* Trustworthy blue */
+  --accent-secondary: #6366f1; /* Deep indigo */
+  
   --border-glass: rgba(255, 255, 255, 0.08);
-  --accent-primary: #00f0ff;
-  --accent-secondary: #7000ff;
-  --accent-gradient: linear-gradient(135deg, #00f0ff 0%, #7000ff 100%);
-  --text-primary: #ffffff;
-  --text-secondary: #a0a0b0;
-  --text-muted: #606070;
-  --success: #00ff88;
-  --danger: #ff0055;
+  
+  --success: #10b981; /* Institutional Emerald Green */
+  --success-bg: rgba(16, 185, 129, 0.15);
+  --danger: #ef4444; /* Institutional Crimson Red */
+  --danger-bg: rgba(239, 68, 68, 0.15);
+  
+  /* Remove gamer gradients for a flatter, sleeker look */
+  --gradient-primary: #3b82f6; 
+  --gradient-glass: linear-gradient(180deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
 }
 
 * {

@@ -106,6 +106,11 @@ export default function Home() {
     }
   };
 
+  const disconnectWallet = () => {
+    setWallet(null);
+    setUsdcBalance("0");
+  };
+
   return (
     <main className="container">
       <nav className="flex justify-between items-center mb-8 glass-panel p-4">
@@ -119,9 +124,14 @@ export default function Home() {
               <span className="text-sm font-medium" style={{ color: 'var(--success)' }}>
                 {usdcBalance} USDC
               </span>
-              <span className="btn btn-outline" style={{ padding: '0.4rem 0.8rem' }}>
-                {wallet.substring(0, 6)}...{wallet.substring(38)}
-              </span>
+              <button 
+                className="btn btn-outline hover:border-[var(--danger)] hover:text-[var(--danger)] transition-colors" 
+                style={{ padding: '0.4rem 0.8rem' }}
+                onClick={disconnectWallet}
+                title="Click to Disconnect"
+              >
+                {wallet.substring(0, 6)}...{wallet.substring(38)} ⏏
+              </button>
             </>
           ) : (
             <button className="btn btn-primary" onClick={connectWallet}>
@@ -139,13 +149,19 @@ export default function Home() {
           Trade on real autonomous AI agents operating on X Layer. Secured by optimistic oracles, powered by OKB, and integrated with OKX Wallet.
         </p>
         <div className="flex justify-center gap-4">
-          <button className="btn btn-primary flex items-center gap-2" onClick={connectWallet}>
-            Connect OKX Wallet <ChevronRight size={18} />
-          </button>
+          {wallet ? (
+            <button className="btn btn-primary flex items-center gap-2" onClick={() => window.scrollTo({ top: document.getElementById('markets').offsetTop, behavior: 'smooth' })}>
+              Explore Markets <ChevronRight size={18} />
+            </button>
+          ) : (
+            <button className="btn btn-primary flex items-center gap-2" onClick={connectWallet}>
+              Connect OKX Wallet <ChevronRight size={18} />
+            </button>
+          )}
         </div>
       </section>
 
-      <section>
+      <section id="markets">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold flex items-center gap-2">
             <Activity size={20} color="var(--accent-secondary)" /> 
@@ -166,7 +182,7 @@ export default function Home() {
       </section>
 
       <footer className="mt-8 text-center text-muted text-sm p-6 glass-panel">
-        <p>Built for BuildX AI Season Hackathon on X Layer.</p>
+        <p>Built natively on X Layer.</p>
         <p className="mt-2 flex items-center justify-center gap-2">
           <Shield size={14} /> Secured by Optimistic Oracles
         </p>
