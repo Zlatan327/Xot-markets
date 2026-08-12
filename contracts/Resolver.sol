@@ -34,6 +34,7 @@ contract Resolver {
     }
 
     mapping(address => MarketResolution) public resolutions;
+    mapping(address => uint256) public lockedBonds;
 
     event AutoResolved(address indexed market, BinaryMarket.Outcome outcome);
     event Challenged(address indexed market, address indexed challenger, uint256 bond);
@@ -106,6 +107,7 @@ contract Resolver {
         uint256 bondAmount = calculatedBond > MIN_CHALLENGE_BOND ? calculatedBond : MIN_CHALLENGE_BOND;
 
         collateral.safeTransferFrom(msg.sender, address(this), bondAmount);
+        lockedBonds[address(collateral)] += bondAmount;
 
         res.state = ResolutionState.CHALLENGED;
         res.challenger = msg.sender;
@@ -125,9 +127,12 @@ contract Resolver {
         BinaryMarket market = BinaryMarket(marketAddress);
         market.resolveMarket(finalOutcome);
 
+        IERC20 collateral = market.collateralToken();
+        lockedBonds[address(collateral)] -= res.bondPosted;
+
         if (finalOutcome != res.proposedOutcome) {
             // Challenger won. Refund bond.
-            market.collateralToken().safeTransfer(res.challenger, res.bondPosted);
+            collateral.safeTransfer(res.challenger, res.bondPosted);
         }
 
         emit Finalized(marketAddress, finalOutcome);
@@ -148,8 +153,9 @@ contract Resolver {
     // Sweep forfeited challenge bonds to the arbitration council (treasury)
     function sweepForfeitedBonds(address token) external {
         uint256 bal = IERC20(token).balanceOf(address(this));
-        if (bal > 0) {
-            IERC20(token).safeTransfer(arbitrationCouncil, bal);
+        uint256 locked = lockedBonds[token];
+        if (bal > locked) {
+            IERC20(token).safeTransfer(arbitrationCouncil, bal - locked);
         }
     }
 }

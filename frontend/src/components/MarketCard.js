@@ -5,8 +5,10 @@ import { getProvider, getContracts } from '../lib/contracts';
 import { ethers } from 'ethers';
 
 export default function MarketCard({ market, signerAddress }) {
-  const [hovered, setHovered] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [approving, setApproving] = useState(false);
+  const [buyingYes, setBuyingYes] = useState(false);
+  const [buyingNo, setBuyingNo] = useState(false);
+  const [claiming, setClaiming] = useState(false);
   const [betAmount, setBetAmount] = useState("10");
   const [eligibility, setEligibility] = useState({ hasClaimed: false, canClaim: false });
   
@@ -37,20 +39,38 @@ export default function MarketCard({ market, signerAddress }) {
     checkEligibility();
   }, [signerAddress, market.outcome, market.marketAddress]);
 
-  const buyShares = async (isYes) => {
+  const approveUSDC = async () => {
     if (!signerAddress) return alert("Please connect wallet first");
-    setLoading(true);
+    setApproving(true);
     try {
       const provider = getProvider();
       const signer = await provider.getSigner();
-      const { usdc, marketAbi } = await getContracts(signer);
+      const { usdc } = await getContracts(signer);
       
-      const marketContract = new ethers.Contract(market.marketAddress, marketAbi, signer);
-      const amount = ethers.parseEther(betAmount.toString() || "0");
+      const amount = ethers.parseUnits(betAmount.toString() || "0", 6);
       if (amount <= 0n) return alert("Enter a valid bet amount");
       
-      const approveTx = await usdc.approve(market.marketAddress, amount);
-      await approveTx.wait();
+      const tx = await usdc.approve(market.marketAddress, amount);
+      await tx.wait();
+      alert("Approved successfully!");
+    } catch (e) {
+      console.error(e);
+      alert("Approval failed: " + e.message);
+    }
+    setApproving(false);
+  };
+
+  const buyShares = async (isYes) => {
+    if (!signerAddress) return alert("Please connect wallet first");
+    isYes ? setBuyingYes(true) : setBuyingNo(true);
+    try {
+      const provider = getProvider();
+      const signer = await provider.getSigner();
+      const { marketAbi } = await getContracts(signer);
+      
+      const marketContract = new ethers.Contract(market.marketAddress, marketAbi, signer);
+      const amount = ethers.parseUnits(betAmount.toString() || "0", 6);
+      if (amount <= 0n) return alert("Enter a valid bet amount");
       
       const tx = await marketContract.buyShares(isYes, amount);
       await tx.wait();
@@ -61,12 +81,12 @@ export default function MarketCard({ market, signerAddress }) {
       console.error(e);
       alert("Trade failed: " + e.message);
     }
-    setLoading(false);
+    isYes ? setBuyingYes(false) : setBuyingNo(false);
   };
 
   const claimWinnings = async () => {
     if (!signerAddress) return alert("Please connect wallet first");
-    setLoading(true);
+    setClaiming(true);
     try {
       const provider = getProvider();
       const signer = await provider.getSigner();
@@ -82,7 +102,7 @@ export default function MarketCard({ market, signerAddress }) {
       console.error(e);
       alert("Claim failed. Ensure you have winning shares and haven't claimed already.");
     }
-    setLoading(false);
+    setClaiming(false);
   };
 
   // Extract the raw address from the "Agent 0x..." string
@@ -144,21 +164,28 @@ export default function MarketCard({ market, signerAddress }) {
         </div>
         
         {market.outcome === 0 ? (
-          <div className="flex items-center gap-4">
-            <div className="terminal-input">
-              <span>&gt;</span>
-              <input 
-                type="number" 
-                value={betAmount} 
-                onChange={(e) => setBetAmount(e.target.value)}
-              />
+          <div className="flex flex-col gap-3 w-full mt-2">
+            <div className="flex items-center gap-4">
+              <div className="terminal-input flex items-center">
+                <span>&gt;</span>
+                <input 
+                  type="number" 
+                  value={betAmount} 
+                  onChange={(e) => setBetAmount(e.target.value)}
+                  className="w-16 bg-transparent outline-none ml-2 text-white"
+                />
+                <span className="text-gray-400 ml-2 text-sm">${parseFloat(betAmount || 0).toFixed(2)} USD</span>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <button className="btn-primary" onClick={() => buyShares(true)} disabled={loading}>
-                {loading ? '...' : 'YES'}
+            <div className="flex gap-2 w-full">
+              <button className="btn-outline flex-1" onClick={approveUSDC} disabled={approving}>
+                {approving ? 'APPROVING...' : '1. APPROVE'}
               </button>
-              <button className="btn-outline" onClick={() => buyShares(false)} disabled={loading}>
-                {loading ? '...' : 'NO'}
+              <button className="btn-primary flex-1" onClick={() => buyShares(true)} disabled={buyingYes}>
+                {buyingYes ? 'BUYING...' : '2. YES'}
+              </button>
+              <button className="btn-outline flex-1" onClick={() => buyShares(false)} disabled={buyingNo}>
+                {buyingNo ? 'BUYING...' : '2. NO'}
               </button>
             </div>
           </div>
@@ -168,8 +195,8 @@ export default function MarketCard({ market, signerAddress }) {
               {market.outcome === 1 ? "YES WON" : market.outcome === 2 ? "NO WON" : "VOIDED"}
             </span>
             {eligibility.canClaim ? (
-              <button className="btn-primary" onClick={claimWinnings} disabled={loading || eligibility.hasClaimed}>
-                {eligibility.hasClaimed ? 'CLAIMED' : (loading ? '...' : 'CLAIM')}
+              <button className="btn-primary" onClick={claimWinnings} disabled={claiming || eligibility.hasClaimed}>
+                {eligibility.hasClaimed ? 'CLAIMED' : (claiming ? 'CLAIMING...' : 'CLAIM')}
               </button>
             ) : (
                <span className="tech-tag ended">NO SHARES</span>

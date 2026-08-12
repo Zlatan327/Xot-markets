@@ -80,6 +80,8 @@ contract BinaryMarket is ReentrancyGuard {
         collateralToken.safeTransferFrom(msg.sender, address(this), amount);
 
         // Deduct 1.5% fee on entry
+        // NOTE: Multiplying by FEE_PERCENT before dividing by FEE_DENOMINATOR 
+        // ensures this math is safe and agnostic to token decimals (e.g. 6-decimal USDC).
         uint256 fee = (amount * FEE_PERCENT) / FEE_DENOMINATOR;
         uint256 netAmount = amount - fee;
         
