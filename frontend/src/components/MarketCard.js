@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Clock } from 'lucide-react';
 import { getProvider, getContracts } from '../lib/contracts';
 import { ethers } from 'ethers';
@@ -7,10 +7,37 @@ import { ethers } from 'ethers';
 export default function MarketCard({ market, signerAddress }) {
   const [hovered, setHovered] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [betAmount, setBetAmount] = useState("10");
+  const [eligibility, setEligibility] = useState({ hasClaimed: false, canClaim: false });
   
   const totalPool = market.poolYes + market.poolNo;
   const yesPercent = totalPool === 0 ? 50 : Math.round((market.poolYes / totalPool) * 100);
   const noPercent = totalPool === 0 ? 50 : 100 - yesPercent;
+
+  
+  
+  useEffect(() => {
+    const checkEligibility = async () => {
+      if (!signerAddress || market.outcome === 0) return;
+      try {
+        const provider = getProvider();
+        const { marketAbi } = await getContracts(provider);
+        const marketContract = new ethers.Contract(market.marketAddress, marketAbi, provider);
+        
+        const claimed = await marketContract.hasClaimed(signerAddress);
+        let userShares = 0n;
+        
+        if (market.outcome === 1) userShares = await marketContract.yesShares(signerAddress);
+        else if (market.outcome === 2) userShares = await marketContract.noShares(signerAddress);
+        else if (market.outcome === 3) userShares = (await marketContract.yesShares(signerAddress)) + (await marketContract.noShares(signerAddress));
+        
+        setEligibility({ hasClaimed: claimed, canClaim: userShares > 0n });
+      } catch(e) {
+        console.error(e);
+      }
+    };
+    checkEligibility();
+  }, [signerAddress, market.outcome, market.marketAddress]);
 
   const buyShares = async (isYes) => {
     if (!signerAddress) return alert("Please connect wallet first");
@@ -21,7 +48,8 @@ export default function MarketCard({ market, signerAddress }) {
       const { usdc, marketAbi } = await getContracts(signer);
       
       const marketContract = new ethers.Contract(market.marketAddress, marketAbi, signer);
-      const amount = ethers.parseEther("100");
+      const amount = ethers.parseEther(betAmount.toString() || "0");
+      if (amount <= 0n) return alert("Enter a valid bet amount");
       
       // Approve
       const approveTx = await usdc.approve(market.marketAddress, amount);
@@ -98,14 +126,22 @@ export default function MarketCard({ market, signerAddress }) {
         </div>
         
         {market.outcome === 0 ? (
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            <input 
+              type="number" 
+              value={betAmount} 
+              onChange={(e) => setBetAmount(e.target.value)}
+              className="bg-transparent border-b border-gray-600 text-white text-sm w-16 px-1 focus:outline-none focus:border-[var(--accent-primary)]"
+              style={{ textAlign: 'center' }}
+            />
+            <span className="text-xs text-muted mr-2">USDC</span>
             <button 
               className="btn btn-outline" 
               onClick={() => buyShares(true)}
               disabled={loading}
               style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', borderColor: 'var(--success)', color: 'var(--success)', opacity: loading ? 0.5 : 1 }}
             >
-              {loading ? 'Tx...' : 'Buy YES'}
+              {loading ? 'Tx...' : 'YES'}
             </button>
             <button 
               className="btn btn-outline" 
@@ -113,7 +149,7 @@ export default function MarketCard({ market, signerAddress }) {
               disabled={loading}
               style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', borderColor: 'var(--danger)', color: 'var(--danger)', opacity: loading ? 0.5 : 1 }}
             >
-              {loading ? 'Tx...' : 'Buy NO'}
+              {loading ? 'Tx...' : 'NO'}
             </button>
           </div>
         ) : (
@@ -121,14 +157,23 @@ export default function MarketCard({ market, signerAddress }) {
             <span className="text-xs font-bold mr-2" style={{ color: market.outcome === 1 ? 'var(--success)' : market.outcome === 2 ? 'var(--danger)' : 'gray' }}>
               {market.outcome === 1 ? "YES WON" : market.outcome === 2 ? "NO WON" : "VOIDED"}
             </span>
-            <button 
-              className="btn btn-primary" 
-              onClick={claimWinnings}
-              disabled={loading}
-              style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', opacity: loading ? 0.5 : 1 }}
-            >
-              {loading ? 'Tx...' : 'Claim Winnings'}
-            </button>
+            {eligibility.canClaim ? (
+              <button 
+                className="btn btn-primary" 
+                onClick={claimWinnings}
+                disabled={loading || eligibility.hasClaimed}
+                style={{ 
+                  padding: '0.4rem 0.8rem', 
+                  fontSize: '0.8rem', 
+                  opacity: loading || eligibility.hasClaimed ? 0.5 : 1,
+                  cursor: eligibility.hasClaimed ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {eligibility.hasClaimed ? 'Claimed' : (loading ? 'Tx...' : 'Claim Winnings')}
+              </button>
+            ) : (
+               <span className="text-xs text-muted italic">No winnings</span>
+            )}
           </div>
         )}
       </div>
