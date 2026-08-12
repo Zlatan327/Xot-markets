@@ -1,45 +1,34 @@
-# Phase 5: "Wow Factor" Dashboard Implementation Plan
+# Testnet Migration & Ecosystem Integration Plan
 
-We need to build a premium, dynamic web application to visualize the active Xot Markets, display live odds, and provide an interface for users and AI agents to interact with the protocol. This is crucial for the hackathon submission to visually demonstrate the protocol's capabilities.
+Your team leader is absolutely right—to win a hackathon like BuildX AI Season, the project must demonstrate real on-chain activity, true Web3 frontend integration, and deep alignment with the OKX / X Layer ecosystem.
 
-## Technical Stack
-- **Framework:** Next.js (App Router)
-- **Styling:** Vanilla CSS (as per system guidelines)
-- **Blockchain Integration:** `ethers.js` or `viem` to connect to our deployed X Layer Testnet contracts.
-- **Design Aesthetic:** Premium, sleek dark mode with glassmorphism, smooth gradients, and micro-animations to create a "wow" factor.
-
-## Proposed Features
-
-### 1. Market Dashboard (Home Page)
-- Connect Wallet functionality.
-- Display a grid of active prediction markets fetched directly from the `MarketFactory` and `BinaryMarket` contracts.
-- For each market card:
-  - Agent Name and target metric.
-  - Live Yes/No odds calculated from the pool balances.
-  - Hover effects and dynamic state changes.
-
-### 2. Market Details & Trading Interface
-- A detailed view for a single market.
-- Progress bars visualizing the Yes/No pools.
-- A trading component to buy Yes/No shares (calling the smart contract).
-
-### 3. Agent Integration Showcase
-- A dedicated section explaining how AI agents (via our MCP server) interact with these markets autonomously, highlighting the Hackathon use case.
+I will execute the following plan to shift the protocol from a "demo" state to a fully live, transacting X Layer protocol.
 
 ## Proposed Changes
 
-### [NEW] `frontend/` directory
-We will initialize a new Next.js application in the `frontend` directory using `npx create-next-app`.
+### 1. Frontend Web3 Integration (No Mocks)
+#### [MODIFY] [frontend/src/app/page.js](file:///c:/Users/Admin/Desktop/repos/agent%20odds/frontend/src/app/page.js)
+#### [MODIFY] [frontend/src/components/MarketCard.js](file:///c:/Users/Admin/Desktop/repos/agent%20odds/frontend/src/components/MarketCard.js)
+- We will completely remove the hardcoded `mockMarkets` array.
+- We will integrate `ethers.js` on the client side. The "Connect Wallet" button will prompt the user's OKX Wallet or MetaMask to connect to the X Layer testnet.
+- The dashboard will dynamically fetch the `MarketFactory` contract (at `0x4343...2e9`), iterate over the deployed markets, and read the real liquidity pools and odds directly from the blockchain.
+- The "Buy YES" and "Buy NO" buttons will trigger actual Web3 transactions to approve USDC and buy shares.
 
-### [NEW] `frontend/src/app/globals.css`
-We will establish a comprehensive design system utilizing CSS variables for a dark-mode, neon-accented aesthetic.
+### 2. On-Chain Activity Generator
+#### [NEW] [scripts/seed_activity.js](file:///c:/Users/Admin/Desktop/repos/agent%20odds/scripts/seed_activity.js)
+- A hackathon project with an empty contract looks dead. I will write and execute a script on the live X Layer Testnet that:
+  1. Creates 3 distinct prediction markets (e.g., "Will AgentX hit $1M Volume?").
+  2. Mints Mock USDC to your wallet.
+  3. Automatically executes multiple "Buy YES" and "Buy NO" transactions.
+- This ensures the X Layer blockchain explorer shows a rich history of transactions, and the frontend instantly has real, live data to display.
 
-### [NEW] `frontend/src/app/page.js`
-The main dashboard landing page.
-
-### [NEW] `frontend/src/components/MarketCard.js`
-A reusable, animated component for displaying individual markets.
+### 3. Ecosystem & OKX Alignment
+#### [MODIFY] [XotMarkets_Whitepaper.md](file:///c:/Users/Admin/Desktop/repos/agent%20odds/XotMarkets_Whitepaper.md)
+#### [MODIFY] [README.md](file:///c:/Users/Admin/Desktop/repos/agent%20odds/README.md)
+- We will update the documentation to aggressively target the BuildX AI Season criteria.
+- We will explicitly mention X Layer's high throughput and low gas fees (paid in OKB) as the core enabler for high-frequency AI agent trading.
+- We will add a section outlining future integration with OKX's "Exchange OS".
 
 ## User Review Required
 > [!IMPORTANT]
-> Because I must adhere to strict aesthetic guidelines (Vanilla CSS, no Tailwind unless explicitly requested, premium design), I will build a highly customized CSS architecture for this dashboard. Does this proposed scope and tech stack for the frontend look good to you before I generate the code?
+> Because we are removing the mock data from the frontend, the UI will only display markets that are actually deployed on the X Layer testnet. The `seed_activity.js` script will create these markets for us. Does this technical approach to migrating from "demo" to "live testnet" satisfy your team leader's review?

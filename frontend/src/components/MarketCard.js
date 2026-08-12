@@ -1,13 +1,44 @@
 "use client";
 import { useState } from 'react';
-import { ArrowUpRight, ArrowDownRight, Clock } from 'lucide-react';
+import { Clock } from 'lucide-react';
+import { getProvider, getContracts } from '../lib/contracts';
+import { ethers } from 'ethers';
 
-export default function MarketCard({ market }) {
+export default function MarketCard({ market, signerAddress }) {
   const [hovered, setHovered] = useState(false);
+  const [loading, setLoading] = useState(false);
   
   const totalPool = market.poolYes + market.poolNo;
-  const yesPercent = Math.round((market.poolYes / totalPool) * 100);
-  const noPercent = 100 - yesPercent;
+  const yesPercent = totalPool === 0 ? 50 : Math.round((market.poolYes / totalPool) * 100);
+  const noPercent = totalPool === 0 ? 50 : 100 - yesPercent;
+
+  const buyShares = async (isYes) => {
+    if (!signerAddress) return alert("Please connect wallet first");
+    setLoading(true);
+    try {
+      const provider = getProvider();
+      const signer = await provider.getSigner();
+      const { usdc, marketAbi } = await getContracts(signer);
+      
+      const marketContract = new ethers.Contract(market.marketAddress, marketAbi, signer);
+      const amount = ethers.parseEther("100");
+      
+      // Approve
+      const approveTx = await usdc.approve(market.marketAddress, amount);
+      await approveTx.wait();
+      
+      // Buy
+      const tx = await marketContract.buyShares(isYes, amount);
+      await tx.wait();
+      
+      alert("Trade successful on X Layer!");
+      window.location.reload();
+    } catch (e) {
+      console.error(e);
+      alert("Trade failed: " + e.message);
+    }
+    setLoading(false);
+  };
 
   return (
     <div 
@@ -45,11 +76,21 @@ export default function MarketCard({ market }) {
           Pool: ${(totalPool).toLocaleString()}
         </div>
         <div className="flex gap-2">
-          <button className="btn btn-outline" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', borderColor: 'var(--success)', color: 'var(--success)' }}>
-            Buy YES
+          <button 
+            className="btn btn-outline" 
+            onClick={() => buyShares(true)}
+            disabled={loading}
+            style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', borderColor: 'var(--success)', color: 'var(--success)', opacity: loading ? 0.5 : 1 }}
+          >
+            {loading ? 'Tx...' : 'Buy YES'}
           </button>
-          <button className="btn btn-outline" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', borderColor: 'var(--danger)', color: 'var(--danger)' }}>
-            Buy NO
+          <button 
+            className="btn btn-outline" 
+            onClick={() => buyShares(false)}
+            disabled={loading}
+            style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', borderColor: 'var(--danger)', color: 'var(--danger)', opacity: loading ? 0.5 : 1 }}
+          >
+            {loading ? 'Tx...' : 'Buy NO'}
           </button>
         </div>
       </div>
