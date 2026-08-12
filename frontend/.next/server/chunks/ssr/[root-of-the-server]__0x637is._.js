@@ -1,3 +1,0 @@
-module.exports=[4047,a=>{a.v({className:"inter_396b12ce-module__rRjk0G__className"})},92286,a=>{"use strict";var b=a.i(18332),c=a.i(4047);let d={className:c.default.className,style:{fontFamily:"'Inter', 'Inter Fallback'",fontStyle:"normal"}};null!=c.default.variable&&(d.variable=c.default.variable),a.s(["default",0,function({children:a}){return(0,b.jsx)("html",{lang:"en",children:(0,b.jsx)("body",{className:d.className,children:a})})},"metadata",0,{title:"Xot Markets | Premium Prediction Markets",description:"AI-driven prediction markets built on X Layer."}],92286)},96740,function(a){a.n(a.i(92286))}];
-
-//# sourceMappingURL=%5Broot-of-the-server%5D__0x637is._.js.map

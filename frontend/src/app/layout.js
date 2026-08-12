@@ -1,17 +1,18 @@
 import './globals.css';
-import { Inter } from 'next/font/google';
+import { Inter, JetBrains_Mono } from 'next/font/google';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ['latin'], variable: '--font-space' });
+const jetbrains = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' });
 
 export const metadata = {
-  title: 'Xot Markets | Premium Prediction Markets',
-  description: 'AI-driven prediction markets built on X Layer.',
+  title: 'Xot Markets | Infrastructure',
+  description: 'Sovereign AI Prediction Market Infrastructure.',
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={`${inter.variable} ${jetbrains.variable}`}>{children}</body>
     </html>
   );
 }

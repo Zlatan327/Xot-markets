@@ -60,7 +60,7 @@ h1, h2, h3, h4 {
 }
 
 .hero-container {
-  perspective: 1000px;
+  perspective: 1200px;
   z-index: 0;
   pointer-events: none;
   justify-content: center;
@@ -92,7 +92,7 @@ h1, h2, h3, h4 {
   z-index: 20;
   justify-content: center;
   align-items: center;
-  animation: 15s linear infinite revolve;
+  animation: 20s linear infinite revolve;
   display: flex;
   position: absolute;
 }
@@ -100,9 +100,10 @@ h1, h2, h3, h4 {
 .text-ring span {
   color: #fff;
   text-transform: uppercase;
+  backface-visibility: hidden;
   -webkit-text-stroke: 1px black;
   font-family: Arial, sans-serif;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 900;
   position: absolute;
 }
@@ -113,7 +114,7 @@ h1, h2, h3, h4 {
   }
 
   100% {
-    transform: rotateX(-15deg)rotateY(360deg);
+    transform: rotateX(-15deg)rotateY(-360deg);
   }
 }
 

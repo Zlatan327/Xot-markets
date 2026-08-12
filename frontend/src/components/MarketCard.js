@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { Clock } from 'lucide-react';
+import { Clock, Activity } from 'lucide-react';
 import { getProvider, getContracts } from '../lib/contracts';
 import { ethers } from 'ethers';
 
@@ -14,8 +14,6 @@ export default function MarketCard({ market, signerAddress }) {
   const yesPercent = totalPool === 0 ? 50 : Math.round((market.poolYes / totalPool) * 100);
   const noPercent = totalPool === 0 ? 50 : 100 - yesPercent;
 
-  
-  
   useEffect(() => {
     const checkEligibility = async () => {
       if (!signerAddress || market.outcome === 0) return;
@@ -51,11 +49,9 @@ export default function MarketCard({ market, signerAddress }) {
       const amount = ethers.parseEther(betAmount.toString() || "0");
       if (amount <= 0n) return alert("Enter a valid bet amount");
       
-      // Approve
       const approveTx = await usdc.approve(market.marketAddress, amount);
       await approveTx.wait();
       
-      // Buy
       const tx = await marketContract.buyShares(isYes, amount);
       await tx.wait();
       
@@ -89,90 +85,94 @@ export default function MarketCard({ market, signerAddress }) {
     setLoading(false);
   };
 
+  // Extract the raw address from the "Agent 0x..." string
+  const rawAddress = market.marketAddress ? market.agentName.replace('Agent ', '').toLowerCase() : '';
+  const explorerUrl = `https://www.okx.com/explorer/xlayer-test/address/${rawAddress}`;
+
   return (
-    <div 
-      className="market-card p-6 flex flex-col justify-between bg-white text-black border-4 border-black"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{ height: '100%', boxShadow: '8px 8px 0px black' }}
-    >
-      <div>
-        <div className="flex justify-between items-center mb-4 border-b-2 border-black pb-2">
-          <span className="text-xs font-black" style={{ textTransform: 'uppercase', letterSpacing: '1px' }}>
-            {market.agentName}
-          </span>
-          <span className="flex items-center gap-2 text-xs font-bold bg-black text-white px-2 py-1">
-            <Clock size={12} /> {market.expiresIn}
+    <div className="infra-node">
+      {/* Header */}
+      <div className="node-header">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <span className="tech-tag bg-[rgba(255,255,255,0.1)] text-white border border-[rgba(255,255,255,0.2)]">
+              ID: {market.agentName}
+            </span>
+            <a 
+              href={explorerUrl} 
+              target="_blank" 
+              rel="noreferrer" 
+              className="tech-tag hover:bg-[rgba(0,240,255,0.2)] transition-colors cursor-pointer"
+              title="View Agent Contract on X Layer Explorer"
+            >
+              <Activity size={12} /> View on Explorer ↗
+            </a>
+          </div>
+          <span className="font-bold text-lg mt-2 tracking-tight">
+            Will agent hit {market.metric}?
           </span>
         </div>
-        
-        <h3 className="text-xl font-black mb-6 uppercase leading-tight">Will agent hit {market.metric}?</h3>
-        
-        <div className="mb-6">
-          <div className="flex justify-between text-sm mb-2 font-black uppercase">
-            <span>Yes {yesPercent}%</span>
-            <span>No {noPercent}%</span>
-          </div>
-          <div className="progress-bar-bg border-2 border-black" style={{ height: '16px' }}>
-            <div className="progress-yes" style={{ width: `${yesPercent}%` }}></div>
-            <div className="progress-no" style={{ width: `${noPercent}%` }}></div>
-          </div>
+        <div className={`tech-tag ${market.outcome !== 0 ? 'ended' : ''}`}>
+          <Clock size={12} /> {market.expiresIn}
         </div>
       </div>
       
-      <div className="flex justify-between items-center mt-4 pt-4 border-t-2 border-black">
-        <div className="text-sm font-black uppercase">
-          Pool: ${(totalPool).toLocaleString()}
+      {/* Body */}
+      <div className="node-body">
+        <div className="mb-4">
+          <p className="text-sm text-[var(--text-muted)]">
+            Verified On-Chain Agent on X Layer. Resolves directly via smart contract metrics.
+          </p>
+        </div>
+        
+        <div className="flex justify-between items-center mb-1">
+          <div className="data-value">YES {yesPercent}%</div>
+          <div className="data-value" style={{ color: 'var(--text-muted)' }}>NO {noPercent}%</div>
+        </div>
+        
+        <div className="bar-container mb-4">
+          <div className="bar-yes" style={{ width: `${yesPercent}%` }}></div>
+          <div className="bar-no" style={{ width: `${noPercent}%` }}></div>
+        </div>
+      </div>
+      
+      {/* Footer */}
+      <div className="node-footer">
+        <div className="flex flex-col">
+          <span className="text-sm text-[var(--text-muted)]">TVL</span>
+          <span className="data-value">${(totalPool).toLocaleString()}</span>
         </div>
         
         {market.outcome === 0 ? (
-          <div className="flex items-center gap-2">
-            <input 
-              type="number" 
-              value={betAmount} 
-              onChange={(e) => setBetAmount(e.target.value)}
-              className="bg-transparent border-b-2 border-black text-black text-sm w-16 px-1 focus:outline-none font-bold"
-              style={{ textAlign: 'center' }}
-            />
-            <span className="text-xs font-black mr-2">USDC</span>
-            <button 
-              className="btn font-black transition-all border-2 border-black hover:bg-black hover:text-white" 
-              onClick={() => buyShares(true)}
-              disabled={loading}
-              style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', opacity: loading ? 0.5 : 1 }}
-            >
-              {loading ? 'WAIT' : 'YES'}
-            </button>
-            <button 
-              className="btn font-black transition-all border-2 border-black bg-black text-white hover:bg-white hover:text-black" 
-              onClick={() => buyShares(false)}
-              disabled={loading}
-              style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', opacity: loading ? 0.5 : 1 }}
-            >
-              {loading ? 'WAIT' : 'NO'}
-            </button>
+          <div className="flex items-center gap-4">
+            <div className="terminal-input">
+              <span>&gt;</span>
+              <input 
+                type="number" 
+                value={betAmount} 
+                onChange={(e) => setBetAmount(e.target.value)}
+              />
+            </div>
+            <div className="flex gap-2">
+              <button className="btn-primary" onClick={() => buyShares(true)} disabled={loading}>
+                {loading ? '...' : 'YES'}
+              </button>
+              <button className="btn-outline" onClick={() => buyShares(false)} disabled={loading}>
+                {loading ? '...' : 'NO'}
+              </button>
+            </div>
           </div>
         ) : (
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-black mr-2 uppercase bg-black text-white px-2 py-1">
+          <div className="flex items-center gap-3">
+            <span className="tech-tag">
               {market.outcome === 1 ? "YES WON" : market.outcome === 2 ? "NO WON" : "VOIDED"}
             </span>
             {eligibility.canClaim ? (
-              <button 
-                className="btn font-black transition-all border-2 border-black bg-white text-black hover:bg-black hover:text-white" 
-                onClick={claimWinnings}
-                disabled={loading || eligibility.hasClaimed}
-                style={{ 
-                  padding: '0.4rem 0.8rem', 
-                  fontSize: '0.8rem', 
-                  opacity: loading || eligibility.hasClaimed ? 0.5 : 1,
-                  cursor: eligibility.hasClaimed ? 'not-allowed' : 'pointer'
-                }}
-              >
-                {eligibility.hasClaimed ? 'CLAIMED' : (loading ? 'WAIT' : 'CLAIM WINNINGS')}
+              <button className="btn-primary" onClick={claimWinnings} disabled={loading || eligibility.hasClaimed}>
+                {eligibility.hasClaimed ? 'CLAIMED' : (loading ? '...' : 'CLAIM')}
               </button>
             ) : (
-               <span className="text-xs font-bold italic">NO WINNINGS</span>
+               <span className="tech-tag ended">NO SHARES</span>
             )}
           </div>
         )}
