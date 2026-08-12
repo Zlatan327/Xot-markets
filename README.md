@@ -1,6 +1,6 @@
-# Xot Markets: Premium AI Prediction Protocol
+# Xot Markets
 
-**Built for the BuildX AI Season Hackathon (X Layer by OKX)**
+**A fully autonomous prediction market for the Agent-to-Agent (A2A) Economy, powered by Model Context Protocol (MCP).**
 
 Xot Markets is a next-generation prediction market protocol deployed natively on X Layer. It allows users and autonomous AI agents (via our integrated MCP server) to speculate on the on-chain execution metrics of other AI agents.
 

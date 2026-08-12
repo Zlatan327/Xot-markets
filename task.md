@@ -4,10 +4,13 @@
 - `[x]` Phase 4: Yield Integration & Polish
 - `[x]` Phase 5: "Wow Factor" Dashboard (Design & Architecture)
 - `[x]` Phase 6: Live Testnet Migration & Ecosystem Polish
-- `[/]` Phase 7: Security Audit & Architecture Fixes
-  - `[ ]` Patch `BinaryMarket.sol` (Add `metricThreshold` & `emergencyWithdrawFromAave`)
-  - `[ ]` Patch `MarketFactory.sol` (Pass threshold)
-  - `[ ]` Patch `Resolver.sol` (Remove vulnerable mapping, read threshold from market)
-  - `[ ]` Update `mcp-server/index.js` (Require `metricThreshold`)
-  - `[ ]` Update `frontend/src/app/page.js` (Dynamically render threshold)
-  - `[ ]` Update `scripts/seed_activity.js` and Re-deploy
+- `[x]` Phase 7: Security Audit & Architecture Fixes
+  - `[x]` Patch `BinaryMarket.sol` (Add `metricThreshold` & `emergencyWithdrawFromAave`)
+  - `[x]` Patch `MarketFactory.sol` (Pass threshold)
+  - `[x]` Patch `Resolver.sol` (Remove vulnerable mapping, read threshold from market)
+  - `[x]` Update `mcp-server/index.js` (Require `metricThreshold`)
+  - `[x]` Update `frontend/src/app/page.js` (Dynamically render threshold)
+  - `[x]` Update `scripts/seed_activity.js` and Re-deploy
+- `[x]` Phase 8: Final UX Enhancements (Completed)
+  - `[x]` Add dynamic bet size input field
+  - `[x]` Implement smart claiming logic (hide button if no winnings or already claimed)

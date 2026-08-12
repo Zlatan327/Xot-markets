@@ -1,26 +1,27 @@
 :root {
-  /* Institutional Dark Theme */
-  --bg-primary: #0a0e17; /* Very deep charcoal/navy */
-  --bg-secondary: #121826; /* Dark slate */
-  --bg-glass: rgba(18, 24, 38, 0.7);
+  /* Dazzardo Dashboard Theme */
+  --bg-primary: #1e1e2d; /* Main background */
+  --bg-sidebar: #242435; /* Sidebar background */
+  --bg-card: #2b2b3d; /* Card panels */
+  --bg-glass: rgba(43, 43, 61, 0.8);
   
-  --text-primary: #f8fafc; /* Crisp white */
-  --text-secondary: #94a3b8; /* Slate gray */
-  --text-muted: #64748b;
+  --text-primary: #ffffff;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
   
-  --accent-primary: #3b82f6; /* Trustworthy blue */
-  --accent-secondary: #6366f1; /* Deep indigo */
+  --accent-primary: #dfff00; /* Neon Yellow/Lime */
+  --accent-secondary: #00e5ff; /* Cyan */
+  --accent-tertiary: #ff477e; /* Pinkish red for variety */
   
-  --border-glass: rgba(255, 255, 255, 0.08);
+  --border-glass: rgba(255, 255, 255, 0.05);
   
-  --success: #10b981; /* Institutional Emerald Green */
-  --success-bg: rgba(16, 185, 129, 0.15);
-  --danger: #ef4444; /* Institutional Crimson Red */
-  --danger-bg: rgba(239, 68, 68, 0.15);
+  --success: #dfff00; /* Use the neon yellow as the primary "YES" / success color */
+  --success-bg: rgba(223, 255, 0, 0.15);
+  --danger: #ff477e; /* Pinkish red for "NO" / danger */
+  --danger-bg: rgba(255, 71, 126, 0.15);
   
-  /* Remove gamer gradients for a flatter, sleeker look */
-  --gradient-primary: #3b82f6; 
-  --gradient-glass: linear-gradient(180deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+  --gradient-primary: #dfff00;
+  --gradient-hub: linear-gradient(135deg, rgba(99, 102, 241, 0.8) 0%, rgba(168, 85, 247, 0.8) 100%); /* Purple gradient for the personal hub */
 }
 
 * {

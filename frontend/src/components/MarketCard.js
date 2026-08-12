@@ -136,18 +136,34 @@ export default function MarketCard({ market, signerAddress }) {
             />
             <span className="text-xs text-muted mr-2">USDC</span>
             <button 
-              className="btn btn-outline" 
+              className="btn font-bold transition-all" 
               onClick={() => buyShares(true)}
               disabled={loading}
-              style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', borderColor: 'var(--success)', color: 'var(--success)', opacity: loading ? 0.5 : 1 }}
+              style={{ 
+                padding: '0.5rem 1rem', 
+                fontSize: '0.8rem', 
+                backgroundColor: 'var(--success-bg)', 
+                color: 'var(--success)', 
+                border: '1px solid var(--success)',
+                opacity: loading ? 0.5 : 1,
+                borderRadius: '8px'
+              }}
             >
               {loading ? 'Tx...' : 'YES'}
             </button>
             <button 
-              className="btn btn-outline" 
+              className="btn font-bold transition-all" 
               onClick={() => buyShares(false)}
               disabled={loading}
-              style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', borderColor: 'var(--danger)', color: 'var(--danger)', opacity: loading ? 0.5 : 1 }}
+              style={{ 
+                padding: '0.5rem 1rem', 
+                fontSize: '0.8rem', 
+                backgroundColor: 'var(--danger-bg)', 
+                color: 'var(--danger)', 
+                border: '1px solid var(--danger)',
+                opacity: loading ? 0.5 : 1,
+                borderRadius: '8px'
+              }}
             >
               {loading ? 'Tx...' : 'NO'}
             </button>
