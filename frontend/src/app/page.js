@@ -55,13 +55,51 @@ export default function Home() {
     }
   };
 
+  const [usdcBalance, setUsdcBalance] = useState("0");
+
   const connectWallet = async () => {
     if (typeof window !== 'undefined' && window.ethereum) {
       try {
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         setWallet(accounts[0]);
+        
+        // Ensure connected to X Layer Testnet (Chain ID: 195 or 0xc3)
+        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+        if (chainId !== '0xc3') {
+          try {
+            await window.ethereum.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: '0xc3' }],
+            });
+          } catch (switchError) {
+            if (switchError.code === 4902) {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: '0xc3',
+                  chainName: 'X Layer Testnet',
+                  rpcUrls: ['https://testrpc.xlayer.tech'],
+                  nativeCurrency: { name: 'OKB', symbol: 'OKB', decimals: 18 },
+                  blockExplorerUrls: ['https://www.okx.com/explorer/xlayer-test']
+                }],
+              });
+            } else {
+              console.error(switchError);
+              alert("Please switch to X Layer Testnet to use this dApp.");
+              return;
+            }
+          }
+        }
+        
+        // Fetch USDC Balance
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const { usdc } = await getContracts(signer);
+        const bal = await usdc.balanceOf(accounts[0]);
+        setUsdcBalance(Number(ethers.formatEther(bal)).toFixed(2));
+        
       } catch (e) {
-        console.error("User rejected connection");
+        console.error("User rejected connection", e);
       }
     } else {
       alert("Please install OKX Wallet or MetaMask!");
@@ -75,9 +113,16 @@ export default function Home() {
           <Zap size={24} color="var(--accent-primary)" />
           <span className="text-xl font-bold text-gradient">Xot Markets</span>
         </div>
-        <div>
+        <div className="flex items-center gap-4">
           {wallet ? (
-            <span className="btn btn-outline">{wallet.substring(0, 6)}...{wallet.substring(38)}</span>
+            <>
+              <span className="text-sm font-medium" style={{ color: 'var(--success)' }}>
+                {usdcBalance} USDC
+              </span>
+              <span className="btn btn-outline" style={{ padding: '0.4rem 0.8rem' }}>
+                {wallet.substring(0, 6)}...{wallet.substring(38)}
+              </span>
+            </>
           ) : (
             <button className="btn btn-primary" onClick={connectWallet}>
               Connect Wallet

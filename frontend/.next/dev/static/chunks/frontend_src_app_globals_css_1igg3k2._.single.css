@@ -1,0 +1,272 @@
+/* [project]/frontend/src/app/globals.css [app-client] (css) */
+:root {
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-glass: #14141c99;
+  --border-glass: #ffffff14;
+  --accent-primary: #00f0ff;
+  --accent-secondary: #7000ff;
+  --accent-gradient: linear-gradient(135deg, #00f0ff 0%, #7000ff 100%);
+  --text-primary: #fff;
+  --text-secondary: #a0a0b0;
+  --text-muted: #606070;
+  --success: #0f8;
+  --danger: #f05;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  background-image: radial-gradient(circle at 15%, #7000ff14 0%, #0000 50%), radial-gradient(circle at 85% 30%, #00f0ff14 0%, #0000 50%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4 {
+  letter-spacing: -.03em;
+  font-weight: 700;
+}
+
+.text-gradient {
+  background: var(--accent-gradient);
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.glass-panel {
+  background: var(--bg-glass);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px #0000004d;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.grid {
+  gap: 1.5rem;
+  display: grid;
+}
+
+.grid-cols-auto {
+  grid-template-columns: repeat(1, 1fr);
+}
+
+@media (min-width: 768px) {
+  .grid-cols-auto {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-cols-auto {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.gap-2 {
+  gap: .5rem;
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+.gap-6 {
+  gap: 1.5rem;
+}
+
+.btn {
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  justify-content: center;
+  align-items: center;
+  padding: .75rem 1.5rem;
+  font-family: inherit;
+  font-size: .95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all .2s ease-in-out;
+  display: inline-flex;
+}
+
+.btn-primary {
+  background: var(--accent-gradient);
+  color: #fff;
+  box-shadow: 0 4px 15px #7000ff4d;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px #00f0ff66;
+}
+
+.btn-outline {
+  border: 1px solid var(--accent-primary);
+  color: var(--accent-primary);
+  background: none;
+}
+
+.btn-outline:hover {
+  background: #00f0ff1a;
+}
+
+.market-card {
+  transition: transform .3s cubic-bezier(.175, .885, .32, 1.275), box-shadow .3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.market-card:before {
+  content: "";
+  background: linear-gradient(to right, #0000, #ffffff0d, #0000);
+  width: 50%;
+  height: 100%;
+  transition: all .5s;
+  position: absolute;
+  top: 0;
+  left: -100%;
+  transform: skewX(-25deg);
+}
+
+.market-card:hover {
+  border-color: #00f0ff4d;
+  transform: translateY(-5px);
+  box-shadow: 0 10px 40px #00000080, 0 0 20px #00f0ff1a;
+}
+
+.market-card:hover:before {
+  left: 200%;
+}
+
+.progress-bar-bg {
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  width: 100%;
+  height: 8px;
+  display: flex;
+  overflow: hidden;
+}
+
+.progress-yes {
+  background: var(--success);
+  height: 100%;
+  transition: width 1s cubic-bezier(.4, 0, .2, 1);
+}
+
+.progress-no {
+  background: var(--danger);
+  height: 100%;
+  transition: width 1s cubic-bezier(.4, 0, .2, 1);
+}
+
+.text-sm {
+  font-size: .875rem;
+}
+
+.text-lg {
+  font-size: 1.125rem;
+}
+
+.text-xl {
+  font-size: 1.25rem;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.mt-2 {
+  margin-top: .5rem;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.mt-8 {
+  margin-top: 2rem;
+}
+
+.mb-2 {
+  margin-bottom: .5rem;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.mb-8 {
+  margin-bottom: 2rem;
+}
+
+.p-4 {
+  padding: 1rem;
+}
+
+.p-6 {
+  padding: 1.5rem;
+}
+
+.p-8 {
+  padding: 2rem;
+}
+
+.rounded-lg {
+  border-radius: .5rem;
+}
+
+.rounded-xl {
+  border-radius: 1rem;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.block {
+  display: block;
+}
+
+/*# sourceMappingURL=frontend_src_app_globals_css_1igg3k2._.single.css.map*/
