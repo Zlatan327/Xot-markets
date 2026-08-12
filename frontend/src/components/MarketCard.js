@@ -40,6 +40,27 @@ export default function MarketCard({ market, signerAddress }) {
     setLoading(false);
   };
 
+  const claimWinnings = async () => {
+    if (!signerAddress) return alert("Please connect wallet first");
+    setLoading(true);
+    try {
+      const provider = getProvider();
+      const signer = await provider.getSigner();
+      const { marketAbi } = await getContracts(signer);
+      
+      const marketContract = new ethers.Contract(market.marketAddress, marketAbi, signer);
+      
+      const tx = await marketContract.claim();
+      await tx.wait();
+      
+      alert("Winnings claimed successfully!");
+    } catch (e) {
+      console.error(e);
+      alert("Claim failed. Ensure you have winning shares and haven't claimed already.");
+    }
+    setLoading(false);
+  };
+
   return (
     <div 
       className="glass-panel market-card p-6 flex flex-col justify-between"
@@ -75,24 +96,41 @@ export default function MarketCard({ market, signerAddress }) {
         <div className="text-xs text-muted font-medium">
           Pool: ${(totalPool).toLocaleString()}
         </div>
-        <div className="flex gap-2">
-          <button 
-            className="btn btn-outline" 
-            onClick={() => buyShares(true)}
-            disabled={loading}
-            style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', borderColor: 'var(--success)', color: 'var(--success)', opacity: loading ? 0.5 : 1 }}
-          >
-            {loading ? 'Tx...' : 'Buy YES'}
-          </button>
-          <button 
-            className="btn btn-outline" 
-            onClick={() => buyShares(false)}
-            disabled={loading}
-            style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', borderColor: 'var(--danger)', color: 'var(--danger)', opacity: loading ? 0.5 : 1 }}
-          >
-            {loading ? 'Tx...' : 'Buy NO'}
-          </button>
-        </div>
+        
+        {market.outcome === 0 ? (
+          <div className="flex gap-2">
+            <button 
+              className="btn btn-outline" 
+              onClick={() => buyShares(true)}
+              disabled={loading}
+              style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', borderColor: 'var(--success)', color: 'var(--success)', opacity: loading ? 0.5 : 1 }}
+            >
+              {loading ? 'Tx...' : 'Buy YES'}
+            </button>
+            <button 
+              className="btn btn-outline" 
+              onClick={() => buyShares(false)}
+              disabled={loading}
+              style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', borderColor: 'var(--danger)', color: 'var(--danger)', opacity: loading ? 0.5 : 1 }}
+            >
+              {loading ? 'Tx...' : 'Buy NO'}
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold mr-2" style={{ color: market.outcome === 1 ? 'var(--success)' : market.outcome === 2 ? 'var(--danger)' : 'gray' }}>
+              {market.outcome === 1 ? "YES WON" : market.outcome === 2 ? "NO WON" : "VOIDED"}
+            </span>
+            <button 
+              className="btn btn-primary" 
+              onClick={claimWinnings}
+              disabled={loading}
+              style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', opacity: loading ? 0.5 : 1 }}
+            >
+              {loading ? 'Tx...' : 'Claim Winnings'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

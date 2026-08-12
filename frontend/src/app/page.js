@@ -31,6 +31,7 @@ export default function Home() {
           const threshold = await marketContract.metricThreshold();
           const totalYes = await marketContract.totalYesPool();
           const totalNo = await marketContract.totalNoPool();
+          const outcome = await marketContract.finalOutcome();
           
           liveMarkets.push({
             id: address,
@@ -39,7 +40,8 @@ export default function Home() {
             metric: metricType == 1 ? `Volume > ${Number(threshold).toLocaleString()}` : metricType == 2 ? `APY > ${Number(threshold)}%` : `Executions > ${Number(threshold)}`,
             poolYes: Number(ethers.formatEther(totalYes)),
             poolNo: Number(ethers.formatEther(totalNo)),
-            expiresIn: "Live"
+            outcome: Number(outcome),
+            expiresIn: Number(outcome) === 0 ? "Live" : "Ended"
           });
         } catch (e) {
           break;
