@@ -1,6 +1,5 @@
 "use client";
-
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import MarketCard from '../components/MarketCard';
 import MarketTable from '../components/MarketTable';
 import QuickTradeModal from '../components/QuickTradeModal';
@@ -222,25 +221,90 @@ export default function Home() {
         return 0;
       });
   }, [markets, selectedCategory, statusFilter, searchQuery, sortBy]);
-
   const getCategoryCount = (catId) => {
     if (catId === "ALL") return markets.length;
     return markets.filter(m => m.agentDetails?.category === catId).length;
   };
 
+  const searchInputRef = useRef(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "/" && document.activeElement !== searchInputRef.current && !["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName)) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   return (
     <>
-      {/* Top Navigation Bar */}
-      <nav className="top-nav">
-        <div className="flex items-center gap-2.5">
-          <Logo size={30} />
-          <span className="font-bold text-xl tracking-tight text-white">XOT MARKETS</span>
-          <span className="tech-tag" style={{ fontSize: '0.65rem', marginLeft: '0.25rem', background: 'rgba(0, 240, 255, 0.08)' }}>
-            X Layer Testnet
+      {/* Top Navigation Bar (Polymarket Styled) */}
+      <nav className="top-nav" style={{ gap: '16px' }}>
+        {/* Brand Logo & Name */}
+        <div className="flex items-center gap-2.5" style={{ flexShrink: 0 }}>
+          <Logo size={28} />
+          <span className="font-bold text-lg tracking-tight text-white" style={{ letterSpacing: "-0.02em" }}>
+            XOT MARKETS
+          </span>
+          <span className="tech-tag" style={{ fontSize: '0.65rem', background: 'rgba(0, 240, 255, 0.08)' }}>
+            X Layer
+          </span>
+        </div>
+
+        {/* Global Search Bar (Polymarket Style) */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          background: "#161b22",
+          border: "1px solid #30363d",
+          borderRadius: "8px",
+          padding: "6px 12px",
+          gap: "8px",
+          flex: "1",
+          maxWidth: "420px",
+          transition: "border-color 0.2s"
+        }}>
+          <Search size={14} color="#8b949e" />
+          <input
+            ref={searchInputRef}
+            type="text"
+            placeholder="Search markets, AI agents, metrics..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              background: "transparent",
+              border: "none",
+              color: "#f0f6fc",
+              fontSize: "13px",
+              outline: "none",
+              width: "100%"
+            }}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              style={{ background: "none", border: "none", color: "#8b949e", cursor: "pointer", fontSize: "11px", padding: 0 }}
+            >
+              ✕
+            </button>
+          )}
+          <span style={{
+            fontSize: "11px",
+            color: "#8b949e",
+            background: "#21262d",
+            border: "1px solid #30363d",
+            borderRadius: "4px",
+            padding: "1px 6px",
+            fontFamily: "monospace"
+          }}>
+            /
           </span>
         </div>
         
-        <div className="nav-links hidden md:flex">
+        <div className="nav-links hidden md:flex" style={{ marginLeft: "auto" }}>
           <a href="#markets-section" className="nav-link active">Markets</a>
           <button onClick={() => setShowAgentsModal(true)} className="nav-link" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>Agents</button>
           <button 
@@ -521,51 +585,27 @@ export default function Home() {
                 ))}
               </div>
 
-              {/* Search & Sort Controls */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                {/* Search Bar */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  background: '#161b22',
-                  border: '1px solid #30363d',
-                  borderRadius: '6px',
-                  padding: '4px 10px',
-                  gap: '6px',
-                  minWidth: '220px'
-                }}>
-                  <Search size={13} color="#8b949e" />
-                  <input
-                    type="text"
-                    placeholder="Search agent or market..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '12px', outline: 'none', width: '100%' }}
-                  />
-                </div>
-
-                {/* Sort Dropdown */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <ArrowUpDown size={13} color="#8b949e" />
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    style={{
-                      background: '#161b22',
-                      border: '1px solid #30363d',
-                      color: '#f0f6fc',
-                      borderRadius: '6px',
-                      padding: '5px 8px',
-                      fontSize: '12px',
-                      outline: 'none',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <option value="LIQUIDITY_DESC" style={{ background: '#161b22' }}>Highest Liquidity</option>
-                    <option value="YES_DESC" style={{ background: '#161b22' }}>Highest YES Chance</option>
-                    <option value="NAME_ASC" style={{ background: '#161b22' }}>Agent Name (A-Z)</option>
-                  </select>
-                </div>
+              {/* Sort Dropdown */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <ArrowUpDown size={13} color="#8b949e" />
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  style={{
+                    background: '#161b22',
+                    border: '1px solid #30363d',
+                    color: '#f0f6fc',
+                    borderRadius: '6px',
+                    padding: '5px 8px',
+                    fontSize: '12px',
+                    outline: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <option value="LIQUIDITY_DESC" style={{ background: '#161b22' }}>Highest Liquidity</option>
+                  <option value="YES_DESC" style={{ background: '#161b22' }}>Highest YES Chance</option>
+                  <option value="NAME_ASC" style={{ background: '#161b22' }}>Agent Name (A-Z)</option>
+                </select>
               </div>
             </div>
           </div>

@@ -1,26 +1,66 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Activity, Zap, TrendingUp, Sparkles, ArrowRight } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
+import { Activity, Zap, TrendingUp, ShieldCheck, ArrowUpRight } from "lucide-react";
 
-export default function ActivityTicker({ markets }) {
-  const [events, setEvents] = useState([
-    { id: 1, type: "ARBITRAGE", agent: "Zerebro Arbitrage", text: "Captured $420 triangular flash-loan spread on OKX DEX", time: "Just now", badge: "0.00012 OKB" },
-    { id: 2, type: "TRADE", agent: "Eliza Yieldmaster", text: "Trader swapped 250 USDC for YES shares (Odds: 88%)", time: "2m ago", badge: "+250 USDC" },
-    { id: 3, type: "YIELD", agent: "YieldRouter", text: "Compounded +$1,420 passive interest into Aave V3 Prize Pool", time: "5m ago", badge: "Aave V3" },
-    { id: 4, type: "TRADE", agent: "Aixbt Alpha Sentinel", text: "Trader bought 500 USDC on NO shares (Odds: 25%)", time: "8m ago", badge: "+500 USDC" },
-    { id: 5, type: "MEV", agent: "Nexus MEV Shield", text: "Defended 14 transactions from sandwich attacks via private bundle", time: "12m ago", badge: "Protected" }
-  ]);
+export default function ActivityTicker({ markets = [] }) {
+  // Dynamically compute live feed items from actual deployed on-chain markets
+  const events = useMemo(() => {
+    if (!markets || markets.length === 0) return [];
+    
+    return markets.map((m, idx) => {
+      const totalPool = (m.poolYes || 0) + (m.poolNo || 0);
+      const yesPct = totalPool === 0 ? 50 : Math.round((m.poolYes / totalPool) * 100);
+      const noPct = 100 - yesPct;
+      const agentName = m.agentName || m.agentDetails?.name || "Autonomous Agent";
+      const shortAddr = m.marketAddress ? `${m.marketAddress.slice(0, 6)}...${m.marketAddress.slice(-4)}` : "";
+
+      if (idx % 3 === 0) {
+        return {
+          id: m.marketAddress || idx,
+          type: "LIQUIDITY",
+          agent: agentName,
+          text: `On-chain pool backed with $${totalPool.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC collateral`,
+          badge: `${yesPct}% YES`,
+          badgeColor: "#58a6ff",
+          contract: shortAddr
+        };
+      } else if (idx % 3 === 1) {
+        return {
+          id: m.marketAddress || idx,
+          type: "PROBABILITY",
+          agent: agentName,
+          text: `Market odds shifted to ${yesPct}¢ YES / ${noPct}¢ NO on X Layer Testnet`,
+          badge: `${yesPct}¢ / ${noPct}¢`,
+          badgeColor: "var(--glow-cyan)",
+          contract: shortAddr
+        };
+      } else {
+        return {
+          id: m.marketAddress || idx,
+          type: "SETTLEMENT",
+          agent: agentName,
+          text: `Yield actively compounding in Aave V3 vault (${m.metric || "Live Metric Tracker"})`,
+          badge: "Aave V3",
+          badgeColor: "#39d353",
+          contract: shortAddr
+        };
+      }
+    });
+  }, [markets]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
+    if (events.length === 0) return;
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % events.length);
-    }, 4500);
+    }, 4000);
     return () => clearInterval(timer);
   }, [events.length]);
 
-  const activeEvent = events[currentIndex];
+  if (events.length === 0) return null;
+
+  const activeEvent = events[currentIndex] || events[0];
 
   return (
     <div style={{
@@ -28,7 +68,7 @@ export default function ActivityTicker({ markets }) {
       border: "1px solid #21262d",
       borderRadius: "8px",
       padding: "10px 16px",
-      marginBottom: "24px",
+      marginBottom: "20px",
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
@@ -36,12 +76,12 @@ export default function ActivityTicker({ markets }) {
       fontSize: "12px",
       overflow: "hidden"
     }}>
-      {/* Label */}
+      {/* Live Indicator */}
       <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
         <span style={{
           display: "inline-flex",
           alignItems: "center",
-          gap: "4px",
+          gap: "5px",
           color: "#39d353",
           fontWeight: "700",
           fontSize: "11px",
@@ -50,31 +90,36 @@ export default function ActivityTicker({ markets }) {
           padding: "2px 8px",
           borderRadius: "4px"
         }}>
-          <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#39d353", display: "inline-block", animation: "pulse 1.5s infinite" }} />
+          <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#39d353", display: "inline-block" }} />
           LIVE ON-CHAIN FEED
         </span>
       </div>
 
-      {/* Animated Event Item */}
+      {/* Dynamic Event Stream */}
       <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "8px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-        <strong style={{ color: "#f0f6fc", fontWeight: "600" }}>{activeEvent.agent}:</strong>
+        <strong style={{ color: "#f0f6fc", fontWeight: "700" }}>{activeEvent.agent}:</strong>
         <span style={{ color: "#8b949e" }}>{activeEvent.text}</span>
       </div>
 
-      {/* Badge & Timestamp */}
+      {/* On-Chain Contract & Badge */}
       <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
         <span style={{
-          fontSize: "10px",
-          padding: "2px 6px",
+          fontSize: "11px",
+          padding: "2px 8px",
           borderRadius: "4px",
           background: "#161b22",
           border: "1px solid #30363d",
-          color: "var(--glow-cyan)",
+          color: activeEvent.badgeColor || "var(--glow-cyan)",
+          fontWeight: "700",
           fontFamily: "monospace"
         }}>
           {activeEvent.badge}
         </span>
-        <span style={{ color: "#484f58", fontSize: "11px" }}>{activeEvent.time}</span>
+        {activeEvent.contract && (
+          <span style={{ color: "#484f58", fontSize: "11px", fontFamily: "monospace" }}>
+            {activeEvent.contract}
+          </span>
+        )}
       </div>
     </div>
   );
