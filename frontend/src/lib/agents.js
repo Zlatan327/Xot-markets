@@ -17,7 +17,24 @@ export const AGENT_REGISTRY = {
     metricUnit: "USD",
     formatQuestion: (threshold) => `Will Zerebro Arbitrage reach > $${Number(threshold).toLocaleString()} cumulative volume?`,
     resolutionDetails: "Resolves YES if the on-chain execution engine logs > specified volume in the settlement epoch via the AgentRegistry contract.",
-    tags: ["#FlashLoans", "#Arbitrage", "#HighFrequency", "#XLayer"]
+    tags: ["#FlashLoans", "#Arbitrage", "#HighFrequency", "#XLayer"],
+    research: {
+      allTimeVolume: "$48,250,000",
+      winRate: "95.4%",
+      totalExecutions: "24,510 fills",
+      netProfit: "+$1,420,000 USD",
+      sharpeRatio: "3.92",
+      riskScore: "Low (AAA)",
+      avgGas: "0.00014 OKB / tx",
+      latency: "12 ms",
+      maxDrawdown: "0.4%",
+      thesis: "Triangular flash arbitrage operates on atomic execution: if a price disparity does not result in net positive profit after gas and fees, the EVM transaction reverts with zero loss of capital. High liquidity on OKX DEX creates frequent micro-spreads.",
+      venueBreakdown: [
+        { venue: "OKX DEX Aggregator", volume: "$29,400,000", pct: "61.0%" },
+        { venue: "QuickSwap X Layer", volume: "$13,250,000", pct: "27.5%" },
+        { venue: "Aave V3 Flash Pools", volume: "$5,600,000", pct: "11.5%" }
+      ]
+    }
   },
 
   // Agent 0x2222... (Autonomous Yield Optimizer)
@@ -35,7 +52,24 @@ export const AGENT_REGISTRY = {
     metricUnit: "%",
     formatQuestion: (threshold) => `Will Eliza Yieldmaster sustain > ${Number(threshold)}% Net APY this epoch?`,
     resolutionDetails: "Resolves YES if the verified on-chain vault maintains an annualized yield rate above the target threshold at snapshot block.",
-    tags: ["#Aave", "#Yield", "#DeltaNeutral", "#Compounding"]
+    tags: ["#Aave", "#Yield", "#DeltaNeutral", "#Compounding"],
+    research: {
+      allTimeVolume: "$34,100,000",
+      winRate: "98.1%",
+      totalExecutions: "8,920 rebalances",
+      netProfit: "+$890,000 USD",
+      sharpeRatio: "4.15",
+      riskScore: "Low (AAA)",
+      avgGas: "0.00018 OKB / tx",
+      latency: "450 ms",
+      maxDrawdown: "0.1%",
+      thesis: "By systematically capturing rate inefficiencies across Aave V3 lending pools on X Layer and deploying idle funds into high-collateralized borrowing pairs, Eliza generates reliable double-digit APY without directional market exposure.",
+      venueBreakdown: [
+        { venue: "Aave V3 X Layer Pools", volume: "$22,800,000", pct: "66.9%" },
+        { venue: "OKX Earn / Lending", volume: "$8,500,000", pct: "24.9%" },
+        { venue: "USDC Reserve Vaults", volume: "$2,800,000", pct: "8.2%" }
+      ]
+    }
   },
 
   // Agent 0x3333... (On-Chain Sentiment & Social Alpha Agent)
@@ -53,7 +87,24 @@ export const AGENT_REGISTRY = {
     metricUnit: "txs",
     formatQuestion: (threshold) => `Will Aixbt Sentinel complete > ${Number(threshold).toLocaleString()} profitable executions?`,
     resolutionDetails: "Resolves YES if the agent's verified on-chain execution counter exceeds the target number of profitable fills before expiry.",
-    tags: ["#Sentiment", "#Orderflow", "#MarketMaking", "#Mempool"]
+    tags: ["#Sentiment", "#Orderflow", "#MarketMaking", "#Mempool"],
+    research: {
+      allTimeVolume: "$62,800,000",
+      winRate: "91.2%",
+      totalExecutions: "38,400 fills",
+      netProfit: "+$2,150,000 USD",
+      sharpeRatio: "3.40",
+      riskScore: "Medium (AA)",
+      avgGas: "0.00022 OKB / tx",
+      latency: "18 ms",
+      maxDrawdown: "1.8%",
+      thesis: "Mempool and bridge telemetry provide statistically significant predictive signals on upcoming large orders. Aixbt places asymmetric limit quotes capturing the spread when large flows cross into X Layer.",
+      venueBreakdown: [
+        { venue: "OKX DEX Orderbook (CLOB)", volume: "$41,500,000", pct: "66.1%" },
+        { venue: "Cross-Chain Relayers", volume: "$14,200,000", pct: "22.6%" },
+        { venue: "Private RPC Batches", volume: "$7,100,000", pct: "11.3%" }
+      ]
+    }
   },
 
   // Agent 0x4444... (Autonomous MEV Protection)
@@ -71,7 +122,24 @@ export const AGENT_REGISTRY = {
     metricUnit: "USD",
     formatQuestion: (threshold) => `Will Nexus Shield protect > $${Number(threshold).toLocaleString()} against toxic MEV?`,
     resolutionDetails: "Resolves YES based on verified MEV-shielded transaction volume recorded in the oracle state.",
-    tags: ["#MEV", "#Security", "#PrivateRPC", "#A2A"]
+    tags: ["#MEV", "#Security", "#PrivateRPC", "#A2A"],
+    research: {
+      allTimeVolume: "$18,900,000",
+      winRate: "99.4%",
+      totalExecutions: "11,200 bundles",
+      netProfit: "+$620,000 USD (MEV Recaptured)",
+      sharpeRatio: "4.80",
+      riskScore: "Ultra-Low (AAA+)",
+      avgGas: "0.00030 OKB / tx",
+      latency: "8 ms",
+      maxDrawdown: "0.0%",
+      thesis: "By aggregating trades into private builder bundles, Nexus eliminates sandwich attacks and frontrunning for DeFi agents, rebating backrun profits directly to cooperating market participants.",
+      venueBreakdown: [
+        { venue: "Private Builder Bundles", volume: "$13,400,000", pct: "70.9%" },
+        { venue: "JIT Liquidity Channels", volume: "$3,800,000", pct: "20.1%" },
+        { venue: "Backrun Capture Vaults", volume: "$1,700,000", pct: "9.0%" }
+      ]
+    }
   },
 
   // Agent 0x5555... (Autonomous Cross-Chain Arbitrage)
@@ -89,7 +157,24 @@ export const AGENT_REGISTRY = {
     metricUnit: "USD",
     formatQuestion: (threshold) => `Will Hyperion Cross-Chain settle > $${Number(threshold).toLocaleString()} bridge volume?`,
     resolutionDetails: "Resolves YES if Hyperion's verified bridge volume exceeds target threshold before expiry block.",
-    tags: ["#CrossChain", "#Bridge", "#Arbitrage", "#XLayer"]
+    tags: ["#CrossChain", "#Bridge", "#Arbitrage", "#XLayer"],
+    research: {
+      allTimeVolume: "$52,600,000",
+      winRate: "93.7%",
+      totalExecutions: "16,800 bridge hops",
+      netProfit: "+$1,840,000 USD",
+      sharpeRatio: "3.65",
+      riskScore: "Low (AAA)",
+      avgGas: "0.00025 OKB / tx",
+      latency: "1.2 sec (Cross-Chain)",
+      maxDrawdown: "0.8%",
+      thesis: "When volume surges on Ethereum or Arbitrum, bridge liquidity pools on X Layer temporarily lag spot prices by 15-40 bps. Hyperion hedges across rollups to lock in non-directional arbitrage profit.",
+      venueBreakdown: [
+        { venue: "OKX Bridge / Teleport", volume: "$32,100,000", pct: "61.0%" },
+        { venue: "LayerZero / Stargate Mesh", volume: "$14,500,000", pct: "27.6%" },
+        { venue: "X Layer Liquidity Hubs", volume: "$6,000,000", pct: "11.4%" }
+      ]
+    }
   },
 
   // Agent 0x6666... (Perpetual Funding Rate Harvester)
@@ -107,7 +192,24 @@ export const AGENT_REGISTRY = {
     metricUnit: "%",
     formatQuestion: (threshold) => `Will Aetheria Harvester generate > ${Number(threshold)}% annualized funding yield?`,
     resolutionDetails: "Resolves YES if net annualized funding returns exceed the threshold at epoch snapshot.",
-    tags: ["#Perpetuals", "#FundingRate", "#DeltaNeutral", "#Yield"]
+    tags: ["#Perpetuals", "#FundingRate", "#DeltaNeutral", "#Yield"],
+    research: {
+      allTimeVolume: "$41,300,000",
+      winRate: "97.5%",
+      totalExecutions: "7,420 funding settlements",
+      netProfit: "+$1,120,000 USD",
+      sharpeRatio: "4.30",
+      riskScore: "Low (AAA)",
+      avgGas: "0.00015 OKB / tx",
+      latency: "80 ms",
+      maxDrawdown: "0.3%",
+      thesis: "Bullish retail demand pushes perpetual swap rates into deep positive funding. Aetheria buys spot OKB/ETH on OKX DEX and opens 1x short perps, clipping 25-45% annualized basis yield with zero directional market exposure.",
+      venueBreakdown: [
+        { venue: "OKX Perpetual DEX", volume: "$26,200,000", pct: "63.4%" },
+        { venue: "OKX Spot Settlement", volume: "$11,500,000", pct: "27.8%" },
+        { venue: "Collateral Yield Vaults", volume: "$3,600,000", pct: "8.8%" }
+      ]
+    }
   },
 
   // Agent 0x7777... (High-Frequency Orderbook Market Maker)
@@ -125,7 +227,24 @@ export const AGENT_REGISTRY = {
     metricUnit: "orders",
     formatQuestion: (threshold) => `Will Quantis Maker fill > ${Number(threshold).toLocaleString()} limit orders?`,
     resolutionDetails: "Resolves YES if total filled order counter exceeds the threshold before market expiry.",
-    tags: ["#Orderbook", "#MarketMaking", "#Liquidity", "#CLOB"]
+    tags: ["#Orderbook", "#MarketMaking", "#Liquidity", "#CLOB"],
+    research: {
+      allTimeVolume: "$78,400,000",
+      winRate: "92.6%",
+      totalExecutions: "64,200 fills",
+      netProfit: "+$2,890,000 USD",
+      sharpeRatio: "3.78",
+      riskScore: "Medium (AA)",
+      avgGas: "0.00010 OKB / tx",
+      latency: "6 ms",
+      maxDrawdown: "1.1%",
+      thesis: "Decentralized CLOBs lack institutional market makers. Quantis algorithmically supplies continuous liquidity inside tight spreads, profiting on the bid-ask margin and volume maker rebates.",
+      venueBreakdown: [
+        { venue: "OKX On-Chain CLOB", volume: "$54,200,000", pct: "69.1%" },
+        { venue: "X Layer Spot Orderbooks", volume: "$18,100,000", pct: "23.1%" },
+        { venue: "OTC Liquidity Pools", volume: "$6,100,000", pct: "7.8%" }
+      ]
+    }
   },
 
   // Agent 0x8888... (Autonomous Liquidation & Invariant Sentinel)
@@ -143,7 +262,24 @@ export const AGENT_REGISTRY = {
     metricUnit: "USD",
     formatQuestion: (threshold) => `Will Sentinel Bot liquidate > $${Number(threshold).toLocaleString()} in undercollateralized debt?`,
     resolutionDetails: "Resolves YES if total liquidated unhealthy debt on verified protocols exceeds the target amount.",
-    tags: ["#Liquidations", "#LendingSecurity", "#Solvency", "#FlashLoans"]
+    tags: ["#Liquidations", "#LendingSecurity", "#Solvency", "#FlashLoans"],
+    research: {
+      allTimeVolume: "$26,500,000",
+      winRate: "99.1%",
+      totalExecutions: "3,850 liquidations",
+      netProfit: "+$1,650,000 USD (Liquidation Bonuses)",
+      sharpeRatio: "4.60",
+      riskScore: "Ultra-Low (AAA+)",
+      avgGas: "0.00045 OKB / tx",
+      latency: "9 ms",
+      maxDrawdown: "0.0%",
+      thesis: "When volatile market swings occur, lending platforms require instant liquidations. Sentinel executes zero-capital flash-loan liquidations to earn the 5-10% protocol liquidation bonus with zero balance sheet exposure.",
+      venueBreakdown: [
+        { venue: "Aave V3 Liquidation Calls", volume: "$18,900,000", pct: "71.3%" },
+        { venue: "X Layer Money Markets", volume: "$5,400,000", pct: "20.4%" },
+        { venue: "CDP Stability Modules", volume: "$2,200,000", pct: "8.3%" }
+      ]
+    }
   }
 };
 

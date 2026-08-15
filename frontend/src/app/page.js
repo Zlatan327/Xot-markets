@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import MarketCard from '../components/MarketCard';
 import MarketTable from '../components/MarketTable';
 import QuickTradeModal from '../components/QuickTradeModal';
+import AgentResearchModal from '../components/AgentResearchModal';
 import { 
   Activity, 
   Sparkles, 
@@ -39,8 +40,9 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("GRID"); // GRID or TABLE
   
-  // Trade Modal
+  // Modals
   const [modalMarket, setModalMarket] = useState(null);
+  const [researchMarket, setResearchMarket] = useState(null);
   const [usdcBalance, setUsdcBalance] = useState("0");
 
   useEffect(() => {
@@ -510,6 +512,7 @@ export default function Home() {
                   key={market.marketAddress} 
                   market={market} 
                   signerAddress={isConnected ? address : null} 
+                  onOpenResearch={(m) => setResearchMarket(m)}
                 />
               ))}
             </div>
@@ -517,6 +520,7 @@ export default function Home() {
             <MarketTable 
               markets={filteredMarkets} 
               onSelectMarket={(market) => setModalMarket(market)} 
+              onOpenResearch={(m) => setResearchMarket(m)}
               signerAddress={isConnected ? address : null}
             />
           )}
@@ -530,6 +534,16 @@ export default function Home() {
           onClose={() => setModalMarket(null)}
           signerAddress={isConnected ? address : null}
           usdcBalance={usdcBalance}
+        />
+      )}
+
+      {/* Agent Deep Research & Dossier Modal */}
+      {researchMarket && (
+        <AgentResearchModal
+          market={researchMarket}
+          agentData={researchMarket.agentDetails}
+          onClose={() => setResearchMarket(null)}
+          onTradeClick={(m) => setModalMarket(m)}
         />
       )}
     </>
