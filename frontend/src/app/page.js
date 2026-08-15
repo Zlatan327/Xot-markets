@@ -21,7 +21,8 @@ import {
   SlidersHorizontal,
   Wallet,
   LogOut,
-  AlertTriangle
+  AlertTriangle,
+  Coins
 } from 'lucide-react';
 import { getPublicProvider, getContracts } from '../lib/contracts';
 import { getAgentMetadata } from '../lib/agents';
@@ -96,22 +97,54 @@ export default function Home() {
     }
   };
 
-  useEffect(() => {
-    const fetchBalance = async () => {
-      if (isConnected && signer && address) {
-        try {
-          const { usdc } = await getContracts(signer);
-          const bal = await usdc.balanceOf(address);
-          setUsdcBalance(Number(ethers.formatEther(bal)).toFixed(2));
-        } catch (e) {
-          console.error("Failed to fetch USDC balance", e);
-        }
-      } else {
-        setUsdcBalance("0");
+  const [minting, setMinting] = useState(false);
+
+  const fetchBalance = async () => {
+    if (address) {
+      try {
+        const provider = getPublicProvider();
+        const { usdc } = await getContracts(provider);
+        const bal = await usdc.balanceOf(address);
+        setUsdcBalance(Number(ethers.formatEther(bal)).toFixed(2));
+      } catch (e) {
+        console.error("Failed to fetch USDC balance", e);
       }
-    };
+    } else {
+      setUsdcBalance("0");
+    }
+  };
+
+  useEffect(() => {
     fetchBalance();
-  }, [isConnected, signer, address]);
+  }, [isConnected, address]);
+
+  const mintFaucetUSDC = async () => {
+    if (!isConnected || !signer) {
+      await connectWallet();
+      return;
+    }
+    if (!isCorrectNetwork) {
+      const switched = await switchToXLayer();
+      if (!switched) {
+        alert("Please switch to X Layer Testnet to claim faucet.");
+        return;
+      }
+    }
+    setMinting(true);
+    try {
+      const { usdc } = await getContracts(signer);
+      const amount = ethers.parseUnits("500", 18);
+      const tx = await usdc.mint(address, amount);
+      await tx.wait();
+      alert("Successfully minted 500 Test USDC on X Layer Testnet!");
+      await fetchBalance();
+    } catch (e) {
+      console.error("Mint failed:", e);
+      alert("Faucet failed: " + (e.reason || e.message));
+    } finally {
+      setMinting(false);
+    }
+  };
 
   const formatAddress = (addr) => {
     if (!addr) return '';
@@ -198,9 +231,19 @@ export default function Home() {
                   <AlertTriangle size={13} /> Switch to X Layer
                 </button>
               ) : (
-                <div className="flex items-center gap-2 font-mono text-sm border border-[var(--border-subtle)] px-3 py-1.5 rounded bg-[rgba(255,255,255,0.03)]">
-                  <span className="text-[var(--text-muted)] text-xs">USDC:</span>
-                  <span className="text-[var(--glow-green)] font-bold">${usdcBalance}</span>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 font-mono text-sm border border-[var(--border-subtle)] px-3 py-1.5 rounded bg-[rgba(255,255,255,0.03)]">
+                    <span className="text-[var(--text-muted)] text-xs">USDC:</span>
+                    <span className="text-[var(--glow-green)] font-bold">${usdcBalance}</span>
+                  </div>
+                  <button 
+                    onClick={mintFaucetUSDC}
+                    disabled={minting}
+                    title="Mint 500 Testnet USDC"
+                    className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded bg-[rgba(0,240,255,0.1)] text-[var(--glow-cyan)] border border-[rgba(0,240,255,0.3)] hover:bg-[rgba(0,240,255,0.2)] transition-all font-mono font-semibold"
+                  >
+                    <Coins size={13} /> {minting ? 'MINTING...' : '+ 500 USDC'}
+                  </button>
                 </div>
               )}
               
