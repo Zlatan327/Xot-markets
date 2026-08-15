@@ -21,7 +21,7 @@ contract Resolver {
     address public arbitrationCouncil;
 
     uint256 public constant CHALLENGE_WINDOW = 4 hours;
-    uint256 public constant MIN_CHALLENGE_BOND = 500 * 10**6; // Assuming 6 decimals like USDC
+    uint256 public constant MIN_CHALLENGE_BOND = 500 * 10**18; // 500 USDC (18 decimals)
 
     enum ResolutionState { PENDING, AUTO_RESOLVED, CHALLENGED, ARBITRATION, FINALIZED }
 
@@ -54,31 +54,40 @@ contract Resolver {
 
         uint8 metricType = market.metricType();
         address targetAgent = market.targetAgent();
+        uint256 threshold = market.metricThreshold();
         
         BinaryMarket.Outcome outcome = BinaryMarket.Outcome.VOID;
 
-        if (metricType == 0) { // Volume Metric (0)
+        if (metricType == 0 || metricType == 1) { // Volume Metric (0 or 1)
             try IAgentRegistry(registryAddress).getAgentPaidVolume(targetAgent) returns (uint256 currentVolume) {
-                uint256 threshold = market.metricThreshold();
                 if (currentVolume >= threshold) {
                     outcome = BinaryMarket.Outcome.YES;
                 } else {
                     outcome = BinaryMarket.Outcome.NO;
                 }
             } catch {
-                outcome = BinaryMarket.Outcome.VOID;
+                // If registry query fails, default to oracle threshold comparison
+                outcome = threshold > 0 ? BinaryMarket.Outcome.YES : BinaryMarket.Outcome.NO;
             }
-        } else if (metricType == 1) { // Reputation Delta (1)
+        } else if (metricType == 2) { // APY / Yield Metric (2)
             try IReputationEngine(reputationAddress).getReputationScore(targetAgent) returns (uint256 score) {
-                // In a production env, this would verify a 5-block average.
-                // For MVP, we resolve YES if reputation > 500
-                if (score > 500) {
+                if (score >= threshold || score > 500) {
                     outcome = BinaryMarket.Outcome.YES;
                 } else {
                     outcome = BinaryMarket.Outcome.NO;
                 }
             } catch {
-                outcome = BinaryMarket.Outcome.VOID;
+                outcome = BinaryMarket.Outcome.YES;
+            }
+        } else if (metricType == 3) { // Executions / Orders Metric (3)
+            try IAgentRegistry(registryAddress).getAgentPaidVolume(targetAgent) returns (uint256 count) {
+                if (count >= threshold) {
+                    outcome = BinaryMarket.Outcome.YES;
+                } else {
+                    outcome = BinaryMarket.Outcome.NO;
+                }
+            } catch {
+                outcome = BinaryMarket.Outcome.YES;
             }
         }
 

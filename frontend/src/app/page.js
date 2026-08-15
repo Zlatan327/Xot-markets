@@ -52,7 +52,7 @@ export default function Home() {
       const { factory, marketAbi } = await getContracts(provider);
       
       const liveMarkets = [];
-      for (let i = 0; i < 20; i++) {
+      for (let i = 0; i < 50; i++) {
         try {
           const marketAddress = await factory.deployedMarkets(i);
           const marketContract = new ethers.Contract(marketAddress, marketAbi, provider);

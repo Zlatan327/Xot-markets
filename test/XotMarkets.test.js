@@ -59,7 +59,8 @@ describe("Xot Markets Protocol", function () {
     
     await factory.createMarket(
       targetAgent.address,
-      0, // Metric: Volume
+      1, // Metric: Volume (1)
+      5000, // Metric Threshold: 5,000 volume
       expiryBlock,
       await mockToken.getAddress(),
       await resolver.getAddress()
@@ -68,8 +69,6 @@ describe("Xot Markets Protocol", function () {
     const marketAddress = await factory.deployedMarkets(0);
     const BinaryMarket = await hre.ethers.getContractFactory("BinaryMarket");
     binaryMarket = BinaryMarket.attach(marketAddress);
-
-    await resolver.setVolumeThreshold(marketAddress, 5000); 
   });
 
   it("Should calculate pari-mutuel payouts correctly on YES win", async function () {
