@@ -4,6 +4,7 @@ import { X, CheckCircle2, Info, ExternalLink, ShieldCheck, Clock } from 'lucide-
 import { getContracts } from '../lib/contracts';
 import { ethers } from 'ethers';
 import { useWeb3 } from '../context/Web3Context';
+import { useToast } from './Toast';
 
 export default function QuickTradeModal({ market, onClose, signerAddress, usdcBalance }) {
   const [betAmount, setBetAmount] = useState("10");
@@ -13,6 +14,7 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
   const [claiming, setClaiming] = useState(false);
   const [eligibility, setEligibility] = useState({ hasClaimed: false, canClaim: false, shares: 0 });
   const { signer, isConnected, connectWallet, isCorrectNetwork, switchToXLayer } = useWeb3();
+  const { addToast, updateToast } = useToast();
 
   if (!market) return null;
 
@@ -38,7 +40,11 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
     if (!isCorrectNetwork) {
       const switched = await switchToXLayer();
       if (!switched) {
-        alert("Please switch network to X Layer Testnet (Chain ID 195) in your wallet.");
+        addToast({
+          type: "error",
+          title: "Wrong Network",
+          message: "Please switch network to X Layer Testnet (Chain ID 195) in your wallet."
+        });
         return false;
       }
     }
@@ -50,17 +56,50 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
     if (!ready || !signer) return;
 
     setApproving(true);
+    const toastId = addToast({
+      type: "loading",
+      title: "Approving USDC...",
+      message: "Sending approval transaction to X Layer.",
+      duration: 0
+    });
+
     try {
       const { usdc } = await getContracts(signer);
       const amount = ethers.parseUnits(betAmount.toString() || "0", 18);
-      if (amount <= 0n) return alert("Enter a valid bet amount");
+      if (amount <= 0n) {
+        updateToast(toastId, {
+          type: "error",
+          title: "Invalid Amount",
+          message: "Please enter a valid bet amount."
+        });
+        setApproving(false);
+        return;
+      }
       
       const tx = await usdc.approve(market.marketAddress, amount);
+      updateToast(toastId, {
+        type: "loading",
+        title: "Approval Submitted",
+        message: "Waiting for block confirmation...",
+        txHash: tx.hash,
+        duration: 0
+      });
+
       await tx.wait();
-      alert("USDC Approved successfully! Now click Execute Trade.");
+      updateToast(toastId, {
+        type: "success",
+        title: "USDC Approved!",
+        message: "You can now execute your trade.",
+        txHash: tx.hash,
+        duration: 5000
+      });
     } catch (e) {
       console.error(e);
-      alert("Approval failed: " + (e.reason || e.message));
+      updateToast(toastId, {
+        type: "error",
+        title: "Approval Failed",
+        message: e.reason || e.message || "Failed to approve USDC."
+      });
     }
     setApproving(false);
   };
@@ -70,20 +109,53 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
     if (!ready || !signer) return;
 
     setTrading(true);
+    const toastId = addToast({
+      type: "loading",
+      title: `Executing ${selectedSide ? 'YES' : 'NO'} Order...`,
+      message: `Placing ${betAmount} USDC prediction on X Layer.`,
+      duration: 0
+    });
+
     try {
       const { marketAbi } = await getContracts(signer);
       const marketContract = new ethers.Contract(market.marketAddress, marketAbi, signer);
       const amount = ethers.parseUnits(betAmount.toString() || "0", 18);
-      if (amount <= 0n) return alert("Enter a valid bet amount");
+      if (amount <= 0n) {
+        updateToast(toastId, {
+          type: "error",
+          title: "Invalid Amount",
+          message: "Please enter a valid bet amount."
+        });
+        setTrading(false);
+        return;
+      }
       
       const tx = await marketContract.buyShares(selectedSide, amount);
+      updateToast(toastId, {
+        type: "loading",
+        title: "Trade Submitted",
+        message: "Confirming on X Layer Testnet...",
+        txHash: tx.hash,
+        duration: 0
+      });
+
       await tx.wait();
-      
-      alert(`Trade confirmed on X Layer! You purchased ${selectedSide ? 'YES' : 'NO'} shares.`);
-      window.location.reload();
+      updateToast(toastId, {
+        type: "success",
+        title: "Prediction Placed Successfully!",
+        message: `Acquired ${selectedSide ? 'YES' : 'NO'} shares.`,
+        txHash: tx.hash,
+        duration: 6000
+      });
+
+      setTimeout(() => window.location.reload(), 1500);
     } catch (e) {
       console.error(e);
-      alert("Trade failed: " + (e.reason || e.message));
+      updateToast(toastId, {
+        type: "error",
+        title: "Trade Failed",
+        message: e.reason || e.message || "Transaction failed."
+      });
     }
     setTrading(false);
   };

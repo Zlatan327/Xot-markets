@@ -4,6 +4,7 @@ import { Clock, Activity, CheckCircle2, Info, ChevronDown, ChevronUp, ExternalLi
 import { getPublicProvider, getContracts } from '../lib/contracts';
 import { ethers } from 'ethers';
 import { useWeb3 } from '../context/Web3Context';
+import { useToast } from './Toast';
 
 export default function MarketCard({ market, signerAddress, onOpenResearch }) {
   const [approving, setApproving] = useState(false);
@@ -15,6 +16,7 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
   const [selectedSide, setSelectedSide] = useState("YES");
   const [eligibility, setEligibility] = useState({ hasClaimed: false, canClaim: false, shares: 0 });
   const { signer, isConnected, connectWallet, isCorrectNetwork, switchToXLayer } = useWeb3();
+  const { addToast, updateToast } = useToast();
   
   const totalPool = (market.poolYes || 0) + (market.poolNo || 0);
   const yesPercent = totalPool === 0 ? 50 : Math.round((market.poolYes / totalPool) * 100);
@@ -64,7 +66,11 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
     if (!isCorrectNetwork) {
       const switched = await switchToXLayer();
       if (!switched) {
-        alert("Please switch network to X Layer Testnet (Chain ID 195) in your wallet.");
+        addToast({
+          type: "error",
+          title: "Wrong Network",
+          message: "Please switch network to X Layer Testnet (Chain ID 195) in your wallet."
+        });
         return false;
       }
     }
@@ -76,21 +82,50 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
     if (!ready || !signer) return;
 
     setApproving(true);
+    const toastId = addToast({
+      type: "loading",
+      title: "Approving USDC...",
+      message: "Sending approval transaction to X Layer.",
+      duration: 0
+    });
+
     try {
       const { usdc } = await getContracts(signer);
       const amount = ethers.parseUnits(betAmount.toString() || "0", 18);
       if (amount <= 0n) {
-        alert("Enter a valid bet amount");
+        updateToast(toastId, {
+          type: "error",
+          title: "Invalid Amount",
+          message: "Please enter a valid bet amount greater than 0."
+        });
         setApproving(false);
         return;
       }
       
       const tx = await usdc.approve(market.marketAddress, amount);
+      updateToast(toastId, {
+        type: "loading",
+        title: "Approval Submitted",
+        message: "Waiting for confirmation...",
+        txHash: tx.hash,
+        duration: 0
+      });
+
       await tx.wait();
-      alert("USDC Approved successfully! You can now place your prediction.");
+      updateToast(toastId, {
+        type: "success",
+        title: "USDC Approved!",
+        message: "You can now place your prediction.",
+        txHash: tx.hash,
+        duration: 5000
+      });
     } catch (e) {
       console.error(e);
-      alert("Approval failed: " + (e.reason || e.message));
+      updateToast(toastId, {
+        type: "error",
+        title: "Approval Failed",
+        message: e.reason || e.message || "Failed to approve USDC."
+      });
     }
     setApproving(false);
   };
@@ -100,24 +135,53 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
     if (!ready || !signer) return;
 
     isYes ? setBuyingYes(true) : setBuyingNo(true);
+    const toastId = addToast({
+      type: "loading",
+      title: `Placing ${isYes ? 'YES' : 'NO'} Prediction...`,
+      message: `Submitting order for ${betAmount} USDC.`,
+      duration: 0
+    });
+
     try {
       const { marketAbi } = await getContracts(signer);
       const marketContract = new ethers.Contract(market.marketAddress, marketAbi, signer);
       const amount = ethers.parseUnits(betAmount.toString() || "0", 18);
       if (amount <= 0n) {
-        alert("Enter a valid bet amount");
+        updateToast(toastId, {
+          type: "error",
+          title: "Invalid Amount",
+          message: "Please enter a valid bet amount."
+        });
         isYes ? setBuyingYes(false) : setBuyingNo(false);
         return;
       }
       
       const tx = await marketContract.buyShares(isYes, amount);
+      updateToast(toastId, {
+        type: "loading",
+        title: "Trade Submitted",
+        message: "Waiting for block confirmation on X Layer...",
+        txHash: tx.hash,
+        duration: 0
+      });
+
       await tx.wait();
-      
-      alert(`Successfully placed prediction on ${isYes ? 'YES' : 'NO'}!`);
-      window.location.reload();
+      updateToast(toastId, {
+        type: "success",
+        title: "Prediction Placed Successfully!",
+        message: `Purchased ${isYes ? 'YES' : 'NO'} shares.`,
+        txHash: tx.hash,
+        duration: 6000
+      });
+
+      setTimeout(() => window.location.reload(), 1500);
     } catch (e) {
       console.error(e);
-      alert("Trade failed: " + (e.reason || e.message));
+      updateToast(toastId, {
+        type: "error",
+        title: "Trade Failed",
+        message: e.reason || e.message || "Transaction failed."
+      });
     }
     isYes ? setBuyingYes(false) : setBuyingNo(false);
   };
@@ -127,18 +191,43 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
     if (!ready || !signer) return;
 
     setClaiming(true);
+    const toastId = addToast({
+      type: "loading",
+      title: "Claiming Winnings...",
+      message: "Sending claim transaction to X Layer.",
+      duration: 0
+    });
+
     try {
       const { marketAbi } = await getContracts(signer);
       const marketContract = new ethers.Contract(market.marketAddress, marketAbi, signer);
-      
       const tx = await marketContract.claim();
+
+      updateToast(toastId, {
+        type: "loading",
+        title: "Claim Submitted",
+        message: "Waiting for confirmation...",
+        txHash: tx.hash,
+        duration: 0
+      });
+
       await tx.wait();
-      
-      alert("Payout successfully claimed directly to your wallet!");
-      window.location.reload();
+      updateToast(toastId, {
+        type: "success",
+        title: "Payout Claimed!",
+        message: "Winnings transferred directly to your wallet.",
+        txHash: tx.hash,
+        duration: 6000
+      });
+
+      setTimeout(() => window.location.reload(), 1500);
     } catch (e) {
       console.error(e);
-      alert("Claim failed: " + (e.reason || e.message));
+      updateToast(toastId, {
+        type: "error",
+        title: "Claim Failed",
+        message: e.reason || e.message || "Failed to claim payout."
+      });
     }
     setClaiming(false);
   };

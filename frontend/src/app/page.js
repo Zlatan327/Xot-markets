@@ -8,6 +8,9 @@ import AgentResearchModal from '../components/AgentResearchModal';
 import ContractsModal from '../components/ContractsModal';
 import AgentsDirectoryModal from '../components/AgentsDirectoryModal';
 import ProtocolDocsModal from '../components/ProtocolDocsModal';
+import PortfolioModal from '../components/PortfolioModal';
+import FaucetButton from '../components/FaucetButton';
+import ActivityTicker from '../components/ActivityTicker';
 import { 
   Activity, 
   Sparkles, 
@@ -25,7 +28,8 @@ import {
   Wallet,
   LogOut,
   AlertTriangle,
-  Coins
+  Coins,
+  Briefcase
 } from 'lucide-react';
 import { getPublicProvider, getContracts } from '../lib/contracts';
 import { getAgentMetadata } from '../lib/agents';
@@ -50,6 +54,7 @@ export default function Home() {
   const [showContractsModal, setShowContractsModal] = useState(false);
   const [showAgentsModal, setShowAgentsModal] = useState(false);
   const [showDocsModal, setShowDocsModal] = useState(false);
+  const [showPortfolioModal, setShowPortfolioModal] = useState(false);
   const [usdcBalance, setUsdcBalance] = useState("0");
 
   useEffect(() => {
@@ -222,6 +227,24 @@ export default function Home() {
         <div className="nav-links hidden md:flex">
           <a href="#markets-section" className="nav-link active">Markets</a>
           <button onClick={() => setShowAgentsModal(true)} className="nav-link" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>Agents</button>
+          <button 
+            onClick={() => {
+              if (!isConnected) connectWallet();
+              else setShowPortfolioModal(true);
+            }} 
+            className="nav-link" 
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              color: 'var(--glow-cyan)'
+            }}
+          >
+            <Briefcase size={13} /> Portfolio
+          </button>
           <button onClick={() => setShowContractsModal(true)} className="nav-link" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>Contracts</button>
           <button onClick={() => setShowDocsModal(true)} className="nav-link" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>Docs</button>
         </div>
@@ -242,14 +265,7 @@ export default function Home() {
                     <span className="text-[var(--text-muted)] text-xs">USDC:</span>
                     <span className="text-[var(--glow-green)] font-bold">${usdcBalance}</span>
                   </div>
-                  <button 
-                    onClick={mintFaucetUSDC}
-                    disabled={minting}
-                    title="Mint 500 Testnet USDC"
-                    className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded bg-[rgba(0,240,255,0.1)] text-[var(--glow-cyan)] border border-[rgba(0,240,255,0.3)] hover:bg-[rgba(0,240,255,0.2)] transition-all font-mono font-semibold"
-                  >
-                    <Coins size={13} /> {minting ? 'MINTING...' : '+ 500 USDC'}
-                  </button>
+                  <FaucetButton signerAddress={address} onBalanceRefresh={fetchBalance} />
                 </div>
               )}
               
@@ -267,14 +283,16 @@ export default function Home() {
               </button>
             </div>
           ) : (
-            <button 
-              onClick={connectWallet}
-              disabled={connecting}
-              className="btn-primary flex items-center gap-2 text-sm font-semibold"
-            >
-              <Wallet size={15} />
-              {connecting ? 'CONNECTING...' : 'CONNECT WALLET'}
-            </button>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={connectWallet}
+                disabled={connecting}
+                className="btn-primary flex items-center gap-2 text-sm font-semibold"
+              >
+                <Wallet size={15} />
+                {connecting ? 'CONNECTING...' : 'CONNECT WALLET'}
+              </button>
+            </div>
           )}
         </div>
       </nav>
@@ -316,6 +334,9 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* Live Streaming Activity Ticker */}
+        <ActivityTicker markets={markets} />
 
         {/* Global Protocol Metric Stats KPI Bar */}
         <section style={{
@@ -619,6 +640,20 @@ export default function Home() {
       {showDocsModal && (
         <ProtocolDocsModal
           onClose={() => setShowDocsModal(false)}
+        />
+      )}
+
+      {/* User Portfolio & Positions Modal */}
+      {showPortfolioModal && (
+        <PortfolioModal
+          markets={markets}
+          signerAddress={isConnected ? address : null}
+          onClose={() => setShowPortfolioModal(false)}
+          onSelectMarket={(market) => {
+            setShowPortfolioModal(false);
+            setModalMarket(market);
+          }}
+          onBalanceRefresh={fetchBalance}
         />
       )}
     </>
