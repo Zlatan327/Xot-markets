@@ -2,25 +2,50 @@
 import React, { useState } from "react";
 import { ethers } from "ethers";
 import addresses from "../lib/addresses.json";
-import { getProvider, getContracts } from "../lib/contracts";
+import { getContracts } from "../lib/contracts";
 import { useToast } from "./Toast";
-import { Droplet, Loader2, Sparkles } from "lucide-react";
-import { useAppKitProvider } from "@reown/appkit/react";
+import { Droplet, Loader2, Sparkles, AlertTriangle } from "lucide-react";
+import { useWeb3 } from "../context/Web3Context";
 
 export default function FaucetButton({ signerAddress, onBalanceRefresh }) {
   const [minting, setMinting] = useState(false);
-  const { walletProvider } = useAppKitProvider('eip155');
+  const { signer, isConnected, connectWallet, isCorrectNetwork, switchToXLayer, address } = useWeb3();
   const { addToast, updateToast } = useToast();
 
+  const ensureWalletReady = async () => {
+    if (!isConnected || !signer) {
+      await connectWallet();
+      return false;
+    }
+    if (!isCorrectNetwork) {
+      const switched = await switchToXLayer();
+      if (!switched) {
+        addToast({
+          type: "error",
+          title: "Wrong Network",
+          message: "Please switch network to X Layer Testnet (Chain ID 195) in your wallet."
+        });
+        return false;
+      }
+    }
+    return true;
+  };
+
   const claimFaucet = async () => {
-    if (!signerAddress) {
-      addToast({
-        type: "error",
-        title: "Wallet Not Connected",
-        message: "Please connect your OKX / Web3 wallet to claim testnet USDC."
-      });
+    const ready = await ensureWalletReady();
+    if (!ready || !signer) {
+      if (!isConnected) {
+        addToast({
+          type: "info",
+          title: "Connect Wallet",
+          message: "Connecting to your Web3 wallet..."
+        });
+      }
       return;
     }
+
+    const targetAddress = signerAddress || address;
+    if (!targetAddress) return;
 
     setMinting(true);
     const toastId = addToast({
@@ -31,12 +56,9 @@ export default function FaucetButton({ signerAddress, onBalanceRefresh }) {
     });
 
     try {
-      const provider = getProvider(walletProvider);
-      const signer = await provider.getSigner();
       const { usdc } = await getContracts(signer);
-
       const mintAmount = ethers.parseUnits("1000", 18);
-      const tx = await usdc.mint(signerAddress, mintAmount);
+      const tx = await usdc.mint(targetAddress, mintAmount);
       
       updateToast(toastId, {
         type: "loading",
@@ -58,11 +80,15 @@ export default function FaucetButton({ signerAddress, onBalanceRefresh }) {
 
       if (onBalanceRefresh) onBalanceRefresh();
     } catch (e) {
-      console.error(e);
+      console.error("Faucet mint error:", e);
+      let errorMsg = e.reason || e.message || "Failed to mint testnet tokens.";
+      if (errorMsg.includes("insufficient funds") || errorMsg.includes("gas")) {
+        errorMsg = "Insufficient testnet OKB for gas. You need a small amount of testnet OKB to send transactions.";
+      }
       updateToast(toastId, {
         type: "error",
         title: "Faucet Claim Failed",
-        message: e.reason || e.message || "Failed to mint testnet tokens."
+        message: errorMsg
       });
     }
     setMinting(false);

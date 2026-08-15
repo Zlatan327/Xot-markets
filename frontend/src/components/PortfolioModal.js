@@ -1,16 +1,16 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
-import { getProvider, getContracts } from "../lib/contracts";
+import { getPublicProvider, getContracts } from "../lib/contracts";
 import { useToast } from "./Toast";
 import { Briefcase, TrendingUp, Award, DollarSign, CheckCircle2, Clock, ArrowUpRight, Loader2 } from "lucide-react";
-import { useAppKitProvider } from "@reown/appkit/react";
+import { useWeb3 } from "../context/Web3Context";
 
 export default function PortfolioModal({ markets, signerAddress, onClose, onSelectMarket, onBalanceRefresh }) {
   const [positions, setPositions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [claimingAddress, setClaimingAddress] = useState(null);
-  const { walletProvider } = useAppKitProvider('eip155');
+  const { signer, isConnected, connectWallet, isCorrectNetwork, switchToXLayer } = useWeb3();
   const { addToast, updateToast } = useToast();
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export default function PortfolioModal({ markets, signerAddress, onClose, onSele
 
     setLoading(true);
     try {
-      const provider = getProvider(walletProvider);
+      const provider = getPublicProvider();
       const { marketAbi } = await getContracts(provider);
 
       const userPositions = [];
@@ -96,7 +96,10 @@ export default function PortfolioModal({ markets, signerAddress, onClose, onSele
   };
 
   const claimMarketWinnings = async (marketAddress) => {
-    if (!signerAddress) return;
+    if (!isConnected || !signer) {
+      await connectWallet();
+      return;
+    }
     setClaimingAddress(marketAddress);
 
     const toastId = addToast({
@@ -107,10 +110,7 @@ export default function PortfolioModal({ markets, signerAddress, onClose, onSele
     });
 
     try {
-      const provider = getProvider(walletProvider);
-      const signer = await provider.getSigner();
       const { marketAbi } = await getContracts(signer);
-
       const contract = new ethers.Contract(marketAddress, marketAbi, signer);
       const tx = await contract.claim();
 
