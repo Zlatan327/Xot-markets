@@ -4,18 +4,21 @@ import factoryArtifact from "./MarketFactory.json";
 import marketArtifact from "./BinaryMarket.json";
 import usdcArtifact from "./MockERC20.json";
 
+export const getPublicProvider = () => {
+  return new ethers.JsonRpcProvider("https://testrpc.xlayer.tech");
+};
+
 export const getProvider = (walletProvider) => {
   if (walletProvider) {
     return new ethers.BrowserProvider(walletProvider);
   }
-  if (typeof window !== "undefined" && window.ethereum) {
-    return new ethers.BrowserProvider(window.ethereum);
-  }
-  return new ethers.JsonRpcProvider("https://testrpc.xlayer.tech");
+  return getPublicProvider();
 };
 
 export const getContracts = async (signerOrProvider) => {
-  const factory = new ethers.Contract(addresses.factory, factoryArtifact.abi, signerOrProvider);
-  const usdc = new ethers.Contract(addresses.usdc, usdcArtifact.abi, signerOrProvider);
+  const provider = signerOrProvider || getPublicProvider();
+  const factory = new ethers.Contract(addresses.factory, factoryArtifact.abi, provider);
+  const usdc = new ethers.Contract(addresses.usdc, usdcArtifact.abi, provider);
   return { factory, usdc, addresses, marketAbi: marketArtifact.abi };
 };
+
