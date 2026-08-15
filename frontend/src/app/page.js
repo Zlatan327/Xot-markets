@@ -100,7 +100,7 @@ export default function Home() {
           const signer = await ethersProvider.getSigner();
           const { usdc } = await getContracts(signer);
           const bal = await usdc.balanceOf(address);
-          setUsdcBalance(Number(ethers.formatUnits(bal, 6)).toFixed(2));
+          setUsdcBalance(Number(ethers.formatEther(bal)).toFixed(2));
         } catch (e) {
           console.error("Failed to fetch USDC balance", e);
         }

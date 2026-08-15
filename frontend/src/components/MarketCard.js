@@ -64,7 +64,7 @@ export default function MarketCard({ market, signerAddress }) {
       const signer = await provider.getSigner();
       const { usdc } = await getContracts(signer);
       
-      const amount = ethers.parseUnits(betAmount.toString() || "0", 6);
+      const amount = ethers.parseUnits(betAmount.toString() || "0", 18);
       if (amount <= 0n) return alert("Enter a valid bet amount");
       
       const tx = await usdc.approve(market.marketAddress, amount);
@@ -86,7 +86,7 @@ export default function MarketCard({ market, signerAddress }) {
       const { marketAbi } = await getContracts(signer);
       
       const marketContract = new ethers.Contract(market.marketAddress, marketAbi, signer);
-      const amount = ethers.parseUnits(betAmount.toString() || "0", 6);
+      const amount = ethers.parseUnits(betAmount.toString() || "0", 18);
       if (amount <= 0n) return alert("Enter a valid bet amount");
       
       const tx = await marketContract.buyShares(isYes, amount);
