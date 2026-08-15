@@ -11,6 +11,7 @@ import PortfolioModal from '../components/PortfolioModal';
 import FaucetButton from '../components/FaucetButton';
 import ActivityTicker from '../components/ActivityTicker';
 import Logo from '../components/Logo';
+import Hero3D from '../components/Hero3D';
 import { 
   Activity, 
   Sparkles, 
@@ -380,63 +381,19 @@ export default function Home() {
       {/* Main Content */}
       <main className="container" style={{ marginTop: '4.5rem' }}>
         
-        {/* Polymarket-Style Clean Protocol Header Bar */}
-        <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: "16px",
-          padding: "16px 20px",
-          background: "#0d1117",
-          border: "1px solid #21262d",
-          borderRadius: "10px",
-          marginBottom: "16px"
-        }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <h1 style={{ margin: 0, fontSize: "20px", fontWeight: "800", color: "#f0f6fc" }}>
-                AI Agent Prediction Protocol
-              </h1>
-              <span style={{ fontSize: "11px", background: "rgba(0, 240, 255, 0.1)", color: "var(--glow-cyan)", padding: "2px 8px", borderRadius: "12px", border: "1px solid rgba(0, 240, 255, 0.25)", fontWeight: "600" }}>
-                X Layer Testnet
-              </span>
-            </div>
-            <p style={{ margin: "4px 0 0 0", color: "#8b949e", fontSize: "13px" }}>
-              Trade on autonomous agent metrics with decentralized settlement and Aave V3 yield compounding.
-            </p>
-          </div>
-
-          {/* Quick Stats Strip */}
-          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-            <div style={{ background: "#161b22", padding: "8px 14px", borderRadius: "8px", border: "1px solid #21262d", fontSize: "12px" }}>
-              <span style={{ color: "#8b949e" }}>Total Collateral: </span>
-              <strong style={{ color: "#39d353" }}>${totalTvl.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</strong>
-            </div>
-            <div style={{ background: "#161b22", padding: "8px 14px", borderRadius: "8px", border: "1px solid #21262d", fontSize: "12px" }}>
-              <span style={{ color: "#8b949e" }}>Active Agents: </span>
-              <strong style={{ color: "var(--glow-cyan)" }}>{activeAgentsCount || 8} Verified</strong>
-            </div>
-            <button
-              onClick={fetchMarkets}
-              title="Refresh Live Odds"
-              style={{
-                background: "#161b22",
-                border: "1px solid #30363d",
-                color: "#8b949e",
-                borderRadius: "8px",
-                padding: "8px 12px",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                cursor: "pointer",
-                fontSize: "12px"
-              }}
-            >
-              <RefreshCw size={13} className={loading ? "animate-spin" : ""} /> Refresh
-            </button>
-          </div>
-        </div>
+        {/* 3D Fintech Animation Hero */}
+        <Hero3D
+          totalTvl={totalTvl}
+          activeAgentsCount={activeAgentsCount || 8}
+          onExploreClick={() => {
+            const el = document.getElementById("markets-section");
+            if (el) el.scrollIntoView({ behavior: "smooth" });
+          }}
+          onOpenPortfolio={() => {
+            if (!isConnected) connectWallet();
+            else setShowPortfolioModal(true);
+          }}
+        />
 
         {/* Live Streaming Activity Ticker */}
         <ActivityTicker markets={markets} />
