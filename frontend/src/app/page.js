@@ -11,6 +11,7 @@ import ProtocolDocsModal from '../components/ProtocolDocsModal';
 import PortfolioModal from '../components/PortfolioModal';
 import FaucetButton from '../components/FaucetButton';
 import ActivityTicker from '../components/ActivityTicker';
+import Logo from '../components/Logo';
 import { 
   Activity, 
   Sparkles, 
@@ -231,12 +232,10 @@ export default function Home() {
     <>
       {/* Top Navigation Bar */}
       <nav className="top-nav">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded bg-[var(--glow-cyan)] flex items-center justify-center">
-            <Sparkles size={15} color="#050505" />
-          </div>
+        <div className="flex items-center gap-2.5">
+          <Logo size={30} />
           <span className="font-bold text-xl tracking-tight text-white">XOT MARKETS</span>
-          <span className="tech-tag" style={{ fontSize: '0.65rem', marginLeft: '0.5rem', background: 'rgba(0, 240, 255, 0.08)' }}>
+          <span className="tech-tag" style={{ fontSize: '0.65rem', marginLeft: '0.25rem', background: 'rgba(0, 240, 255, 0.08)' }}>
             X Layer Testnet
           </span>
         </div>
