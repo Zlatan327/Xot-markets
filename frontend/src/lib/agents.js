@@ -72,6 +72,78 @@ export const AGENT_REGISTRY = {
     formatQuestion: (threshold) => `Will Nexus Shield protect > $${Number(threshold).toLocaleString()} against toxic MEV?`,
     resolutionDetails: "Resolves YES based on verified MEV-shielded transaction volume recorded in the oracle state.",
     tags: ["#MEV", "#Security", "#PrivateRPC", "#A2A"]
+  },
+
+  // Agent 0x5555... (Autonomous Cross-Chain Arbitrage)
+  "0x5555555555555555555555555555555555555555": {
+    name: "Hyperion Cross-Chain",
+    symbol: "HYPERION",
+    tagline: "High-Speed Bridge Arbitrage & Rebalancer",
+    category: "DeFi Arbitrage",
+    badgeColor: "var(--glow-cyan)",
+    avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=HyperionCross&backgroundColor=050505",
+    description: "Leverages fast cross-chain messaging to capture bridge price discrepancies between Ethereum, X Layer, and Arbitrum.",
+    strategy: "Atomic cross-rollup bridge execution and dynamic liquidity rebalancing.",
+    creator: "Hyperion Labs",
+    targetMetricLabel: "24H Bridge Volume",
+    metricUnit: "USD",
+    formatQuestion: (threshold) => `Will Hyperion Cross-Chain settle > $${Number(threshold).toLocaleString()} bridge volume?`,
+    resolutionDetails: "Resolves YES if Hyperion's verified bridge volume exceeds target threshold before expiry block.",
+    tags: ["#CrossChain", "#Bridge", "#Arbitrage", "#XLayer"]
+  },
+
+  // Agent 0x6666... (Perpetual Funding Rate Harvester)
+  "0x6666666666666666666666666666666666666666": {
+    name: "Aetheria Funding Harvester",
+    symbol: "AETHERIA",
+    tagline: "Delta-Neutral Perp Funding Arbitrageur",
+    category: "Yield Aggregation",
+    badgeColor: "var(--glow-green)",
+    avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=AetheriaPerp&backgroundColor=050505",
+    description: "Captures positive perpetual funding rates by longing spot and shorting perps with automated delta balancing.",
+    strategy: "Continuous delta-neutral perpetual funding rate harvesting with auto-compounding.",
+    creator: "Aetheria Quant Core",
+    targetMetricLabel: "Annualized Funding APY",
+    metricUnit: "%",
+    formatQuestion: (threshold) => `Will Aetheria Harvester generate > ${Number(threshold)}% annualized funding yield?`,
+    resolutionDetails: "Resolves YES if net annualized funding returns exceed the threshold at epoch snapshot.",
+    tags: ["#Perpetuals", "#FundingRate", "#DeltaNeutral", "#Yield"]
+  },
+
+  // Agent 0x7777... (High-Frequency Orderbook Market Maker)
+  "0x7777777777777777777777777777777777777777": {
+    name: "Quantis CLOB Maker",
+    symbol: "QUANTIS",
+    tagline: "Autonomous Orderbook Liquidity Engine",
+    category: "Market Making",
+    badgeColor: "var(--glow-blue)",
+    avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=QuantisCLOB&backgroundColor=050505",
+    description: "Maintains two-sided bid/ask depth on decentralized orderbooks with adaptive volatility spreads.",
+    strategy: "Microsecond quote placement and inventory risk minimization.",
+    creator: "Quantis Algo DAO",
+    targetMetricLabel: "Filled Orders",
+    metricUnit: "orders",
+    formatQuestion: (threshold) => `Will Quantis Maker fill > ${Number(threshold).toLocaleString()} limit orders?`,
+    resolutionDetails: "Resolves YES if total filled order counter exceeds the threshold before market expiry.",
+    tags: ["#Orderbook", "#MarketMaking", "#Liquidity", "#CLOB"]
+  },
+
+  // Agent 0x8888... (Autonomous Liquidation & Invariant Sentinel)
+  "0x8888888888888888888888888888888888888888": {
+    name: "Sentinel Liquidation Bot",
+    symbol: "SENTINEL",
+    tagline: "Autonomous Bad-Debt Prevention Engine",
+    category: "Security & MEV",
+    badgeColor: "var(--glow-purple)",
+    avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=SentinelLiq&backgroundColor=050505",
+    description: "Monitors collateral health ratios across X Layer money markets to liquidate undercollateralized debt instantly.",
+    strategy: "Flash-loan powered atomic liquidations preserving protocol solvency.",
+    creator: "Sentinel Security Group",
+    targetMetricLabel: "Liquidated Debt Volume",
+    metricUnit: "USD",
+    formatQuestion: (threshold) => `Will Sentinel Bot liquidate > $${Number(threshold).toLocaleString()} in undercollateralized debt?`,
+    resolutionDetails: "Resolves YES if total liquidated unhealthy debt on verified protocols exceeds the target amount.",
+    tags: ["#Liquidations", "#LendingSecurity", "#Solvency", "#FlashLoans"]
   }
 };
 
