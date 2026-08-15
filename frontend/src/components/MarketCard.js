@@ -1,62 +1,119 @@
 "use client";
-import { useState, useEffect } from 'react';
-import { Clock, Activity, CheckCircle2, Info, ChevronDown, ChevronUp, ExternalLink, ShieldCheck, Sparkles, TrendingUp } from 'lucide-react';
-import { getPublicProvider, getContracts } from '../lib/contracts';
-import { ethers } from 'ethers';
-import { useWeb3 } from '../context/Web3Context';
-import { useToast } from './Toast';
+import React, { useState, useEffect } from "react";
+import { Clock, CheckCircle2, Info, ChevronDown, ChevronUp, ExternalLink, TrendingUp, TrendingDown, ArrowUpRight, Loader2, Sparkles } from "lucide-react";
+import { getPublicProvider, getContracts } from "../lib/contracts";
+import { ethers } from "ethers";
+import { useWeb3 } from "../context/Web3Context";
+import { useToast } from "./Toast";
 
 export default function MarketCard({ market, signerAddress, onOpenResearch }) {
   const [approving, setApproving] = useState(false);
   const [buyingYes, setBuyingYes] = useState(false);
   const [buyingNo, setBuyingNo] = useState(false);
   const [claiming, setClaiming] = useState(false);
-  const [betAmount, setBetAmount] = useState("10");
+  const [betAmount, setBetAmount] = useState("25");
+  const [selectedSide, setSelectedSide] = useState("YES"); // YES or NO
   const [showRules, setShowRules] = useState(false);
-  const [selectedSide, setSelectedSide] = useState("YES");
-  const [eligibility, setEligibility] = useState({ hasClaimed: false, canClaim: false, shares: 0 });
-  const { signer, isConnected, connectWallet, isCorrectNetwork, switchToXLayer } = useWeb3();
-  const { addToast, updateToast } = useToast();
   
-  const totalPool = (market.poolYes || 0) + (market.poolNo || 0);
-  const yesPercent = totalPool === 0 ? 50 : Math.round((market.poolYes / totalPool) * 100);
-  const noPercent = totalPool === 0 ? 50 : 100 - yesPercent;
+  // User position & eligibility state
+  const [userPosition, setUserPosition] = useState({
+    yesShares: 0,
+    noShares: 0,
+    currentValue: 0,
+    estPayout: 0,
+    pnl: 0,
+    pnlPercent: 0,
+    hasClaimed: false,
+    canClaim: false
+  });
 
-  // Potential return calculation (Pari-mutuel estimate)
+  const { signer, isConnected, connectWallet, isCorrectNetwork, switchToXLayer, address } = useWeb3();
+  const { addToast, updateToast } = useToast();
+
+  const totalPool = (market.poolYes || 0) + (market.poolNo || 0);
+  const yesProb = totalPool === 0 ? 0.50 : (market.poolYes / totalPool);
+  const noProb = totalPool === 0 ? 0.50 : (market.poolNo / totalPool);
+  
+  const yesPercent = Math.round(yesProb * 100);
+  const noPercent = 100 - yesPercent;
+  const yesPriceCents = (yesProb * 100).toFixed(0);
+  const noPriceCents = (noProb * 100).toFixed(0);
+
+  // Live order calculations
   const numBet = parseFloat(betAmount) || 0;
   const estYesPayout = numBet > 0 
-    ? (numBet + (market.poolNo || 0) * (numBet / ((market.poolYes || 0) + numBet || 1))).toFixed(2)
-    : "0.00";
+    ? (numBet + (market.poolNo || 0) * (numBet / ((market.poolYes || 0) + numBet || 1)))
+    : 0;
   const estNoPayout = numBet > 0
-    ? (numBet + (market.poolYes || 0) * (numBet / ((market.poolNo || 0) + numBet || 1))).toFixed(2)
-    : "0.00";
+    ? (numBet + (market.poolYes || 0) * (numBet / ((market.poolNo || 0) + numBet || 1)))
+    : 0;
 
+  const activePayout = selectedSide === "YES" ? estYesPayout : estNoPayout;
+  const activeProfit = Math.max(0, activePayout - numBet);
+  const activeRoi = numBet > 0 ? ((activeProfit / numBet) * 100).toFixed(1) : "0.0";
+  const estSharesReceived = selectedSide === "YES"
+    ? (yesProb > 0 ? (numBet / yesProb).toFixed(2) : numBet.toFixed(2))
+    : (noProb > 0 ? (numBet / noProb).toFixed(2) : numBet.toFixed(2));
+
+  // Live user position & PnL scanner
   useEffect(() => {
-    const checkEligibility = async () => {
-      if (!signerAddress || market.outcome === 0) return;
+    const fetchPosition = async () => {
+      const activeUser = signerAddress || address;
+      if (!activeUser || !market.marketAddress) return;
+
       try {
         const provider = getPublicProvider();
         const { marketAbi } = await getContracts(provider);
-        const marketContract = new ethers.Contract(market.marketAddress, marketAbi, provider);
-        
-        const claimed = await marketContract.hasClaimed(signerAddress);
-        let userShares = 0n;
-        
-        if (market.outcome === 1) userShares = await marketContract.yesShares(signerAddress);
-        else if (market.outcome === 2) userShares = await marketContract.noShares(signerAddress);
-        else if (market.outcome === 3) userShares = (await marketContract.yesShares(signerAddress)) + (await marketContract.noShares(signerAddress));
-        
-        setEligibility({ 
-          hasClaimed: claimed, 
-          canClaim: userShares > 0n,
-          shares: Number(ethers.formatEther(userShares))
+        const contract = new ethers.Contract(market.marketAddress, marketAbi, provider);
+
+        const [yesSharesBN, noSharesBN, claimed] = await Promise.all([
+          contract.yesShares(activeUser),
+          contract.noShares(activeUser),
+          contract.hasClaimed(activeUser)
+        ]);
+
+        const yesShares = parseFloat(ethers.formatEther(yesSharesBN));
+        const noShares = parseFloat(ethers.formatEther(noSharesBN));
+
+        // Value based on live market probability
+        const currentValue = (yesShares * yesProb) + (noShares * noProb);
+        const costBasis = yesShares + noShares; // In pari-mutuel, 1 share initially cost 1 USDC proportional stake
+        const pnl = currentValue - costBasis;
+        const pnlPercent = costBasis > 0 ? ((pnl / costBasis) * 100) : 0;
+
+        let canClaim = false;
+        let estPayout = 0;
+
+        if (market.outcome === 1 && yesShares > 0 && !claimed) {
+          canClaim = true;
+          estPayout = (yesShares * totalPool) / (market.poolYes || 1);
+        } else if (market.outcome === 2 && noShares > 0 && !claimed) {
+          canClaim = true;
+          estPayout = (noShares * totalPool) / (market.poolNo || 1);
+        } else if (market.outcome === 3 && !claimed) {
+          canClaim = true;
+          estPayout = yesShares + noShares;
+        } else if (market.outcome === 0) {
+          estPayout = (yesShares * (totalPool / (market.poolYes || 1))) + (noShares * (totalPool / (market.poolNo || 1)));
+        }
+
+        setUserPosition({
+          yesShares,
+          noShares,
+          currentValue,
+          estPayout,
+          pnl,
+          pnlPercent,
+          hasClaimed: claimed,
+          canClaim
         });
-      } catch(e) {
-        console.error(e);
+      } catch (e) {
+        console.error("Error fetching card position:", e);
       }
     };
-    checkEligibility();
-  }, [signerAddress, market.outcome, market.marketAddress]);
+
+    fetchPosition();
+  }, [signerAddress, address, market.marketAddress, market.outcome, market.poolYes, market.poolNo, totalPool, yesProb, noProb]);
 
   const ensureWalletReady = async () => {
     if (!isConnected || !signer) {
@@ -96,7 +153,7 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
         updateToast(toastId, {
           type: "error",
           title: "Invalid Amount",
-          message: "Please enter a valid bet amount greater than 0."
+          message: "Please enter a valid bet amount."
         });
         setApproving(false);
         return;
@@ -106,7 +163,7 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
       updateToast(toastId, {
         type: "loading",
         title: "Approval Submitted",
-        message: "Waiting for confirmation...",
+        message: "Waiting for confirmation on X Layer...",
         txHash: tx.hash,
         duration: 0
       });
@@ -115,7 +172,7 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
       updateToast(toastId, {
         type: "success",
         title: "USDC Approved!",
-        message: "You can now place your prediction.",
+        message: `Approved ${betAmount} USDC. Click 'Buy ${selectedSide}' to place trade.`,
         txHash: tx.hash,
         duration: 5000
       });
@@ -130,7 +187,7 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
     setApproving(false);
   };
 
-  const buyShares = async (isYes) => {
+  const executeTrade = async (isYes) => {
     const ready = await ensureWalletReady();
     if (!ready || !signer) return;
 
@@ -160,7 +217,7 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
       updateToast(toastId, {
         type: "loading",
         title: "Trade Submitted",
-        message: "Waiting for block confirmation on X Layer...",
+        message: "Confirming on X Layer Testnet...",
         txHash: tx.hash,
         duration: 0
       });
@@ -168,12 +225,13 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
       await tx.wait();
       updateToast(toastId, {
         type: "success",
-        title: "Prediction Placed Successfully!",
-        message: `Purchased ${isYes ? 'YES' : 'NO'} shares.`,
+        title: "Prediction Executed!",
+        message: `Successfully acquired ${isYes ? 'YES' : 'NO'} shares!`,
         txHash: tx.hash,
         duration: 6000
       });
 
+      // Reload state after short delay
       setTimeout(() => window.location.reload(), 1500);
     } catch (e) {
       console.error(e);
@@ -233,299 +291,334 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
   };
 
   const agent = market.agentDetails || {};
-  const explorerUrl = `https://www.okx.com/explorer/xlayer-test/address/${market.marketAddress}`;
-  const agentExplorerUrl = `https://www.okx.com/explorer/xlayer-test/address/${market.targetAgent}`;
+  const hasUserPosition = userPosition.yesShares > 0 || userPosition.noShares > 0;
 
   return (
-    <div className="infra-node" style={{ borderColor: market.outcome !== 0 ? 'rgba(255,255,255,0.08)' : 'var(--border-subtle)' }}>
-      {/* Header: Agent Identity & Badges */}
-      <div className="node-header" style={{ alignItems: 'flex-start', gap: '1rem' }}>
-        <div style={{ display: 'flex', gap: '0.85rem', width: '100%' }}>
-          {/* Agent Avatar */}
-          <div style={{ position: 'relative', flexShrink: 0, cursor: 'pointer' }} onClick={() => onOpenResearch && onOpenResearch(market)}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-              src={agent.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${market.targetAgent}&backgroundColor=050505`} 
-              alt={agent.name || "Agent"} 
+    <div style={{
+      background: "#0d1117",
+      border: "1px solid #21262d",
+      borderRadius: "12px",
+      padding: "20px",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "space-between",
+      transition: "border-color 0.2s, box-shadow 0.2s",
+      position: "relative",
+      boxShadow: "0 4px 20px rgba(0,0,0,0.4)"
+    }}>
+      {/* Top Header: Agent & Category */}
+      <div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px", marginBottom: "12px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <img
+              src={agent.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${market.targetAgent}&backgroundColor=050505`}
+              alt={agent.name || "Agent"}
+              onClick={() => onOpenResearch && onOpenResearch(market)}
               style={{
-                width: '46px',
-                height: '46px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-subtle)',
-                background: '#0d0d0d'
+                width: "40px",
+                height: "40px",
+                borderRadius: "8px",
+                border: "1px solid #30363d",
+                cursor: "pointer",
+                background: "#161b22"
               }}
             />
-            <div style={{
-              position: 'absolute',
-              bottom: '-2px',
-              right: '-2px',
-              width: '10px',
-              height: '10px',
-              borderRadius: '50%',
-              background: market.outcome === 0 ? 'var(--glow-green)' : '#666',
-              border: '2px solid #050505'
-            }} />
-          </div>
-
-          {/* Agent Name, Category & Status */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
-              <span className="font-bold text-main text-sm" style={{ letterSpacing: '-0.01em', whiteSpace: 'nowrap', cursor: 'pointer' }} onClick={() => onOpenResearch && onOpenResearch(market)}>
-                {agent.name || market.agentName}
-              </span>
-              <span style={{ 
-                color: agent.badgeColor || 'var(--glow-cyan)', 
-                fontSize: '0.65rem', 
-                fontWeight: 600,
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid var(--border-subtle)',
-                padding: '1px 6px',
-                borderRadius: '3px',
-                textTransform: 'uppercase'
-              }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <span
+                  onClick={() => onOpenResearch && onOpenResearch(market)}
+                  style={{ fontWeight: "700", fontSize: "14px", color: "#f0f6fc", cursor: "pointer" }}
+                >
+                  {agent.name || market.agentName}
+                </span>
+                <CheckCircle2 size={13} color="var(--glow-cyan)" />
+              </div>
+              <span style={{ fontSize: "10px", color: agent.badgeColor || "var(--glow-cyan)", fontWeight: "600", textTransform: "uppercase" }}>
                 {agent.category || "AI Agent"}
               </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--glow-cyan)' }} title="Verified On-Chain Agent">
-                <CheckCircle2 size={13} />
-              </span>
             </div>
+          </div>
 
-            {/* Creator / Strategy tagline */}
-            <p className="text-sm text-[var(--text-muted)]" style={{ fontSize: '0.75rem', lineHeight: '1.2' }}>
-              {agent.tagline || agent.strategy || "Verified Autonomous Smart Contract Agent"}
-            </p>
+          <div style={{
+            fontSize: "11px",
+            padding: "3px 8px",
+            borderRadius: "12px",
+            background: market.outcome === 0 ? "rgba(57, 211, 83, 0.1)" : "rgba(255, 255, 255, 0.05)",
+            border: market.outcome === 0 ? "1px solid rgba(57, 211, 83, 0.3)" : "1px solid #30363d",
+            color: market.outcome === 0 ? "#39d353" : "#8b949e",
+            fontWeight: "600",
+            display: "flex",
+            alignItems: "center",
+            gap: "4px"
+          }}>
+            <Clock size={11} /> {market.expiresIn}
           </div>
         </div>
 
-        {/* Live / Ended Status Badge */}
-        <div className={`tech-tag ${market.outcome !== 0 ? 'ended' : ''}`} style={{ flexShrink: 0 }}>
-          <Clock size={11} /> {market.expiresIn}
-        </div>
-      </div>
-
-      {/* Quantitative Research Strip */}
-      <div style={{
-        background: '#11161d',
-        border: '1px solid #21262d',
-        borderRadius: '6px',
-        padding: '6px 10px',
-        margin: '0.75rem 1.25rem 0.25rem 1.25rem',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        fontSize: '0.72rem'
-      }}>
-        <div style={{ display: 'flex', gap: '8px', color: '#8b949e' }}>
-          <span>📊 Incurred Vol: <strong style={{ color: '#39d353' }}>{agent.research?.allTimeVolume || "$48.2M"}</strong></span>
-          <span>•</span>
-          <span>🎯 Win Rate: <strong style={{ color: '#58a6ff' }}>{agent.research?.winRate || "95.4%"}</strong></span>
-        </div>
-        <button 
+        {/* Proposition Question */}
+        <h3
           onClick={() => onOpenResearch && onOpenResearch(market)}
           style={{
-            background: 'transparent',
-            border: 'none',
-            color: 'var(--glow-cyan)',
-            fontWeight: 600,
-            fontSize: '0.72rem',
-            cursor: 'pointer',
-            padding: 0,
-            textDecoration: 'underline'
+            margin: "0 0 8px 0",
+            fontSize: "15px",
+            fontWeight: "600",
+            lineHeight: "1.4",
+            color: "#f0f6fc",
+            cursor: "pointer"
           }}
         >
-          🔬 Research Dossier
-        </button>
-      </div>
-
-      {/* Proposition Question & Description */}
-      <div className="node-body">
-        <h3 className="font-bold text-main" style={{ fontSize: '1.05rem', lineHeight: '1.35', marginBottom: '0.6rem' }}>
           {agent.question || `Will agent hit ${market.metric}?`}
         </h3>
 
-        <p className="text-sm text-[var(--text-muted)]" style={{ fontSize: '0.8rem', lineHeight: '1.4', marginBottom: '1.25rem' }}>
-          {agent.description || "Settles automatically on X Layer via decentralized metric verifier contracts."}
-        </p>
-
-        {/* Odds Bars (Polymarket Style) */}
-        <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.85rem', borderRadius: '6px', border: '1px solid var(--border-subtle)', marginBottom: '1rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem' }}>
-              <span style={{ color: 'var(--glow-blue)', fontWeight: 700, fontSize: '1.1rem' }}>YES {yesPercent}%</span>
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>(${ (yesPercent / 100).toFixed(2) })</span>
+        {/* Polymarket Live Chance & Prices Strip */}
+        <div style={{
+          background: "#161b22",
+          borderRadius: "8px",
+          border: "1px solid #21262d",
+          padding: "12px",
+          marginBottom: "14px"
+        }}>
+          {/* Chance Heading */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ fontSize: "22px", fontWeight: "800", color: yesPercent >= 50 ? "#58a6ff" : "#8b949e" }}>
+                {yesPercent}%
+              </span>
+              <span style={{ fontSize: "12px", color: "#8b949e", fontWeight: "600" }}>chance</span>
+              {yesPercent >= 50 ? <TrendingUp size={16} color="#39d353" /> : <TrendingDown size={16} color="#f85149" />}
             </div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem' }}>
-              <span style={{ color: '#888', fontWeight: 700, fontSize: '1.1rem' }}>NO {noPercent}%</span>
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>(${ (noPercent / 100).toFixed(2) })</span>
-            </div>
-          </div>
 
-          <div className="bar-container" style={{ height: '6px', borderRadius: '3px' }}>
-            <div className="bar-yes" style={{ width: `${yesPercent}%`, background: 'var(--glow-blue)' }}></div>
-            <div className="bar-no" style={{ width: `${noPercent}%`, background: 'rgba(255,255,255,0.2)' }}></div>
-          </div>
-        </div>
-
-        {/* Collapsible Resolution Mechanics */}
-        <div style={{ marginBottom: '0.75rem' }}>
-          <button 
-            onClick={() => setShowRules(!showRules)}
-            style={{ 
-              background: 'transparent', 
-              border: 'none', 
-              color: 'var(--text-muted)', 
-              fontSize: '0.75rem', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.3rem', 
-              cursor: 'pointer',
-              padding: 0
-            }}
-          >
-            <Info size={12} color="var(--glow-cyan)" />
-            <span>Resolution Rules & Oracles</span>
-            {showRules ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-          </button>
-          
-          {showRules && (
-            <div style={{ 
-              marginTop: '0.5rem', 
-              padding: '0.75rem', 
-              background: 'rgba(0,0,0,0.5)', 
-              borderRadius: '4px', 
-              border: '1px solid var(--border-subtle)',
-              fontSize: '0.75rem',
-              color: 'var(--text-muted)',
-              lineHeight: '1.4'
-            }}>
-              <p style={{ marginBottom: '0.4rem' }}>
-                <strong style={{ color: 'var(--text-main)' }}>Settlement Criteria: </strong> 
-                {agent.resolutionDetails || `Resolves YES if on-chain performance satisfies ${market.metric}.`}
-              </p>
-              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
-                <a href={agentExplorerUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--glow-cyan)', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
-                  Target Agent Contract <ExternalLink size={10} />
-                </a>
-                <a href={explorerUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--glow-cyan)', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
-                  Market Contract <ExternalLink size={10} />
-                </a>
+            {/* Price Pills (¢) */}
+            <div style={{ display: "flex", gap: "6px" }}>
+              <div style={{
+                background: "rgba(88, 166, 255, 0.12)",
+                border: "1px solid rgba(88, 166, 255, 0.3)",
+                borderRadius: "6px",
+                padding: "2px 8px",
+                fontSize: "11px",
+                fontWeight: "700",
+                color: "#58a6ff"
+              }}>
+                YES {yesPriceCents}¢
+              </div>
+              <div style={{
+                background: "rgba(255, 255, 255, 0.05)",
+                border: "1px solid #30363d",
+                borderRadius: "6px",
+                padding: "2px 8px",
+                fontSize: "11px",
+                fontWeight: "700",
+                color: "#8b949e"
+              }}>
+                NO {noPriceCents}¢
               </div>
             </div>
-          )}
+          </div>
+
+          {/* Animated Odds Probability Bar */}
+          <div style={{ height: "6px", width: "100%", background: "#21262d", borderRadius: "3px", overflow: "hidden", display: "flex" }}>
+            <div style={{ width: `${yesPercent}%`, background: "#58a6ff", transition: "width 0.4s ease" }} />
+            <div style={{ width: `${noPercent}%`, background: "rgba(255, 255, 255, 0.2)", transition: "width 0.4s ease" }} />
+          </div>
+
+          {/* Volume & Research Link */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "8px", fontSize: "11px", color: "#8b949e" }}>
+            <span>Liquidity: <strong style={{ color: "#f0f6fc" }}>${totalPool.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</strong></span>
+            <button
+              onClick={() => onOpenResearch && onOpenResearch(market)}
+              style={{ background: "none", border: "none", color: "var(--glow-cyan)", cursor: "pointer", fontSize: "11px", fontWeight: "600", padding: 0 }}
+            >
+              🔬 Research Dossier →
+            </button>
+          </div>
         </div>
+
+        {/* Live User Position Banner (if shares held) */}
+        {hasUserPosition && (
+          <div style={{
+            background: "rgba(57, 211, 83, 0.08)",
+            border: "1px solid rgba(57, 211, 83, 0.25)",
+            borderRadius: "8px",
+            padding: "10px 12px",
+            marginBottom: "14px",
+            fontSize: "12px"
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+              <span style={{ color: "#8b949e" }}>Your Position:</span>
+              <strong style={{ color: "#f0f6fc" }}>
+                {userPosition.yesShares > 0 ? `${userPosition.yesShares.toFixed(1)} YES` : `${userPosition.noShares.toFixed(1)} NO`}
+              </strong>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px" }}>
+              <span style={{ color: "#8b949e" }}>Est. Value: <strong style={{ color: "#39d353" }}>${userPosition.currentValue.toFixed(2)} USDC</strong></span>
+              <span style={{ color: userPosition.pnl >= 0 ? "#39d353" : "#f85149", fontWeight: "700" }}>
+                {userPosition.pnl >= 0 ? "+" : ""}${userPosition.pnl.toFixed(2)} ({userPosition.pnlPercent.toFixed(1)}%)
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Footer: TVL + Interactive Bet Engine */}
-      <div className="node-footer" style={{ flexDirection: 'column', gap: '0.75rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <div>
-            <span className="text-sm text-[var(--text-muted)]" style={{ fontSize: '0.7rem' }}>TOTAL LIQUIDITY</span>
-            <div className="data-value" style={{ fontSize: '0.95rem', fontWeight: 600 }}>${totalPool.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</div>
-          </div>
-          <div>
-            <span className="text-sm text-[var(--text-muted)]" style={{ fontSize: '0.7rem' }}>SETTLEMENT</span>
-            <div className="data-value" style={{ fontSize: '0.95rem', color: 'var(--glow-green)' }}>Aave Yield Vault</div>
-          </div>
-        </div>
-
+      {/* Trade / Resolution Action Footer */}
+      <div>
         {market.outcome === 0 ? (
-          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {/* Quick Amount Selector & Custom Input */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div className="terminal-input" style={{ flex: 1, padding: '0.35rem 0.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '4px' }}>
-                <span style={{ color: 'var(--glow-cyan)' }}>$</span>
-                <input 
-                  type="number" 
-                  value={betAmount} 
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            {/* Side Selector (YES / NO Tabs) */}
+            <div style={{ display: "flex", gap: "6px" }}>
+              <button
+                type="button"
+                onClick={() => setSelectedSide("YES")}
+                style={{
+                  flex: 1,
+                  background: selectedSide === "YES" ? "rgba(88, 166, 255, 0.2)" : "#161b22",
+                  border: selectedSide === "YES" ? "1px solid #58a6ff" : "1px solid #30363d",
+                  color: selectedSide === "YES" ? "#58a6ff" : "#8b949e",
+                  padding: "8px",
+                  borderRadius: "6px",
+                  fontWeight: "700",
+                  fontSize: "12px",
+                  cursor: "pointer"
+                }}
+              >
+                YES {yesPriceCents}¢
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedSide("NO")}
+                style={{
+                  flex: 1,
+                  background: selectedSide === "NO" ? "rgba(255, 255, 255, 0.15)" : "#161b22",
+                  border: selectedSide === "NO" ? "1px solid #f0f6fc" : "1px solid #30363d",
+                  color: selectedSide === "NO" ? "#f0f6fc" : "#8b949e",
+                  padding: "8px",
+                  borderRadius: "6px",
+                  fontWeight: "700",
+                  fontSize: "12px",
+                  cursor: "pointer"
+                }}
+              >
+                NO {noPriceCents}¢
+              </button>
+            </div>
+
+            {/* Quick Amount Selector & Input */}
+            <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+              <div style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                background: "#161b22",
+                border: "1px solid #30363d",
+                borderRadius: "6px",
+                padding: "6px 10px"
+              }}>
+                <span style={{ color: "var(--glow-cyan)", fontSize: "12px", fontWeight: "700" }}>$</span>
+                <input
+                  type="number"
+                  value={betAmount}
                   onChange={(e) => setBetAmount(e.target.value)}
-                  className="bg-transparent outline-none ml-2 text-white font-mono"
-                  style={{ width: '60px' }}
-                  placeholder="10"
+                  style={{ background: "transparent", border: "none", color: "#fff", outline: "none", width: "100%", marginLeft: "6px", fontSize: "13px", fontWeight: "600" }}
+                  placeholder="25"
                 />
-                <span className="text-muted ml-auto" style={{ fontSize: '0.75rem' }}>USDC</span>
+                <span style={{ color: "#8b949e", fontSize: "11px" }}>USDC</span>
               </div>
-              <div style={{ display: 'flex', gap: '0.25rem' }}>
-                {["5", "25", "100"].map((amt) => (
-                  <button 
-                    key={amt}
-                    type="button"
-                    onClick={() => setBetAmount(amt)}
-                    style={{
-                      background: betAmount === amt ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.04)',
-                      border: '1px solid var(--border-subtle)',
-                      borderRadius: '3px',
-                      color: 'var(--text-main)',
-                      padding: '2px 7px',
-                      fontSize: '0.7rem',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    ${amt}
-                  </button>
-                ))}
-              </div>
+
+              {["10", "50", "250"].map((amt) => (
+                <button
+                  key={amt}
+                  type="button"
+                  onClick={() => setBetAmount(amt)}
+                  style={{
+                    background: betAmount === amt ? "#21262d" : "#161b22",
+                    border: betAmount === amt ? "1px solid #58a6ff" : "1px solid #30363d",
+                    color: betAmount === amt ? "#58a6ff" : "#8b949e",
+                    borderRadius: "6px",
+                    padding: "6px 10px",
+                    fontSize: "11px",
+                    fontWeight: "600",
+                    cursor: "pointer"
+                  }}
+                >
+                  ${amt}
+                </button>
+              ))}
             </div>
 
-            {/* Payout Preview */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-              <span>Est. Return if YES: <strong style={{ color: 'var(--glow-green)' }}>${estYesPayout}</strong></span>
-              <span>Est. Return if NO: <strong style={{ color: 'var(--glow-green)' }}>${estNoPayout}</strong></span>
+            {/* Live Return / Payout Preview */}
+            <div style={{ background: "#161b22", padding: "8px 10px", borderRadius: "6px", fontSize: "11px", color: "#8b949e", display: "flex", justifyContent: "space-between" }}>
+              <span>Est. Payout: <strong style={{ color: "#39d353" }}>${activePayout.toFixed(2)}</strong></span>
+              <span>Net Profit: <strong style={{ color: "#39d353" }}>+${activeProfit.toFixed(2)} ({activeRoi}%)</strong></span>
             </div>
 
-            {/* Action Buttons: 1. Approve | 2. Buy YES | 2. Buy NO */}
-            <div style={{ display: 'flex', gap: '0.4rem', width: '100%', marginTop: '0.25rem' }}>
-              <button 
-                className="btn-outline" 
-                style={{ flex: '1', padding: '0.5rem 0.4rem', fontSize: '0.75rem' }} 
-                onClick={approveUSDC} 
+            {/* Actions: Approve & Trade */}
+            <div style={{ display: "flex", gap: "6px" }}>
+              <button
+                onClick={approveUSDC}
                 disabled={approving}
-                title="Approve contract to use USDC collateral"
+                style={{
+                  flex: 1,
+                  background: "#21262d",
+                  color: "#c9d1d9",
+                  border: "1px solid #30363d",
+                  padding: "9px 12px",
+                  borderRadius: "6px",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                  cursor: approving ? "not-allowed" : "pointer"
+                }}
               >
-                {approving ? 'APPROVING...' : '1. APPROVE'}
+                {approving ? "Approving..." : "1. Approve"}
               </button>
-              <button 
-                className="btn-primary" 
-                style={{ flex: '1.2', background: 'var(--glow-blue)', color: '#fff', padding: '0.5rem 0.4rem', fontSize: '0.75rem' }} 
-                onClick={() => buyShares(true)} 
-                disabled={buyingYes}
+
+              <button
+                onClick={() => executeTrade(selectedSide === "YES")}
+                disabled={selectedSide === "YES" ? buyingYes : buyingNo}
+                style={{
+                  flex: 1.4,
+                  background: selectedSide === "YES" ? "#1f6feb" : "#30363d",
+                  color: "#ffffff",
+                  border: "none",
+                  padding: "9px 12px",
+                  borderRadius: "6px",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                  cursor: (selectedSide === "YES" ? buyingYes : buyingNo) ? "not-allowed" : "pointer"
+                }}
               >
-                {buyingYes ? 'BUYING...' : '2. BUY YES'}
-              </button>
-              <button 
-                className="btn-outline" 
-                style={{ flex: '1.2', padding: '0.5rem 0.4rem', fontSize: '0.75rem', borderColor: 'rgba(255,255,255,0.2)' }} 
-                onClick={() => buyShares(false)} 
-                disabled={buyingNo}
-              >
-                {buyingNo ? 'BUYING...' : '2. BUY NO'}
+                {(selectedSide === "YES" ? buyingYes : buyingNo) ? "Executing..." : `2. Buy ${selectedSide}`}
               </button>
             </div>
           </div>
         ) : (
-          /* Market Resolved Outcome Banner & Claiming */
-          <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span className="tech-tag" style={{ background: market.outcome === 1 ? 'rgba(0,112,243,0.2)' : 'rgba(255,255,255,0.05)' }}>
+          /* Resolved Market Actions */
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#161b22", padding: "12px", borderRadius: "8px" }}>
+            <div>
+              <span style={{ fontSize: "10px", color: "#8b949e", textTransform: "uppercase" }}>Resolved Outcome</span>
+              <div style={{ fontWeight: "700", fontSize: "14px", color: market.outcome === 1 ? "#58a6ff" : "#f0f6fc" }}>
                 {market.outcome === 1 ? "✓ YES RESOLVED" : market.outcome === 2 ? "✓ NO RESOLVED" : "VOIDED"}
-              </span>
-              {eligibility.shares > 0 && (
-                <span className="font-mono text-sm" style={{ color: 'var(--glow-green)' }}>
-                  You hold: {eligibility.shares.toFixed(2)} shares
-                </span>
-              )}
+              </div>
             </div>
 
-            {eligibility.canClaim ? (
-              <button 
-                className="btn-primary" 
-                onClick={claimWinnings} 
-                disabled={claiming || eligibility.hasClaimed}
-                style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }}
+            {userPosition.canClaim ? (
+              <button
+                onClick={claimWinnings}
+                disabled={claiming || userPosition.hasClaimed}
+                style={{
+                  background: "#238636",
+                  color: "#fff",
+                  border: "none",
+                  padding: "8px 16px",
+                  borderRadius: "6px",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                  cursor: "pointer"
+                }}
               >
-                {eligibility.hasClaimed ? 'CLAIMED' : (claiming ? 'CLAIMING...' : 'CLAIM WINNINGS')}
+                {userPosition.hasClaimed ? "Claimed" : claiming ? "Claiming..." : `Claim $${userPosition.estPayout.toFixed(2)}`}
               </button>
             ) : (
-              <span className="tech-tag ended">NO WINNING SHARES</span>
+              <span style={{ fontSize: "11px", color: "#8b949e" }}>Settled</span>
             )}
           </div>
         )}

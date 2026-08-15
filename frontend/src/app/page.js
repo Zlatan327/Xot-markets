@@ -59,10 +59,15 @@ export default function Home() {
 
   useEffect(() => {
     fetchMarkets();
+    // Auto-poll every 12s so live chances and pool odds adjust continuously
+    const interval = setInterval(() => {
+      fetchMarkets();
+    }, 12000);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchMarkets = async () => {
-    setLoading(true);
+    setLoading(prev => prev && markets.length === 0);
     try {
       const provider = getPublicProvider();
       const { factory, marketAbi } = await getContracts(provider);
@@ -168,20 +173,29 @@ export default function Home() {
   }, [markets]);
 
   const activeAgentsCount = useMemo(() => {
-    const set = new Set(markets.map(m => m.targetAgent?.toLowerCase()));
-    return set.size;
+    const unique = new Set(markets.map(m => m.targetAgent?.toLowerCase()));
+    return unique.size;
   }, [markets]);
+
+  // Categories with counts
+  const categoryDefs = [
+    { id: "ALL", label: "🔥 All Markets" },
+    { id: "DeFi Arbitrage", label: "⚡ DeFi Arbitrage" },
+    { id: "Yield Aggregation", label: "🌾 Yield Harvesters" },
+    { id: "Market Making", label: "📈 Market Making" },
+    { id: "Security & MEV", label: "🛡️ Security & MEV" }
+  ];
 
   // Filtering and Sorting
   const filteredMarkets = useMemo(() => {
     return markets
-      .filter(m => {
+      .filter((m) => {
         // Category Filter
-        const matchesCat = selectedCategory === "ALL" || 
-          (m.agentDetails?.category && m.agentDetails.category.toUpperCase().includes(selectedCategory.toUpperCase()));
-        
+        const matchesCat = selectedCategory === "ALL" || m.agentDetails?.category === selectedCategory;
+
         // Status Filter
-        const matchesStatus = statusFilter === "ALL" ||
+        const matchesStatus =
+          statusFilter === "ALL" ||
           (statusFilter === "LIVE" && m.outcome === 0) ||
           (statusFilter === "RESOLVED" && m.outcome !== 0);
 
@@ -208,17 +222,20 @@ export default function Home() {
       });
   }, [markets, selectedCategory, statusFilter, searchQuery, sortBy]);
 
-  const categories = ["ALL", "DeFi Arbitrage", "Yield Aggregation", "Market Making", "Security & MEV"];
+  const getCategoryCount = (catId) => {
+    if (catId === "ALL") return markets.length;
+    return markets.filter(m => m.agentDetails?.category === catId).length;
+  };
 
   return (
     <>
-      {/* Top Navigation */}
+      {/* Top Navigation Bar */}
       <nav className="top-nav">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded bg-[var(--glow-cyan)] flex items-center justify-center">
-            <Sparkles size={14} color="#050505" />
+          <div className="w-7 h-7 rounded bg-[var(--glow-cyan)] flex items-center justify-center">
+            <Sparkles size={15} color="#050505" />
           </div>
-          <span className="font-bold text-xl tracking-tight">XOT MARKETS</span>
+          <span className="font-bold text-xl tracking-tight text-white">XOT MARKETS</span>
           <span className="tech-tag" style={{ fontSize: '0.65rem', marginLeft: '0.5rem', background: 'rgba(0, 240, 255, 0.08)' }}>
             X Layer Testnet
           </span>
@@ -298,174 +315,171 @@ export default function Home() {
       </nav>
 
       {/* Main Content */}
-      <main className="container" style={{ marginTop: '5rem' }}>
+      <main className="container" style={{ marginTop: '4.5rem' }}>
         
-        {/* Hero Section */}
-        <section className="hero-split" style={{ minHeight: 'auto', paddingBottom: '3rem' }}>
-          <div className="hero-text">
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', background: 'rgba(0, 240, 255, 0.1)', padding: '4px 12px', borderRadius: '20px', border: '1px solid rgba(0, 240, 255, 0.2)' }}>
-              <Sparkles size={12} color="var(--glow-cyan)" />
-              <span className="font-mono text-xs text-[var(--glow-cyan)]">Autonomous AI Agent Prediction Protocol</span>
+        {/* Polymarket-Style Clean Protocol Header Bar */}
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: "16px",
+          padding: "16px 20px",
+          background: "#0d1117",
+          border: "1px solid #21262d",
+          borderRadius: "10px",
+          marginBottom: "16px"
+        }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <h1 style={{ margin: 0, fontSize: "20px", fontWeight: "800", color: "#f0f6fc" }}>
+                AI Agent Prediction Protocol
+              </h1>
+              <span style={{ fontSize: "11px", background: "rgba(0, 240, 255, 0.1)", color: "var(--glow-cyan)", padding: "2px 8px", borderRadius: "12px", border: "1px solid rgba(0, 240, 255, 0.25)", fontWeight: "600" }}>
+                X Layer Testnet
+              </span>
             </div>
-            <h1>Predict AI Agent Outcomes.</h1>
-            <p>
-              Trade on autonomous agent performance metrics, yield generation, and cross-DEX arbitrage. Built with decentralized on-chain settlement and Aave yield compounding on X Layer.
+            <p style={{ margin: "4px 0 0 0", color: "#8b949e", fontSize: "13px" }}>
+              Trade on autonomous agent metrics with decentralized settlement and Aave V3 yield compounding.
             </p>
-            <div className="flex gap-4">
-              <a href="#markets-section" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-                EXPLORE MARKETS
-              </a>
-              <button 
-                className="btn-outline" 
-                onClick={fetchMarkets}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
-              >
-                <RefreshCw size={14} className={loading ? "animate-spin" : ""} /> REFRESH
-              </button>
-            </div>
           </div>
-          
-          <div className="hero-visual">
-            <div className="glowing-core">
-              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%) rotate(-45deg)', textAlign: 'center' }}>
-                <Cpu size={48} color="var(--glow-cyan)" />
-                <div className="font-mono text-[var(--glow-cyan)] mt-2 text-xs">A2A_CORE</div>
-              </div>
+
+          {/* Quick Stats Strip */}
+          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+            <div style={{ background: "#161b22", padding: "8px 14px", borderRadius: "8px", border: "1px solid #21262d", fontSize: "12px" }}>
+              <span style={{ color: "#8b949e" }}>Total Collateral: </span>
+              <strong style={{ color: "#39d353" }}>${totalTvl.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</strong>
             </div>
+            <div style={{ background: "#161b22", padding: "8px 14px", borderRadius: "8px", border: "1px solid #21262d", fontSize: "12px" }}>
+              <span style={{ color: "#8b949e" }}>Active Agents: </span>
+              <strong style={{ color: "var(--glow-cyan)" }}>{activeAgentsCount || 8} Verified</strong>
+            </div>
+            <button
+              onClick={fetchMarkets}
+              title="Refresh Live Odds"
+              style={{
+                background: "#161b22",
+                border: "1px solid #30363d",
+                color: "#8b949e",
+                borderRadius: "8px",
+                padding: "8px 12px",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                cursor: "pointer",
+                fontSize: "12px"
+              }}
+            >
+              <RefreshCw size={13} className={loading ? "animate-spin" : ""} /> Refresh
+            </button>
           </div>
-        </section>
+        </div>
 
         {/* Live Streaming Activity Ticker */}
         <ActivityTicker markets={markets} />
 
-        {/* Global Protocol Metric Stats KPI Bar */}
-        <section style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '1rem',
-          marginBottom: '2.5rem',
-          padding: '1.25rem 1.5rem',
-          background: 'var(--bg-panel)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: '8px'
-        }}>
-          <div>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Value Locked</span>
-            <div className="font-mono" style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-main)', marginTop: '0.2rem' }}>
-              ${totalTvl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span style={{ fontSize: '0.8rem', color: 'var(--glow-green)' }}>USDC</span>
-            </div>
-          </div>
-
-          <div>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Verified Autonomous Agents</span>
-            <div className="font-mono" style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--glow-cyan)', marginTop: '0.2rem' }}>
-              {activeAgentsCount || 4} Verified
-            </div>
-          </div>
-
-          <div>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Active Prediction Contracts</span>
-            <div className="font-mono" style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--glow-blue)', marginTop: '0.2rem' }}>
-              {markets.length} Deployed
-            </div>
-          </div>
-
-          <div>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Settlement Oracle Status</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.35rem' }}>
-              <span className="w-2.5 h-2.5 rounded-full bg-[var(--glow-green)] animate-pulse" />
-              <span className="font-mono" style={{ fontSize: '0.9rem', color: 'var(--glow-green)', fontWeight: 600 }}>100% Operational</span>
-            </div>
-          </div>
-        </section>
-
         {/* Markets Workspace Section */}
         <section id="markets-section" className="mb-12">
           
-          {/* Main Controls & Filters Bar */}
+          {/* Main Category Tabs & Controls Bar */}
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '1rem',
-            marginBottom: '1.5rem',
-            background: 'var(--bg-panel)',
-            padding: '1.25rem',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: '8px'
+            gap: '12px',
+            marginBottom: '16px',
+            background: '#0d1117',
+            padding: '16px',
+            border: '1px solid #21262d',
+            borderRadius: '10px'
           }}>
             {/* Top Row: Category Pills & View Switcher */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
               
-              {/* Category Pills */}
-              <div style={{ display: 'flex', gap: '0.4rem', overflowX: 'auto', paddingBottom: '2px' }}>
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    style={{
-                      background: selectedCategory === cat ? 'var(--glow-blue)' : 'rgba(255, 255, 255, 0.03)',
-                      color: selectedCategory === cat ? '#ffffff' : 'var(--text-muted)',
-                      border: '1px solid',
-                      borderColor: selectedCategory === cat ? 'var(--glow-blue)' : 'var(--border-subtle)',
-                      padding: '0.4rem 0.85rem',
-                      borderRadius: '20px',
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      whiteSpace: 'nowrap',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    {cat === "ALL" ? "ALL MARKETS" : cat.toUpperCase()}
-                  </button>
-                ))}
+              {/* Clean Category Navigation Tabs */}
+              <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px' }}>
+                {categoryDefs.map((cat) => {
+                  const isSelected = selectedCategory === cat.id;
+                  const count = getCategoryCount(cat.id);
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => setSelectedCategory(cat.id)}
+                      style={{
+                        background: isSelected ? '#21262d' : '#161b22',
+                        color: isSelected ? '#58a6ff' : '#8b949e',
+                        border: isSelected ? '1px solid #58a6ff' : '1px solid #30363d',
+                        padding: '6px 14px',
+                        borderRadius: '20px',
+                        fontSize: '12px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                        transition: 'all 0.15s',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <span>{cat.label}</span>
+                      <span style={{
+                        background: isSelected ? 'rgba(88, 166, 255, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                        color: isSelected ? '#58a6ff' : '#8b949e',
+                        padding: '1px 6px',
+                        borderRadius: '10px',
+                        fontSize: '10px'
+                      }}>
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
 
               {/* View Switcher (Grid vs Table) */}
               <div style={{
                 display: 'flex',
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid var(--border-subtle)',
+                background: '#161b22',
+                border: '1px solid #30363d',
                 borderRadius: '6px',
                 padding: '2px'
               }}>
                 <button
                   onClick={() => setViewMode("GRID")}
                   style={{
-                    background: viewMode === "GRID" ? 'rgba(255, 255, 255, 0.12)' : 'transparent',
+                    background: viewMode === "GRID" ? '#21262d' : 'transparent',
                     border: 'none',
-                    color: viewMode === "GRID" ? '#fff' : 'var(--text-muted)',
-                    padding: '6px 12px',
+                    color: viewMode === "GRID" ? '#fff' : '#8b949e',
+                    padding: '5px 10px',
                     borderRadius: '4px',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.35rem',
-                    fontSize: '0.75rem',
-                    fontWeight: 600
+                    gap: '4px',
+                    fontSize: '11px',
+                    fontWeight: '600'
                   }}
                   title="Card Grid View"
                 >
-                  <LayoutGrid size={14} /> Grid
+                  <LayoutGrid size={13} /> Grid
                 </button>
                 <button
                   onClick={() => setViewMode("TABLE")}
                   style={{
-                    background: viewMode === "TABLE" ? 'rgba(255, 255, 255, 0.12)' : 'transparent',
+                    background: viewMode === "TABLE" ? '#21262d' : 'transparent',
                     border: 'none',
-                    color: viewMode === "TABLE" ? '#fff' : 'var(--text-muted)',
-                    padding: '6px 12px',
+                    color: viewMode === "TABLE" ? '#fff' : '#8b949e',
+                    padding: '5px 10px',
                     borderRadius: '4px',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.35rem',
-                    fontSize: '0.75rem',
-                    fontWeight: 600
+                    gap: '4px',
+                    fontSize: '11px',
+                    fontWeight: '600'
                   }}
                   title="Dense Table View"
                 >
-                  <List size={14} /> Table
+                  <List size={13} /> Table
                 </button>
               </div>
             </div>
@@ -476,13 +490,13 @@ export default function Home() {
               justifyContent: 'space-between',
               alignItems: 'center',
               flexWrap: 'wrap',
-              gap: '1rem',
-              borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-              paddingTop: '1rem'
+              gap: '12px',
+              borderTop: '1px solid #21262d',
+              paddingTop: '12px'
             }}>
               
               {/* Status Filter Tabs (All, Live, Resolved) */}
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', gap: '8px' }}>
                 {[
                   { id: "ALL", label: `All (${markets.length})` },
                   { id: "LIVE", label: `Live (${markets.filter(m => m.outcome === 0).length})` },
@@ -494,13 +508,13 @@ export default function Home() {
                     style={{
                       background: 'transparent',
                       border: 'none',
-                      color: statusFilter === tab.id ? 'var(--glow-cyan)' : 'var(--text-muted)',
+                      color: statusFilter === tab.id ? 'var(--glow-cyan)' : '#8b949e',
                       borderBottom: statusFilter === tab.id ? '2px solid var(--glow-cyan)' : '2px solid transparent',
-                      padding: '0.3rem 0.5rem',
-                      fontSize: '0.8rem',
-                      fontWeight: 600,
+                      padding: '4px 6px',
+                      fontSize: '12px',
+                      fontWeight: '600',
                       cursor: 'pointer',
-                      transition: 'all 0.2s'
+                      transition: 'all 0.15s'
                     }}
                   >
                     {tab.label}
@@ -509,48 +523,48 @@ export default function Home() {
               </div>
 
               {/* Search & Sort Controls */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                 {/* Search Bar */}
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
-                  background: 'rgba(255, 255, 255, 0.03)',
-                  border: '1px solid var(--border-subtle)',
+                  background: '#161b22',
+                  border: '1px solid #30363d',
                   borderRadius: '6px',
-                  padding: '0.35rem 0.75rem',
-                  gap: '0.5rem',
+                  padding: '4px 10px',
+                  gap: '6px',
                   minWidth: '220px'
                 }}>
-                  <Search size={14} color="var(--text-muted)" />
+                  <Search size={13} color="#8b949e" />
                   <input
                     type="text"
-                    placeholder="Search agents or markets..."
+                    placeholder="Search agent or market..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.8rem', outline: 'none', width: '100%' }}
+                    style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '12px', outline: 'none', width: '100%' }}
                   />
                 </div>
 
                 {/* Sort Dropdown */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <ArrowUpDown size={14} color="var(--text-muted)" />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <ArrowUpDown size={13} color="#8b949e" />
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
                     style={{
-                      background: 'rgba(255, 255, 255, 0.03)',
-                      border: '1px solid var(--border-subtle)',
-                      color: 'var(--text-main)',
+                      background: '#161b22',
+                      border: '1px solid #30363d',
+                      color: '#f0f6fc',
                       borderRadius: '6px',
-                      padding: '0.35rem 0.6rem',
-                      fontSize: '0.75rem',
+                      padding: '5px 8px',
+                      fontSize: '12px',
                       outline: 'none',
                       cursor: 'pointer'
                     }}
                   >
-                    <option value="LIQUIDITY_DESC" style={{ background: '#111' }}>Highest Liquidity</option>
-                    <option value="YES_DESC" style={{ background: '#111' }}>Highest YES Odds</option>
-                    <option value="NAME_ASC" style={{ background: '#111' }}>Agent Name (A-Z)</option>
+                    <option value="LIQUIDITY_DESC" style={{ background: '#161b22' }}>Highest Liquidity</option>
+                    <option value="YES_DESC" style={{ background: '#161b22' }}>Highest YES Chance</option>
+                    <option value="NAME_ASC" style={{ background: '#161b22' }}>Agent Name (A-Z)</option>
                   </select>
                 </div>
               </div>
