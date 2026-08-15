@@ -1,9 +1,9 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { X, CheckCircle2, Info, ExternalLink, ShieldCheck, Clock } from 'lucide-react';
-import { getProvider, getContracts } from '../lib/contracts';
+import { getContracts } from '../lib/contracts';
 import { ethers } from 'ethers';
-import { useAppKitProvider } from '@reown/appkit/react';
+import { useWeb3 } from '../context/Web3Context';
 
 export default function QuickTradeModal({ market, onClose, signerAddress, usdcBalance }) {
   const [betAmount, setBetAmount] = useState("10");
@@ -12,7 +12,7 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
   const [trading, setTrading] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [eligibility, setEligibility] = useState({ hasClaimed: false, canClaim: false, shares: 0 });
-  const { walletProvider } = useAppKitProvider('eip155');
+  const { signer, isConnected, connectWallet, isCorrectNetwork, switchToXLayer } = useWeb3();
 
   if (!market) return null;
 
@@ -30,14 +30,28 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
   const potentialProfit = numBet > 0 ? (parseFloat(estPayout) - numBet).toFixed(2) : "0.00";
   const returnPercentage = numBet > 0 ? ((parseFloat(potentialProfit) / numBet) * 100).toFixed(1) : "0.0";
 
+  const ensureWalletReady = async () => {
+    if (!isConnected || !signer) {
+      await connectWallet();
+      return false;
+    }
+    if (!isCorrectNetwork) {
+      const switched = await switchToXLayer();
+      if (!switched) {
+        alert("Please switch network to X Layer Testnet (Chain ID 195) in your wallet.");
+        return false;
+      }
+    }
+    return true;
+  };
+
   const approveUSDC = async () => {
-    if (!signerAddress) return alert("Please connect wallet first");
+    const ready = await ensureWalletReady();
+    if (!ready || !signer) return;
+
     setApproving(true);
     try {
-      const provider = getProvider(walletProvider);
-      const signer = await provider.getSigner();
       const { usdc } = await getContracts(signer);
-      
       const amount = ethers.parseUnits(betAmount.toString() || "0", 18);
       if (amount <= 0n) return alert("Enter a valid bet amount");
       
@@ -52,13 +66,12 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
   };
 
   const buyShares = async () => {
-    if (!signerAddress) return alert("Please connect wallet first");
+    const ready = await ensureWalletReady();
+    if (!ready || !signer) return;
+
     setTrading(true);
     try {
-      const provider = getProvider(walletProvider);
-      const signer = await provider.getSigner();
       const { marketAbi } = await getContracts(signer);
-      
       const marketContract = new ethers.Contract(market.marketAddress, marketAbi, signer);
       const amount = ethers.parseUnits(betAmount.toString() || "0", 18);
       if (amount <= 0n) return alert("Enter a valid bet amount");

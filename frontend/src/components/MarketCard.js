@@ -1,9 +1,9 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { Clock, Activity, CheckCircle2, Info, ChevronDown, ChevronUp, ExternalLink, ShieldCheck, Sparkles, TrendingUp } from 'lucide-react';
-import { getProvider, getContracts } from '../lib/contracts';
+import { getPublicProvider, getContracts } from '../lib/contracts';
 import { ethers } from 'ethers';
-import { useAppKitProvider } from '@reown/appkit/react';
+import { useWeb3 } from '../context/Web3Context';
 
 export default function MarketCard({ market, signerAddress }) {
   const [approving, setApproving] = useState(false);
@@ -14,7 +14,7 @@ export default function MarketCard({ market, signerAddress }) {
   const [showRules, setShowRules] = useState(false);
   const [selectedSide, setSelectedSide] = useState("YES");
   const [eligibility, setEligibility] = useState({ hasClaimed: false, canClaim: false, shares: 0 });
-  const { walletProvider } = useAppKitProvider('eip155');
+  const { signer, isConnected, connectWallet, isCorrectNetwork, switchToXLayer } = useWeb3();
   
   const totalPool = (market.poolYes || 0) + (market.poolNo || 0);
   const yesPercent = totalPool === 0 ? 50 : Math.round((market.poolYes / totalPool) * 100);
@@ -33,7 +33,7 @@ export default function MarketCard({ market, signerAddress }) {
     const checkEligibility = async () => {
       if (!signerAddress || market.outcome === 0) return;
       try {
-        const provider = getProvider(walletProvider);
+        const provider = getPublicProvider();
         const { marketAbi } = await getContracts(provider);
         const marketContract = new ethers.Contract(market.marketAddress, marketAbi, provider);
         
@@ -54,18 +54,36 @@ export default function MarketCard({ market, signerAddress }) {
       }
     };
     checkEligibility();
-  }, [signerAddress, market.outcome, market.marketAddress, walletProvider]);
+  }, [signerAddress, market.outcome, market.marketAddress]);
+
+  const ensureWalletReady = async () => {
+    if (!isConnected || !signer) {
+      await connectWallet();
+      return false;
+    }
+    if (!isCorrectNetwork) {
+      const switched = await switchToXLayer();
+      if (!switched) {
+        alert("Please switch network to X Layer Testnet (Chain ID 195) in your wallet.");
+        return false;
+      }
+    }
+    return true;
+  };
 
   const approveUSDC = async () => {
-    if (!signerAddress) return alert("Please connect your wallet first");
+    const ready = await ensureWalletReady();
+    if (!ready || !signer) return;
+
     setApproving(true);
     try {
-      const provider = getProvider(walletProvider);
-      const signer = await provider.getSigner();
       const { usdc } = await getContracts(signer);
-      
       const amount = ethers.parseUnits(betAmount.toString() || "0", 18);
-      if (amount <= 0n) return alert("Enter a valid bet amount");
+      if (amount <= 0n) {
+        alert("Enter a valid bet amount");
+        setApproving(false);
+        return;
+      }
       
       const tx = await usdc.approve(market.marketAddress, amount);
       await tx.wait();
@@ -78,16 +96,19 @@ export default function MarketCard({ market, signerAddress }) {
   };
 
   const buyShares = async (isYes) => {
-    if (!signerAddress) return alert("Please connect your wallet first");
+    const ready = await ensureWalletReady();
+    if (!ready || !signer) return;
+
     isYes ? setBuyingYes(true) : setBuyingNo(true);
     try {
-      const provider = getProvider(walletProvider);
-      const signer = await provider.getSigner();
       const { marketAbi } = await getContracts(signer);
-      
       const marketContract = new ethers.Contract(market.marketAddress, marketAbi, signer);
       const amount = ethers.parseUnits(betAmount.toString() || "0", 18);
-      if (amount <= 0n) return alert("Enter a valid bet amount");
+      if (amount <= 0n) {
+        alert("Enter a valid bet amount");
+        isYes ? setBuyingYes(false) : setBuyingNo(false);
+        return;
+      }
       
       const tx = await marketContract.buyShares(isYes, amount);
       await tx.wait();
@@ -102,13 +123,12 @@ export default function MarketCard({ market, signerAddress }) {
   };
 
   const claimWinnings = async () => {
-    if (!signerAddress) return alert("Please connect your wallet first");
+    const ready = await ensureWalletReady();
+    if (!ready || !signer) return;
+
     setClaiming(true);
     try {
-      const provider = getProvider(walletProvider);
-      const signer = await provider.getSigner();
       const { marketAbi } = await getContracts(signer);
-      
       const marketContract = new ethers.Contract(market.marketAddress, marketAbi, signer);
       
       const tx = await marketContract.claim();

@@ -4,8 +4,10 @@ import factoryArtifact from "./MarketFactory.json";
 import marketArtifact from "./BinaryMarket.json";
 import usdcArtifact from "./MockERC20.json";
 
+export const XLAYER_RPC = "https://testrpc.xlayer.tech";
+
 export const getPublicProvider = () => {
-  return new ethers.JsonRpcProvider("https://testrpc.xlayer.tech");
+  return new ethers.JsonRpcProvider(XLAYER_RPC);
 };
 
 export const getProvider = (walletProvider) => {

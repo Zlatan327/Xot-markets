@@ -17,16 +17,18 @@ import {
   DollarSign, 
   ShieldCheck, 
   Bot, 
-  SlidersHorizontal 
+  SlidersHorizontal,
+  Wallet,
+  LogOut,
+  AlertTriangle
 } from 'lucide-react';
 import { getPublicProvider, getContracts } from '../lib/contracts';
 import { getAgentMetadata } from '../lib/agents';
 import { ethers } from 'ethers';
-import { useAppKitProvider, useAppKitAccount } from '@reown/appkit/react';
+import { useWeb3 } from '../context/Web3Context';
 
 export default function Home() {
-  const { address, isConnected } = useAppKitAccount();
-  const { walletProvider } = useAppKitProvider('eip155');
+  const { address, isConnected, isCorrectNetwork, connectWallet, disconnectWallet, switchToXLayer, connecting, signer } = useWeb3();
   const [markets, setMarkets] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -94,10 +96,8 @@ export default function Home() {
 
   useEffect(() => {
     const fetchBalance = async () => {
-      if (isConnected && walletProvider && address) {
+      if (isConnected && signer && address) {
         try {
-          const ethersProvider = new ethers.BrowserProvider(walletProvider);
-          const signer = await ethersProvider.getSigner();
           const { usdc } = await getContracts(signer);
           const bal = await usdc.balanceOf(address);
           setUsdcBalance(Number(ethers.formatEther(bal)).toFixed(2));
@@ -109,7 +109,12 @@ export default function Home() {
       }
     };
     fetchBalance();
-  }, [isConnected, walletProvider, address]);
+  }, [isConnected, signer, address]);
+
+  const formatAddress = (addr) => {
+    if (!addr) return '';
+    return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
+  };
 
   // Derived Summary Statistics
   const totalTvl = useMemo(() => {
@@ -181,13 +186,45 @@ export default function Home() {
         </div>
         
         <div className="flex items-center gap-3">
-          {isConnected && address && (
-            <div className="flex items-center gap-2 font-mono text-sm border border-[var(--border-subtle)] px-3 py-1.5 rounded bg-[rgba(255,255,255,0.03)]">
-              <span className="text-[var(--text-muted)] text-xs">USDC:</span>
-              <span className="text-[var(--glow-green)] font-bold">${usdcBalance}</span>
+          {isConnected && address ? (
+            <div className="flex items-center gap-3">
+              {!isCorrectNetwork ? (
+                <button 
+                  onClick={switchToXLayer}
+                  className="flex items-center gap-1 text-xs px-3 py-1.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 hover:bg-amber-500/30 transition-all font-mono"
+                >
+                  <AlertTriangle size={13} /> Switch to X Layer
+                </button>
+              ) : (
+                <div className="flex items-center gap-2 font-mono text-sm border border-[var(--border-subtle)] px-3 py-1.5 rounded bg-[rgba(255,255,255,0.03)]">
+                  <span className="text-[var(--text-muted)] text-xs">USDC:</span>
+                  <span className="text-[var(--glow-green)] font-bold">${usdcBalance}</span>
+                </div>
+              )}
+              
+              <div className="flex items-center gap-2 px-3 py-1 rounded bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.15)] font-mono text-xs text-white">
+                <span className="w-2 h-2 rounded-full bg-[var(--glow-green)] animate-pulse"></span>
+                {formatAddress(address)}
+              </div>
+
+              <button 
+                onClick={disconnectWallet}
+                title="Disconnect Wallet"
+                className="p-1.5 rounded hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-colors"
+              >
+                <LogOut size={16} />
+              </button>
             </div>
+          ) : (
+            <button 
+              onClick={connectWallet}
+              disabled={connecting}
+              className="btn-primary flex items-center gap-2 text-sm font-semibold"
+            >
+              <Wallet size={15} />
+              {connecting ? 'CONNECTING...' : 'CONNECT WALLET'}
+            </button>
           )}
-          <appkit-button />
         </div>
       </nav>
 
