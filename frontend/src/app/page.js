@@ -5,6 +5,9 @@ import MarketCard from '../components/MarketCard';
 import MarketTable from '../components/MarketTable';
 import QuickTradeModal from '../components/QuickTradeModal';
 import AgentResearchModal from '../components/AgentResearchModal';
+import ContractsModal from '../components/ContractsModal';
+import AgentsDirectoryModal from '../components/AgentsDirectoryModal';
+import ProtocolDocsModal from '../components/ProtocolDocsModal';
 import { 
   Activity, 
   Sparkles, 
@@ -44,6 +47,9 @@ export default function Home() {
   // Modals
   const [modalMarket, setModalMarket] = useState(null);
   const [researchMarket, setResearchMarket] = useState(null);
+  const [showContractsModal, setShowContractsModal] = useState(false);
+  const [showAgentsModal, setShowAgentsModal] = useState(false);
+  const [showDocsModal, setShowDocsModal] = useState(false);
   const [usdcBalance, setUsdcBalance] = useState("0");
 
   useEffect(() => {
@@ -214,10 +220,10 @@ export default function Home() {
         </div>
         
         <div className="nav-links hidden md:flex">
-          <a href="#" className="nav-link active">Markets</a>
-          <a href="https://www.okx.com/web3/marketplace/agents" target="_blank" rel="noreferrer" className="nav-link">Agents</a>
-          <a href="https://github.com/agent-odds/contracts" target="_blank" rel="noreferrer" className="nav-link">Contracts</a>
-          <a href="https://www.okx.com/web3/build/x-layer" target="_blank" rel="noreferrer" className="nav-link">Docs</a>
+          <a href="#markets-section" className="nav-link active">Markets</a>
+          <button onClick={() => setShowAgentsModal(true)} className="nav-link" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>Agents</button>
+          <button onClick={() => setShowContractsModal(true)} className="nav-link" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>Contracts</button>
+          <button onClick={() => setShowDocsModal(true)} className="nav-link" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>Docs</button>
         </div>
         
         <div className="flex items-center gap-3">
@@ -587,6 +593,32 @@ export default function Home() {
           agentData={researchMarket.agentDetails}
           onClose={() => setResearchMarket(null)}
           onTradeClick={(m) => setModalMarket(m)}
+        />
+      )}
+
+      {/* Agents Directory Leaderboard Modal */}
+      {showAgentsModal && (
+        <AgentsDirectoryModal
+          markets={markets}
+          onClose={() => setShowAgentsModal(false)}
+          onSelectAgent={(market) => {
+            setShowAgentsModal(false);
+            setResearchMarket(market);
+          }}
+        />
+      )}
+
+      {/* Live Contracts & Verification Modal */}
+      {showContractsModal && (
+        <ContractsModal
+          onClose={() => setShowContractsModal(false)}
+        />
+      )}
+
+      {/* Protocol Architecture & Docs Modal */}
+      {showDocsModal && (
+        <ProtocolDocsModal
+          onClose={() => setShowDocsModal(false)}
         />
       )}
     </>
