@@ -2,7 +2,7 @@
 // Maps on-chain targetAgent addresses to rich, human-readable agent profiles and verification data
 
 export const AGENT_REGISTRY = {
-  // Agent 0x1111... (High-Frequency DEX Arbitrage Agent)
+  // 1. Agent 0x1111... (High-Frequency DEX Arbitrage Agent)
   "0x1111111111111111111111111111111111111111": {
     name: "Zerebro Arbitrage",
     symbol: "ZEREBRO",
@@ -37,7 +37,7 @@ export const AGENT_REGISTRY = {
     }
   },
 
-  // Agent 0x2222... (Autonomous Yield Optimizer)
+  // 2. Agent 0x2222... (Autonomous Yield Optimizer)
   "0x2222222222222222222222222222222222222222": {
     name: "Eliza Yieldmaster",
     symbol: "ELIZA",
@@ -72,7 +72,7 @@ export const AGENT_REGISTRY = {
     }
   },
 
-  // Agent 0x3333... (On-Chain Sentiment & Social Alpha Agent)
+  // 3. Agent 0x3333... (On-Chain Sentiment & Social Alpha Agent)
   "0x3333333333333333333333333333333333333333": {
     name: "Aixbt Alpha Sentinel",
     symbol: "AIXBT",
@@ -107,7 +107,7 @@ export const AGENT_REGISTRY = {
     }
   },
 
-  // Agent 0x4444... (Autonomous MEV Protection)
+  // 4. Agent 0x4444... (Autonomous MEV Protection)
   "0x4444444444444444444444444444444444444444": {
     name: "Nexus MEV Shield",
     symbol: "NEXUS",
@@ -142,7 +142,7 @@ export const AGENT_REGISTRY = {
     }
   },
 
-  // Agent 0x5555... (Autonomous Cross-Chain Arbitrage)
+  // 5. Agent 0x5555... (Autonomous Cross-Chain Arbitrage)
   "0x5555555555555555555555555555555555555555": {
     name: "Hyperion Cross-Chain",
     symbol: "HYPERION",
@@ -177,7 +177,7 @@ export const AGENT_REGISTRY = {
     }
   },
 
-  // Agent 0x6666... (Perpetual Funding Rate Harvester)
+  // 6. Agent 0x6666... (Perpetual Funding Rate Harvester)
   "0x6666666666666666666666666666666666666666": {
     name: "Aetheria Funding Harvester",
     symbol: "AETHERIA",
@@ -212,7 +212,7 @@ export const AGENT_REGISTRY = {
     }
   },
 
-  // Agent 0x7777... (High-Frequency Orderbook Market Maker)
+  // 7. Agent 0x7777... (High-Frequency Orderbook Market Maker)
   "0x7777777777777777777777777777777777777777": {
     name: "Quantis CLOB Maker",
     symbol: "QUANTIS",
@@ -247,7 +247,7 @@ export const AGENT_REGISTRY = {
     }
   },
 
-  // Agent 0x8888... (Autonomous Liquidation & Invariant Sentinel)
+  // 8. Agent 0x8888... (Autonomous Liquidation & Invariant Sentinel)
   "0x8888888888888888888888888888888888888888": {
     name: "Sentinel Liquidation Bot",
     symbol: "SENTINEL",
@@ -278,6 +278,286 @@ export const AGENT_REGISTRY = {
         { venue: "Aave V3 Liquidation Calls", volume: "$18,900,000", pct: "71.3%" },
         { venue: "X Layer Money Markets", volume: "$5,400,000", pct: "20.4%" },
         { venue: "CDP Stability Modules", volume: "$2,200,000", pct: "8.3%" }
+      ]
+    }
+  },
+
+  // 9. Agent 0x9999... (Truth Terminal Social Alpha)
+  "0x9999999999999999999999999999999999999999": {
+    name: "Truth Terminal Alpha",
+    symbol: "GOAT / TRUTH",
+    tagline: "Autonomous Social Sentiment & Meme Momentum Engine",
+    category: "Social & Sentiment",
+    badgeColor: "#F59E0B",
+    avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=TruthTerminal&backgroundColor=050505",
+    description: "Autonomous LLM-driven intelligence engine analyzing viral on-chain narratives, influencer sentiment clusters, and token velocity.",
+    strategy: "NLP sentiment clustering, early narrative identification, and automated decentralized social graph indexing.",
+    creator: "Truth Terminal Research",
+    targetMetricLabel: "24H Social Volume Tracked",
+    metricUnit: "USD",
+    formatQuestion: (threshold) => `Will Truth Terminal Alpha surpass > $${Number(threshold).toLocaleString()} tracked narrative volume?`,
+    resolutionDetails: "Resolves YES if the agent's verified narrative sentiment index logs > target volume before epoch settlement.",
+    tags: ["#Sentiment", "#SocialAlpha", "#LLM", "#Narratives"],
+    research: {
+      allTimeVolume: "$94,200,000",
+      winRate: "89.8%",
+      totalExecutions: "41,200 signals",
+      netProfit: "+$3,420,000 USD",
+      sharpeRatio: "3.25",
+      riskScore: "Medium (AA)",
+      avgGas: "0.00019 OKB / tx",
+      latency: "45 ms",
+      maxDrawdown: "2.4%",
+      thesis: "Social momentum precedes on-chain liquidity inflows. Truth Terminal continuously scores memetic resonance and viral propagation to identify capital rotations hours before peak DEX trading volume.",
+      venueBreakdown: [
+        { venue: "OKX Web3 Social Graph", volume: "$58,400,000", pct: "62.0%" },
+        { venue: "X Layer Trending Pairs", volume: "$24,100,000", pct: "25.6%" },
+        { venue: "Telegram Alpha Channels", volume: "$11,700,000", pct: "12.4%" }
+      ]
+    }
+  },
+
+  // 10. Agent 0xAAAA... (Virtuals Protocol Multi-Agent Yield Engine)
+  "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa": {
+    name: "Virtuals Yield Bot",
+    symbol: "VIRTUALS",
+    tagline: "Co-Op Multi-Agent Liquidity & Fee Harvester",
+    category: "Yield Aggregation",
+    badgeColor: "var(--glow-green)",
+    avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=VirtualsYield&backgroundColor=050505",
+    description: "Orchestrates multi-agent liquidity pools, distributing concentrated DEX fees and protocol incentives among decentralized AI subagents.",
+    strategy: "Dynamic concentrated liquidity provisioning and autonomous LP fee compounding.",
+    creator: "Virtuals Protocol Core",
+    targetMetricLabel: "Net Annualized Yield APY",
+    metricUnit: "%",
+    formatQuestion: (threshold) => `Will Virtuals Yield Bot sustain > ${Number(threshold)}% Net LP Fee APY?`,
+    resolutionDetails: "Resolves YES if Virtuals' verified LP fee pool generates net APY above the target threshold at settlement block.",
+    tags: ["#Virtuals", "#CoOpAgents", "#ConcentratedLP", "#Yield"],
+    research: {
+      allTimeVolume: "$58,100,000",
+      winRate: "96.2%",
+      totalExecutions: "14,300 rebalances",
+      netProfit: "+$1,850,000 USD",
+      sharpeRatio: "4.05",
+      riskScore: "Low (AAA)",
+      avgGas: "0.00021 OKB / tx",
+      latency: "320 ms",
+      maxDrawdown: "0.6%",
+      thesis: "Multi-agent coordination concentrates liquidity precisely around active swap volumes, tripling capital efficiency and maximizing fee income relative to passive liquidity providers.",
+      venueBreakdown: [
+        { venue: "OKX DEX Concentrated Pools", volume: "$37,200,000", pct: "64.0%" },
+        { venue: "QuickSwap V3 X Layer", volume: "$15,100,000", pct: "26.0%" },
+        { venue: "Virtuals Co-Op Staking", volume: "$5,800,000", pct: "10.0%" }
+      ]
+    }
+  },
+
+  // 11. Agent 0xBBBB... (Luna Autonomous Sentinel)
+  "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb": {
+    name: "Luna Autonomous Sentinel",
+    symbol: "LUNA",
+    tagline: "Real-Time AI Social Graph & Token Velocity Predictor",
+    category: "Social & Sentiment",
+    badgeColor: "#F59E0B",
+    avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=LunaSentinel&backgroundColor=050505",
+    description: "Evaluates token velocity, developer commit activity, and community engagement scores to forecast breakout trading volume.",
+    strategy: "On-chain token velocity modeling combined with multi-channel social graph signal filtering.",
+    creator: "Luna Intelligence Labs",
+    targetMetricLabel: "Tracked Velocity Volume",
+    metricUnit: "USD",
+    formatQuestion: (threshold) => `Will Luna Sentinel identify > $${Number(threshold).toLocaleString()} in breakout volume?`,
+    resolutionDetails: "Resolves YES if the cumulative volume of Luna-flagged breakout assets exceeds the target threshold.",
+    tags: ["#SocialGraph", "#Velocity", "#BreakoutPredictor", "#AI"],
+    research: {
+      allTimeVolume: "$39,400,000",
+      winRate: "88.5%",
+      totalExecutions: "18,900 signals",
+      netProfit: "+$1,290,000 USD",
+      sharpeRatio: "3.10",
+      riskScore: "Medium (AA)",
+      avgGas: "0.00017 OKB / tx",
+      latency: "60 ms",
+      maxDrawdown: "2.1%",
+      thesis: "Sudden acceleration in unique sender addresses and contract calls on X Layer reliably forecasts imminent DEX liquidity volume surges with high statistical confidence.",
+      venueBreakdown: [
+        { venue: "X Layer Contract Analytics", volume: "$24,800,000", pct: "62.9%" },
+        { venue: "OKX DEX New Pairs", volume: "$10,200,000", pct: "25.9%" },
+        { venue: "Cross-Rollup Inflows", volume: "$4,400,000", pct: "11.2%" }
+      ]
+    }
+  },
+
+  // 12. Agent 0xCCCC... (Spectral Arbitrage Solver)
+  "0xcccccccccccccccccccccccccccccccccccccccc": {
+    name: "Spectral Arbitrage Solver",
+    symbol: "SPECTRAL",
+    tagline: "Machine Learning Execution & Routing Solver",
+    category: "DeFi Arbitrage",
+    badgeColor: "var(--glow-cyan)",
+    avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=SpectralSolver&backgroundColor=050505",
+    description: "Deploys reinforcement learning models to predict order routing paths and arbitrage execution latencies across decentralized exchanges.",
+    strategy: "Deep Q-network routing optimization and microsecond execution pricing.",
+    creator: "Spectral Machine Intelligence",
+    targetMetricLabel: "24H ML Arbitrage Volume",
+    metricUnit: "USD",
+    formatQuestion: (threshold) => `Will Spectral Solver achieve > $${Number(threshold).toLocaleString()} in ML routed volume?`,
+    resolutionDetails: "Resolves YES if total ML-routed arbitrage execution volume surpasses the threshold before market expiry.",
+    tags: ["#MachineLearning", "#Routing", "#Arbitrage", "#Spectral"],
+    research: {
+      allTimeVolume: "$71,500,000",
+      winRate: "96.8%",
+      totalExecutions: "29,400 fills",
+      netProfit: "+$2,640,000 USD",
+      sharpeRatio: "4.20",
+      riskScore: "Low (AAA)",
+      avgGas: "0.00016 OKB / tx",
+      latency: "10 ms",
+      maxDrawdown: "0.5%",
+      thesis: "Reinforcement learning agents dynamically adapt to changing mempool congestion and DEX orderbook depth, optimizing split-order routing to capture 8-15% higher net arbitrage margins.",
+      venueBreakdown: [
+        { venue: "OKX Smart Routing", volume: "$46,500,000", pct: "65.0%" },
+        { venue: "QuickSwap Arbitrage Pools", volume: "$17,900,000", pct: "25.0%" },
+        { venue: "Private Flash Liquidity", volume: "$7,100,000", pct: "10.0%" }
+      ]
+    }
+  },
+
+  // 13. Agent 0xDDDD... (Vader Algorithmic Market Maker)
+  "0xdddddddddddddddddddddddddddddddddddddddd": {
+    name: "Vader Market Maker",
+    symbol: "VADER",
+    tagline: "Volatility-Adaptive Limit Quoting Engine",
+    category: "Market Making",
+    badgeColor: "var(--glow-blue)",
+    avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=VaderMM&backgroundColor=050505",
+    description: "Supplies dynamic bid/ask quotes with volatility-adjusted inventory skew, profiting from round-trip spread capture.",
+    strategy: "Avellaneda-Stoikov market making with GARCH volatility modeling.",
+    creator: "Vader Quantitative Research",
+    targetMetricLabel: "Completed Fills",
+    metricUnit: "fills",
+    formatQuestion: (threshold) => `Will Vader Market Maker complete > ${Number(threshold).toLocaleString()} profitable fills?`,
+    resolutionDetails: "Resolves YES if total verified profitable maker fills exceed the threshold before settlement.",
+    tags: ["#MarketMaking", "#Volatility", "#CLOB", "#Quants"],
+    research: {
+      allTimeVolume: "$85,200,000",
+      winRate: "93.4%",
+      totalExecutions: "52,800 fills",
+      netProfit: "+$3,120,000 USD",
+      sharpeRatio: "3.85",
+      riskScore: "Medium (AA)",
+      avgGas: "0.00012 OKB / tx",
+      latency: "5 ms",
+      maxDrawdown: "1.2%",
+      thesis: "Adaptive inventory skew prevents adverse selection: when directional flow increases, Vader widens one side of the book while capturing oversized spreads on uninformed retail flow.",
+      venueBreakdown: [
+        { venue: "OKX DEX CLOB", volume: "$58,800,000", pct: "69.0%" },
+        { venue: "X Layer Direct RFQ", volume: "$18,700,000", pct: "22.0%" },
+        { venue: "Institutional Dark Pools", volume: "$7,700,000", pct: "9.0%" }
+      ]
+    }
+  },
+
+  // 14. Agent 0xEEEE... (Freysa Autonomous Oracle)
+  "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee": {
+    name: "Freysa Autonomous Oracle",
+    symbol: "FREYSA",
+    tagline: "Game-Theoretic Consensus & Prompt Defense Sentinel",
+    category: "Social & Sentiment",
+    badgeColor: "#F59E0B",
+    avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=FreysaOracle&backgroundColor=050505",
+    description: "Decentralized consensus oracle testing adversarial prompt defenses and validating multi-agent outcome verification.",
+    strategy: "Multi-model adversarial cross-validation and zero-knowledge proof verification.",
+    creator: "Freysa Open Foundation",
+    targetMetricLabel: "Verified Consensus Queries",
+    metricUnit: "queries",
+    formatQuestion: (threshold) => `Will Freysa Oracle verify > ${Number(threshold).toLocaleString()} consensus proofs?`,
+    resolutionDetails: "Resolves YES if total cryptographically certified consensus queries exceed the threshold.",
+    tags: ["#Consensus", "#GameTheory", "#ZKProof", "#Freysa"],
+    research: {
+      allTimeVolume: "$22,400,000",
+      winRate: "99.8%",
+      totalExecutions: "15,600 consensus rounds",
+      netProfit: "+$780,000 USD",
+      sharpeRatio: "4.90",
+      riskScore: "Ultra-Low (AAA+)",
+      avgGas: "0.00028 OKB / tx",
+      latency: "15 ms",
+      maxDrawdown: "0.0%",
+      thesis: "Adversarial testing ensures no single LLM hallucinations can corrupt prediction resolutions. Multi-agent cryptographic quorum guarantees 100% deterministic on-chain outcome settlement.",
+      venueBreakdown: [
+        { venue: "On-Chain Consensus Registry", volume: "$15,200,000", pct: "67.9%" },
+        { venue: "ZK-SNARK Prover Nodes", volume: "$4,900,000", pct: "21.9%" },
+        { venue: "OKX Oracle Feeds", volume: "$2,300,000", pct: "10.2%" }
+      ]
+    }
+  },
+
+  // 15. Agent 0xFFFF... (CoW Intent Solver Agent)
+  "0xffffffffffffffffffffffffffffffffffffffff": {
+    name: "CoW Intent Solver Agent",
+    symbol: "SOLVER-X",
+    tagline: "Batch Auction Optimizer & Coincidence of Wants Matcher",
+    category: "Intent & Solvers",
+    badgeColor: "#10B981",
+    avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=CoWSolver&backgroundColor=050505",
+    description: "Competes in discrete batch auctions to find peer-to-peer coincidence of wants (CoW), settling user trades with zero slippage and zero LP fees.",
+    strategy: "Graph-theoretic matching algorithms and multi-hop atomic routing.",
+    creator: "SolverDAO Research",
+    targetMetricLabel: "24H Batch Intent Volume",
+    metricUnit: "USD",
+    formatQuestion: (threshold) => `Will CoW Intent Solver settle > $${Number(threshold).toLocaleString()} in batch intents?`,
+    resolutionDetails: "Resolves YES if cumulative batch auction volume matched by SOLVER-X satisfies the threshold before epoch end.",
+    tags: ["#Intents", "#BatchAuctions", "#CoW", "#ZeroSlippage"],
+    research: {
+      allTimeVolume: "$64,700,000",
+      winRate: "94.8%",
+      totalExecutions: "32,100 auction batches",
+      netProfit: "+$2,380,000 USD",
+      sharpeRatio: "4.10",
+      riskScore: "Low (AAA)",
+      avgGas: "0.00020 OKB / tx",
+      latency: "1.5 sec (Batch Block)",
+      maxDrawdown: "0.2%",
+      thesis: "Peer-to-peer CoW matching circumvents constant-product AMM slippage entirely. Solvers extract value by providing the most optimal uniform clearing price in every auction block.",
+      venueBreakdown: [
+        { venue: "OKX DEX Intent Pool", volume: "$42,700,000", pct: "66.0%" },
+        { venue: "Private CoW Match Mesh", volume: "$16,200,000", pct: "25.0%" },
+        { venue: "X Layer AMM Fallbacks", volume: "$5,800,000", pct: "9.0%" }
+      ]
+    }
+  },
+
+  // 16. Agent 0x1010... (Fortress Invariant Guardian)
+  "0x1010101010101010101010101010101010101010": {
+    name: "Fortress Invariant Guardian",
+    symbol: "FORTRESS",
+    tagline: "Autonomous Invariant Monitoring & Circuit Breaker Sentinel",
+    category: "Security & MEV",
+    badgeColor: "var(--glow-purple)",
+    avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=FortressGuardian&backgroundColor=050505",
+    description: "Continuously simulates protocol math invariants in real-time mempool transactions, triggering atomic pause circuits if mathematical anomalies are detected.",
+    strategy: "Formal verification emulation and automated flash-pause governance execution.",
+    creator: "Fortress Security Labs",
+    targetMetricLabel: "Guarded Protocol TVL",
+    metricUnit: "USD",
+    formatQuestion: (threshold) => `Will Fortress Guardian safeguard > $${Number(threshold).toLocaleString()} in verified TVL?`,
+    resolutionDetails: "Resolves YES if total active TVL safeguarded under Fortress invariant monitoring exceeds the threshold.",
+    tags: ["#Security", "#Invariants", "#CircuitBreaker", "#Auditing"],
+    research: {
+      allTimeVolume: "$112,000,000 (Guarded TVL)",
+      winRate: "100.0%",
+      totalExecutions: "84,000 block checks",
+      netProfit: "+$1,940,000 USD (Security Bounties)",
+      sharpeRatio: "5.10",
+      riskScore: "Ultra-Low (AAA+)",
+      avgGas: "0.00035 OKB / tx",
+      latency: "4 ms",
+      maxDrawdown: "0.0%",
+      thesis: "Pre-execution invariant simulation stops zero-day smart contract exploits before transactions can be mined on X Layer, preventing catastrophic economic drain.",
+      venueBreakdown: [
+        { venue: "X Layer Core Lending Protocols", volume: "$76,000,000", pct: "67.9%" },
+        { venue: "OKX DEX Liquidity Vaults", volume: "$25,000,000", pct: "22.3%" },
+        { venue: "Bridge Message Queues", volume: "$11,000,000", pct: "9.8%" }
       ]
     }
   }
@@ -316,12 +596,12 @@ export function getAgentMetadata(agentAddress, metricType, metricThreshold) {
   return {
     name: `Autonomous Agent (${shortAddr})`,
     symbol: "AGENT",
-    tagline: "On-Chain Smart Contract Agent",
+    tagline: "Onchain Smart Contract Agent",
     category: "Autonomous Protocol",
     badgeColor: "var(--glow-cyan)",
     avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=${agentAddress}&backgroundColor=050505`,
-    description: `Verified autonomous contract deployed on X Layer Testnet. Targets on-chain performance threshold of ${formattedTarget} for ${metricName}.`,
-    strategy: "Automated on-chain state machine execution.",
+    description: `Verified autonomous contract deployed on X Layer Testnet. Targets onchain performance threshold of ${formattedTarget} for ${metricName}.`,
+    strategy: "Automated onchain state machine execution.",
     creator: "Community / Decentralized",
     targetMetricLabel: metricName,
     metricUnit: metricType === 1 ? "USD" : metricType === 2 ? "%" : "Txs",
@@ -331,7 +611,7 @@ export function getAgentMetadata(agentAddress, metricType, metricThreshold) {
         ? `APY > ${Number(metricThreshold)}%` 
         : `Executions > ${Number(metricThreshold).toLocaleString()}`,
     question: `Will Agent ${shortAddr} achieve ${metricName} > ${formattedTarget}?`,
-    resolutionDetails: `Resolves YES if targetAgent (${shortAddr}) satisfies metric threshold of ${formattedTarget} as certified by the on-chain Resolver.`,
-    tags: ["#Autonomous", "#XLayer", "#OnChainMetric"]
+    resolutionDetails: `Resolves YES if targetAgent (${shortAddr}) satisfies metric threshold of ${formattedTarget} as certified by the onchain Resolver.`,
+    tags: ["#Autonomous", "#XLayer", "#OnchainMetric"]
   };
 }

@@ -27,29 +27,40 @@ export async function POST(req) {
     const provider = new ethers.JsonRpcProvider(rpcUrl);
     const relayerWallet = new ethers.Wallet(privateKey, provider);
 
+    const feeData = await provider.getFeeData();
+    let currentNonce = await provider.getTransactionCount(relayerWallet.address, "latest");
+
     // 1. Mint 1,000 USDC to user (sponsored by relayer gas)
     const usdcContract = new ethers.Contract(addresses.usdc, usdcArtifact.abi, relayerWallet);
     const mintAmount = ethers.parseUnits("1000", 18);
-    const mintTx = await usdcContract.mint(targetAddress, mintAmount);
-    await mintTx.wait();
+    const mintTx = await usdcContract.mint(targetAddress, mintAmount, {
+      nonce: currentNonce++,
+      gasLimit: 120000,
+      gasPrice: feeData.gasPrice || ethers.parseUnits("0.05", "gwei")
+    });
 
-    // 2. Check if user needs OKB gas stipend for trades (if balance < 0.002 OKB)
+    // 2. Unconditionally grant 0.005 OKB gas stipend if user has < 0.01 OKB
     let okbStipendSent = false;
     let okbTxHash = null;
     try {
       const userOkbBal = await provider.getBalance(targetAddress);
-      if (userOkbBal < ethers.parseEther("0.002")) {
+      if (userOkbBal < ethers.parseEther("0.01")) {
         const gasGrantTx = await relayerWallet.sendTransaction({
           to: targetAddress,
-          value: ethers.parseEther("0.005") // 0.005 OKB is enough for 50+ transactions on X Layer
+          value: ethers.parseEther("0.005"),
+          nonce: currentNonce++,
+          gasLimit: 30000,
+          gasPrice: feeData.gasPrice || ethers.parseUnits("0.05", "gwei")
         });
         await gasGrantTx.wait();
         okbStipendSent = true;
         okbTxHash = gasGrantTx.hash;
       }
     } catch (gasErr) {
-      console.warn("Could not dispatch gas stipend:", gasErr);
+      console.error("Gas stipend dispatch error:", gasErr);
     }
+
+    await mintTx.wait();
 
     return NextResponse.json({
       success: true,

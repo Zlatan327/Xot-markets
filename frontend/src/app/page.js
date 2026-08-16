@@ -184,7 +184,9 @@ export default function Home() {
     { id: "DeFi Arbitrage", label: "⚡ DeFi Arbitrage" },
     { id: "Yield Aggregation", label: "🌾 Yield Harvesters" },
     { id: "Market Making", label: "📈 Market Making" },
-    { id: "Security & MEV", label: "🛡️ Security & MEV" }
+    { id: "Security & MEV", label: "🛡️ Security & MEV" },
+    { id: "Social & Sentiment", label: "🧠 Social & Sentiment" },
+    { id: "Intent & Solvers", label: "🧩 Intent & Solvers" }
   ];
 
   // Filtering and Sorting
