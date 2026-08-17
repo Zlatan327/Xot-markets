@@ -25,7 +25,16 @@ export default function AgentsDirectoryModal({ onClose, onSelectAgent, markets }
     return matchesSearch && matchesCat;
   });
 
-  const categories = ["ALL", "DeFi Arbitrage", "Yield Aggregation", "Market Making", "Security & MEV"];
+  const categories = [
+    "ALL", 
+    "DeFi Arbitrage", 
+    "Yield Aggregation", 
+    "Market Making", 
+    "Security & MEV", 
+    "Social & Sentiment", 
+    "Intent & Solvers", 
+    "Autonomous Protocol"
+  ];
 
   return (
     <div style={{

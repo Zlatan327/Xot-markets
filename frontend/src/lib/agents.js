@@ -560,6 +560,181 @@ export const AGENT_REGISTRY = {
         { venue: "Bridge Message Queues", volume: "$11,000,000", pct: "9.8%" }
       ]
     }
+  },
+
+  // 17. Agent 0x1212... (Morpheus Compute Router)
+  "0x1212121212121212121212121212121212121212": {
+    name: "Morpheus Compute Router",
+    symbol: "MOR",
+    tagline: "Decentralized AI Inference & Smart Agent Orchestration",
+    category: "Autonomous Protocol",
+    badgeColor: "#6366F1",
+    avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=MorpheusRouter&backgroundColor=050505",
+    description: "Routes decentralized open-source LLM inference requests across compute providers with programmatic token reward settlement.",
+    strategy: "Dynamic compute pricing optimization and distributed load balancing.",
+    creator: "Morpheus Open Core",
+    targetMetricLabel: "24H Inference Compute Volume",
+    metricUnit: "USD",
+    formatQuestion: (threshold) => `Will Morpheus Router settle > $${Number(threshold).toLocaleString()} in compute rewards?`,
+    resolutionDetails: "Resolves YES if total compute fee volume settled on X Layer exceeds the threshold before market expiry.",
+    tags: ["#Morpheus", "#DecentralizedCompute", "#SmartAgents", "#DePIN"],
+    research: {
+      allTimeVolume: "$68,400,000",
+      winRate: "97.1%",
+      totalExecutions: "142,000 inference requests",
+      netProfit: "+$2,100,000 USD",
+      sharpeRatio: "4.20",
+      riskScore: "Low (AAA)",
+      avgGas: "0.00018 OKB / tx",
+      latency: "25 ms",
+      maxDrawdown: "0.4%",
+      thesis: "Decentralized inference creates predictable demand for tokenized compute bandwidth. Morpheus captures routing margins by aggregating high-throughput GPU clusters.",
+      venueBreakdown: [
+        { venue: "Morpheus Node Mesh", volume: "$45,000,000", pct: "65.8%" },
+        { venue: "Lumerin Compute Protocol", volume: "$15,200,000", pct: "22.2%" },
+        { venue: "X Layer Settlement Hub", volume: "$8,200,000", pct: "12.0%" }
+      ]
+    }
+  },
+
+  // 18. Agent 0x1313... (Olas Autonomous Keeper)
+  "0x1313131313131313131313131313131313131313": {
+    name: "Olas Autonomous Keeper",
+    symbol: "OLAS",
+    tagline: "Decentralized Multi-Agent Coordinated Operations",
+    category: "Security & MEV",
+    badgeColor: "var(--glow-purple)",
+    avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=OlasKeeper&backgroundColor=050505",
+    description: "Operates decentralized off-chain services and keeper automation across multiple blockchains using consensus-driven agent coordination.",
+    strategy: "Multi-agent consensus execution and automated keeper bot incentivization.",
+    creator: "Autonolas Network",
+    targetMetricLabel: "Automated Executions",
+    metricUnit: "jobs",
+    formatQuestion: (threshold) => `Will Olas Keeper complete > ${Number(threshold).toLocaleString()} automated jobs?`,
+    resolutionDetails: "Resolves YES if total verified multi-agent keeper jobs exceed the target amount before epoch settlement.",
+    tags: ["#Autonolas", "#Keepers", "#MultiAgent", "#Automation"],
+    research: {
+      allTimeVolume: "$44,900,000",
+      winRate: "98.9%",
+      totalExecutions: "98,400 keeper jobs",
+      netProfit: "+$1,450,000 USD",
+      sharpeRatio: "4.75",
+      riskScore: "Ultra-Low (AAA+)",
+      avgGas: "0.00014 OKB / tx",
+      latency: "12 ms",
+      maxDrawdown: "0.1%",
+      thesis: "Decentralized protocols require non-stop keeper automation. Olas multi-agent consensus eliminates single points of failure in liquidations, rebalancing, and oracle updates.",
+      venueBreakdown: [
+        { venue: "Autonolas Service Registry", volume: "$29,600,000", pct: "65.9%" },
+        { venue: "X Layer Keeper Mesh", volume: "$11,200,000", pct: "24.9%" },
+        { venue: "Cross-Chain Relayers", volume: "$4,100,000", pct: "9.2%" }
+      ]
+    }
+  },
+
+  // 19. Agent 0x1414... (Phala TEE Privacy Sentinel)
+  "0x1414141414141414141414141414141414141414": {
+    name: "Phala TEE Privacy Sentinel",
+    symbol: "PHA",
+    tagline: "Hardware-Enforced Confidential AI Agent Execution",
+    category: "Security & MEV",
+    badgeColor: "#10B981",
+    avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=PhalaTEE&backgroundColor=050505",
+    description: "Executes proprietary trading models and private key operations inside hardware-secured Trusted Execution Environments (TEE).",
+    strategy: "Zero-knowledge and TEE-shielded execution preventing frontrunning and key compromise.",
+    creator: "Phala Network",
+    targetMetricLabel: "24H TEE Volume Guarded",
+    metricUnit: "USD",
+    formatQuestion: (threshold) => `Will Phala Sentinel process > $${Number(threshold).toLocaleString()} in confidential volume?`,
+    resolutionDetails: "Resolves YES based on attested cryptographic TEE execution volume before market close.",
+    tags: ["#TEE", "#Privacy", "#ConfidentialAI", "#HardwareSecurity"],
+    research: {
+      allTimeVolume: "$51,200,000",
+      winRate: "99.2%",
+      totalExecutions: "22,100 private jobs",
+      netProfit: "+$1,780,000 USD",
+      sharpeRatio: "4.65",
+      riskScore: "Ultra-Low (AAA+)",
+      avgGas: "0.00022 OKB / tx",
+      latency: "10 ms",
+      maxDrawdown: "0.0%",
+      thesis: "Hardware enclaves guarantee that trading models and private keys cannot be inspected or frontrun by RPC operators, guaranteeing zero slippage from predatory MEV searchers.",
+      venueBreakdown: [
+        { venue: "Phala Dstack Enclaves", volume: "$34,200,000", pct: "66.8%" },
+        { venue: "OKX Private RPC", volume: "$12,400,000", pct: "24.2%" },
+        { venue: "Confidential Order Books", volume: "$4,600,000", pct: "9.0%" }
+      ]
+    }
+  },
+
+  // 20. Agent 0x1515... (Taoshi Quant Alpha)
+  "0x1515151515151515151515151515151515151515": {
+    name: "Taoshi Quant Alpha",
+    symbol: "TAOSHI",
+    tagline: "Bittensor Subnet 8 Decentralized Predictive Trading",
+    category: "DeFi Arbitrage",
+    badgeColor: "var(--glow-cyan)",
+    avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=TaoshiAlpha&backgroundColor=050505",
+    description: "Aggregates competitive machine learning signals from Bittensor Subnet 8 miners to execute high-conviction momentum and mean-reversion trades.",
+    strategy: "Ensemble competitive predictive modeling across decentralized quantitative miners.",
+    creator: "Taoshi Research / Bittensor",
+    targetMetricLabel: "24H Trading Volume",
+    metricUnit: "USD",
+    formatQuestion: (threshold) => `Will Taoshi Alpha reach > $${Number(threshold).toLocaleString()} in predictive trading volume?`,
+    resolutionDetails: "Resolves YES if cumulative trading volume generated by Taoshi ensemble models surpasses the threshold.",
+    tags: ["#Bittensor", "#Subnet8", "#DecentralizedAI", "#QuantAlpha"],
+    research: {
+      allTimeVolume: "$82,600,000",
+      winRate: "94.6%",
+      totalExecutions: "36,800 trades",
+      netProfit: "+$3,250,000 USD",
+      sharpeRatio: "4.15",
+      riskScore: "Low (AAA)",
+      avgGas: "0.00015 OKB / tx",
+      latency: "14 ms",
+      maxDrawdown: "0.7%",
+      thesis: "Incentivized competitive subnet mining produces higher out-of-sample forecast accuracy than centralized hedge fund quants by crowd-sourcing hyperparameter exploration.",
+      venueBreakdown: [
+        { venue: "OKX Perpetual Swaps", volume: "$56,100,000", pct: "67.9%" },
+        { venue: "X Layer Spot Pools", volume: "$18,500,000", pct: "22.4%" },
+        { venue: "Arbitrage Relayers", volume: "$8,000,000", pct: "9.7%" }
+      ]
+    }
+  },
+
+  // 21. Agent 0x1616... (KIP Knowledge Monetizer)
+  "0x1616161616161616161616161616161616161616": {
+    name: "KIP Knowledge Agent",
+    symbol: "KIP",
+    tagline: "Decentralized RAG & AI Data Monetization Protocol",
+    category: "Autonomous Protocol",
+    badgeColor: "#F59E0B",
+    avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=KIPAgent&backgroundColor=050505",
+    description: "Enables autonomous agents to trade proprietary knowledge embeddings and pay for verified decentralized retrieval-augmented generation (RAG) data.",
+    strategy: "On-chain vector indexing and tokenized data stream monetization.",
+    creator: "KIP Protocol Core",
+    targetMetricLabel: "24H Knowledge Micropayments",
+    metricUnit: "USD",
+    formatQuestion: (threshold) => `Will KIP Knowledge Agent settle > $${Number(threshold).toLocaleString()} in data micropayments?`,
+    resolutionDetails: "Resolves YES if total knowledge query settlement volume satisfies the target threshold before expiry.",
+    tags: ["#KIP", "#RAG", "#DataMonetization", "#A2APayments"],
+    research: {
+      allTimeVolume: "$31,400,000",
+      winRate: "97.8%",
+      totalExecutions: "88,200 data queries",
+      netProfit: "+$960,000 USD",
+      sharpeRatio: "4.40",
+      riskScore: "Low (AAA)",
+      avgGas: "0.00016 OKB / tx",
+      latency: "35 ms",
+      maxDrawdown: "0.2%",
+      thesis: "AI agents require verified domain-specific context. KIP allows data creators to tokenize proprietary knowledge graphs and receive micro-royalties on every inference call.",
+      venueBreakdown: [
+        { venue: "KIP Knowledge Hub", volume: "$21,200,000", pct: "67.5%" },
+        { venue: "x402 Micropayment Rails", volume: "$7,300,000", pct: "23.2%" },
+        { venue: "X Layer Data Indexers", volume: "$2,900,000", pct: "9.3%" }
+      ]
+    }
   }
 };
 

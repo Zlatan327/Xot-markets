@@ -185,7 +185,6 @@ export default function Home() {
     return unique.size;
   }, [markets]);
 
-  // Categories with counts
   const categoryDefs = [
     { id: "ALL", label: "🔥 All Markets" },
     { id: "DeFi Arbitrage", label: "⚡ DeFi Arbitrage" },
@@ -193,7 +192,8 @@ export default function Home() {
     { id: "Market Making", label: "📈 Market Making" },
     { id: "Security & MEV", label: "🛡️ Security & MEV" },
     { id: "Social & Sentiment", label: "🧠 Social & Sentiment" },
-    { id: "Intent & Solvers", label: "🧩 Intent & Solvers" }
+    { id: "Intent & Solvers", label: "🧩 Intent & Solvers" },
+    { id: "Autonomous Protocol", label: "🤖 Autonomous Protocols" }
   ];
 
   // Filtering and Sorting
