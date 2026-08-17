@@ -3,13 +3,13 @@ import React, { useState } from "react";
 import { ethers } from "ethers";
 import { getContracts } from "../lib/contracts";
 import { useToast } from "./Toast";
-import { Droplet, Loader2, Sparkles, AlertTriangle, ExternalLink, Fuel, CheckCircle } from "lucide-react";
+import { Droplet, Loader2, Fuel, ExternalLink, CheckCircle } from "lucide-react";
 import { useWeb3 } from "../context/Web3Context";
 
 export default function FaucetButton({ signerAddress, onBalanceRefresh }) {
   const [minting, setMinting] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const { signer, isConnected, connectWallet, isCorrectNetwork, switchToXLayer, address } = useWeb3();
+  const { signer, isConnected, connectWallet, isCorrectNetwork, address } = useWeb3();
   const { addToast, updateToast } = useToast();
 
   const handleClaim = async () => {
@@ -28,7 +28,7 @@ export default function FaucetButton({ signerAddress, onBalanceRefresh }) {
     });
 
     try {
-      // 1. Attempt Instant Gasless Claim via Relayer API
+      // 1. Instant Gasless Claim via Relayer API
       const res = await fetch("/api/faucet", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -40,12 +40,12 @@ export default function FaucetButton({ signerAddress, onBalanceRefresh }) {
       if (res.ok && data.success) {
         updateToast(toastId, {
           type: "success",
-          title: "1,000 USDC Claimed Successfully!",
+          title: "1,000 USDC Claimed!",
           message: data.okbStipendSent 
-            ? "1,000 USDC + 0.005 OKB Gas Stipend delivered to your wallet!" 
-            : "1,000 USDC delivered! You're ready to place bets.",
+            ? "1,000 USDC + 0.005 OKB Gas Stipend delivered!" 
+            : "1,000 USDC delivered to your wallet.",
           txHash: data.txHash,
-          duration: 6000
+          duration: 5000
         });
         if (onBalanceRefresh) onBalanceRefresh();
         setMinting(false);
@@ -54,13 +54,6 @@ export default function FaucetButton({ signerAddress, onBalanceRefresh }) {
 
       // 2. Fallback to direct on-chain mint via user's connected wallet
       if (signer && isCorrectNetwork) {
-        updateToast(toastId, {
-          type: "loading",
-          title: "Minting via Wallet...",
-          message: "Sending on-chain transaction from your wallet...",
-          duration: 0
-        });
-
         const { usdc } = await getContracts(signer);
         const mintAmount = ethers.parseUnits("1000", 18);
         const tx = await usdc.mint(targetAddress, mintAmount);
@@ -68,10 +61,10 @@ export default function FaucetButton({ signerAddress, onBalanceRefresh }) {
 
         updateToast(toastId, {
           type: "success",
-          title: "1,000 Testnet USDC Minted!",
+          title: "1,000 USDC Minted!",
           message: "Balance updated successfully!",
           txHash: tx.hash,
-          duration: 6000
+          duration: 5000
         });
         if (onBalanceRefresh) onBalanceRefresh();
       } else {
@@ -81,11 +74,11 @@ export default function FaucetButton({ signerAddress, onBalanceRefresh }) {
       console.error("Faucet error:", e);
       let errorMsg = e.reason || e.message || "Failed to claim testnet tokens.";
       if (errorMsg.includes("insufficient funds") || errorMsg.includes("gas")) {
-        errorMsg = "Your wallet needs Testnet OKB for gas. Click 'OKB Faucet' to claim free testnet OKB.";
+        errorMsg = "Your wallet needs Testnet OKB. Click 'Gas Help' in the faucet modal.";
       }
       updateToast(toastId, {
         type: "error",
-        title: "Faucet Claim Notice",
+        title: "Faucet Notice",
         message: errorMsg
       });
     }
@@ -94,110 +87,89 @@ export default function FaucetButton({ signerAddress, onBalanceRefresh }) {
 
   return (
     <>
-      <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-        {/* Main 1-Click Faucet Button */}
+      <div style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+        {/* Compact +1,000 Faucet Button */}
         <button
           onClick={handleClaim}
           disabled={minting}
           title="Claim 1,000 Free Testnet USDC"
           style={{
-            background: "rgba(0, 240, 255, 0.08)",
-            border: "1px solid rgba(0, 240, 255, 0.25)",
-            color: "var(--glow-cyan)",
-            borderRadius: "6px",
-            padding: "6px 12px",
-            fontSize: "12px",
+            background: "rgba(57, 211, 83, 0.12)",
+            border: "1px solid rgba(57, 211, 83, 0.35)",
+            color: "#39d353",
+            borderRadius: "16px",
+            padding: "3px 8px",
+            fontSize: "11px",
             fontWeight: "700",
             cursor: minting ? "not-allowed" : "pointer",
             display: "inline-flex",
             alignItems: "center",
-            gap: "6px",
-            transition: "all 0.2s ease"
+            gap: "4px",
+            transition: "all 0.15s ease"
           }}
           onMouseOver={(e) => {
-            if (!minting) {
-              e.currentTarget.style.background = "rgba(0, 240, 255, 0.15)";
-              e.currentTarget.style.borderColor = "var(--glow-cyan)";
-            }
+            if (!minting) e.currentTarget.style.background = "rgba(57, 211, 83, 0.22)";
           }}
           onMouseOut={(e) => {
-            if (!minting) {
-              e.currentTarget.style.background = "rgba(0, 240, 255, 0.08)";
-              e.currentTarget.style.borderColor = "rgba(0, 240, 255, 0.25)";
-            }
+            if (!minting) e.currentTarget.style.background = "rgba(57, 211, 83, 0.12)";
           }}
         >
           {minting ? (
-            <>
-              <Loader2 size={13} className="animate-spin" />
-              <span>Claiming...</span>
-            </>
+            <Loader2 size={11} className="animate-spin" />
           ) : (
-            <>
-              <Droplet size={13} />
-              <span>+1,000 USDC Faucet</span>
-            </>
+            <Droplet size={11} />
           )}
+          <span>+ $1K</span>
         </button>
 
-        {/* OKB Gas Faucet Help Button */}
+        {/* Minimal Gas Info Button */}
         <button
           onClick={() => setShowModal(true)}
-          title="Need Testnet OKB Gas?"
+          title="Faucet & Gas Information"
           style={{
-            background: "#161b22",
-            border: "1px solid #30363d",
+            background: "transparent",
+            border: "none",
             color: "#8b949e",
-            borderRadius: "6px",
-            padding: "6px 8px",
-            fontSize: "11px",
-            fontWeight: "600",
             cursor: "pointer",
+            padding: "2px",
             display: "inline-flex",
-            alignItems: "center",
-            gap: "4px"
+            alignItems: "center"
           }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.color = "#f0f6fc";
-            e.currentTarget.style.borderColor = "#58a6ff";
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.color = "#8b949e";
-            e.currentTarget.style.borderColor = "#30363d";
-          }}
+          onMouseOver={(e) => e.currentTarget.style.color = "#38bdf8"}
+          onMouseOut={(e) => e.currentTarget.style.color = "#8b949e"}
         >
-          <Fuel size={12} color="#38bdf8" />
-          <span>OKB Gas</span>
+          <Fuel size={12} />
         </button>
       </div>
 
-      {/* OKB & USDC Faucets Modal */}
+      {/* Clean Faucets Modal */}
       {showModal && (
         <div style={{
           position: "fixed",
           inset: 0,
-          background: "rgba(0, 0, 0, 0.75)",
+          background: "rgba(0, 0, 0, 0.8)",
           backdropFilter: "blur(6px)",
           zIndex: 9999,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           padding: "20px"
-        }}>
+        }} onClick={() => setShowModal(false)}>
           <div style={{
             background: "#0d1117",
             border: "1px solid #30363d",
             borderRadius: "12px",
             padding: "24px",
-            maxWidth: "460px",
+            maxWidth: "440px",
             width: "100%",
-            boxShadow: "0 20px 40px rgba(0,0,0,0.8)"
-          }}>
+            boxShadow: "0 20px 40px rgba(0,0,0,0.8)",
+            color: "#f0f6fc"
+          }} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <Fuel size={20} color="var(--glow-cyan)" />
-                <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "700", color: "#f0f6fc" }}>
-                  X Layer Testnet Faucets
+                <Fuel size={18} color="#38bdf8" />
+                <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "700" }}>
+                  X Layer Testnet Tokens & Gas
                 </h3>
               </div>
               <button
@@ -208,11 +180,11 @@ export default function FaucetButton({ signerAddress, onBalanceRefresh }) {
               </button>
             </div>
 
-            <p style={{ fontSize: "13px", color: "#8b949e", lineHeight: "1.5", marginBottom: "20px" }}>
-              To trade and interact on X Layer Testnet, your wallet needs <strong>USDC</strong> (for placing bets) and a tiny amount of <strong>OKB</strong> (for transaction gas).
+            <p style={{ fontSize: "13px", color: "#8b949e", lineHeight: "1.5", marginBottom: "18px" }}>
+              You need <strong>USDC</strong> (for betting) and a fraction of testnet <strong>OKB</strong> (for gas).
             </p>
 
-            {/* Option 1: Gasless USDC + OKB Stipend */}
+            {/* Claim Gasless USDC */}
             <div style={{
               background: "#161b22",
               border: "1px solid #30363d",
@@ -220,26 +192,19 @@ export default function FaucetButton({ signerAddress, onBalanceRefresh }) {
               padding: "14px",
               marginBottom: "12px"
             }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                <div style={{ fontWeight: "700", fontSize: "13px", color: "#f0f6fc" }}>
-                  ⚡ Instant Gas-Sponsored Dispenser
-                </div>
-                <span style={{ fontSize: "10px", background: "rgba(57, 211, 83, 0.15)", color: "#39d353", padding: "2px 6px", borderRadius: "4px", fontWeight: "700" }}>
-                  RECOMMENDED
-                </span>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                <strong style={{ fontSize: "13px", color: "#39d353" }}>1-Click USDC Faucet</strong>
+                <span style={{ fontSize: "10px", color: "#8b949e" }}>Sponsored</span>
               </div>
-              <p style={{ fontSize: "12px", color: "#8b949e", margin: "0 0 12px 0" }}>
-                Mints 1,000 USDC directly to your address and grants an OKB gas stipend automatically. Zero gas needed from you!
+              <p style={{ fontSize: "12px", color: "#8b949e", margin: "0 0 10px 0" }}>
+                Instantly claims 1,000 Testnet USDC directly to your connected wallet.
               </p>
               <button
-                onClick={() => {
-                  setShowModal(false);
-                  handleClaim();
-                }}
+                onClick={() => { setShowModal(false); handleClaim(); }}
                 disabled={minting}
                 style={{
                   width: "100%",
-                  background: "#1f6feb",
+                  background: "#238636",
                   color: "#fff",
                   border: "none",
                   borderRadius: "6px",
@@ -249,83 +214,47 @@ export default function FaucetButton({ signerAddress, onBalanceRefresh }) {
                   cursor: "pointer"
                 }}
               >
-                Claim 1,000 USDC + Gas Stipend
+                Claim 1,000 USDC Now
               </button>
             </div>
 
-            {/* Option 2: Official OKX OKB Faucets */}
+            {/* Official OKX OKB Faucet */}
             <div style={{
               background: "#161b22",
               border: "1px solid #30363d",
               borderRadius: "8px",
               padding: "14px"
             }}>
-              <div style={{ fontWeight: "700", fontSize: "13px", color: "#f0f6fc", marginBottom: "6px" }}>
-                ⛽ Official OKX Testnet OKB Faucets
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                <strong style={{ fontSize: "13px", color: "#38bdf8" }}>Official OKX OKB Gas Faucet</strong>
+                <span style={{ fontSize: "10px", color: "#8b949e" }}>External</span>
               </div>
-              <p style={{ fontSize: "12px", color: "#8b949e", margin: "0 0 12px 0" }}>
-                Need more testnet OKB for advanced transactions or deploying smart contracts?
+              <p style={{ fontSize: "12px", color: "#8b949e", margin: "0 0 10px 0" }}>
+                Need OKB testnet gas? Claim directly from the official OKX Developer Faucet.
               </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <a
-                  href="https://www.okx.com/xlayer/faucet"
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "8px 12px",
-                    background: "#0d1117",
-                    border: "1px solid #30363d",
-                    borderRadius: "6px",
-                    color: "var(--glow-cyan)",
-                    fontSize: "12px",
-                    textDecoration: "none",
-                    fontWeight: "600"
-                  }}
-                >
-                  <span>OKX Official X Layer Faucet</span>
-                  <ExternalLink size={13} />
-                </a>
-
-                <a
-                  href="https://faucet.xlayer.tech/"
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "8px 12px",
-                    background: "#0d1117",
-                    border: "1px solid #30363d",
-                    borderRadius: "6px",
-                    color: "#58a6ff",
-                    fontSize: "12px",
-                    textDecoration: "none",
-                    fontWeight: "600"
-                  }}
-                >
-                  <span>X Layer Community Faucet</span>
-                  <ExternalLink size={13} />
-                </a>
-              </div>
-            </div>
-
-            <div style={{ marginTop: "16px", textAlign: "center" }}>
-              <button
-                onClick={() => setShowModal(false)}
+              <a
+                href="https://www.okx.com/xlayer/faucet"
+                target="_blank"
+                rel="noreferrer"
                 style={{
-                  background: "transparent",
-                  border: "none",
-                  color: "#8b949e",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                  width: "100%",
+                  background: "#21262d",
+                  color: "#58a6ff",
+                  border: "1px solid #30363d",
+                  borderRadius: "6px",
+                  padding: "8px",
                   fontSize: "12px",
-                  cursor: "pointer"
+                  fontWeight: "600",
+                  textDecoration: "none"
                 }}
               >
-                Close
-              </button>
+                <span>Open OKX Gas Faucet</span>
+                <ExternalLink size={13} />
+              </a>
             </div>
           </div>
         </div>

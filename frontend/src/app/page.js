@@ -251,160 +251,151 @@ export default function Home() {
 
   return (
     <>
-      {/* Top Navigation Bar (Polymarket Styled) */}
-      <nav className="top-nav" style={{ gap: '16px' }}>
-        {/* Brand Logo & Name */}
-        <div className="flex items-center gap-2.5" style={{ flexShrink: 0 }}>
-          <Logo size={28} />
-          <span className="font-bold text-lg tracking-tight text-white" style={{ letterSpacing: "-0.02em" }}>
+      {/* Top Navigation Bar (Clean Google/Linear Styled) */}
+      <nav className="top-nav" style={{ padding: '0.75rem 2rem' }}>
+        {/* Left: Brand Identity */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+          <Logo size={26} />
+          <span style={{ fontWeight: '800', fontSize: '16px', letterSpacing: '-0.02em', color: '#f0f6fc' }}>
             XOT MARKETS
           </span>
-          <span className="tech-tag" style={{ fontSize: '0.65rem', background: 'rgba(0, 240, 255, 0.08)' }}>
+          <span style={{
+            fontSize: '10px',
+            fontWeight: '700',
+            padding: '2px 8px',
+            borderRadius: '12px',
+            background: 'rgba(56, 189, 248, 0.1)',
+            border: '1px solid rgba(56, 189, 248, 0.25)',
+            color: '#38bdf8'
+          }}>
             X Layer
           </span>
         </div>
 
-        {/* Global Search Bar (Polymarket Style) */}
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          background: "#161b22",
-          border: "1px solid #30363d",
-          borderRadius: "8px",
-          padding: "6px 12px",
-          gap: "8px",
-          flex: "1",
-          maxWidth: "420px",
-          transition: "border-color 0.2s"
-        }}>
-          <Search size={14} color="#8b949e" />
-          <input
-            ref={searchInputRef}
-            type="text"
-            placeholder="Search markets, AI agents, metrics..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "#f0f6fc",
-              fontSize: "13px",
-              outline: "none",
-              width: "100%"
-            }}
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery("")}
-              style={{ background: "none", border: "none", color: "#8b949e", cursor: "pointer", fontSize: "11px", padding: 0 }}
-            >
-              ✕
-            </button>
-          )}
-          <span style={{
-            fontSize: "11px",
-            color: "#8b949e",
-            background: "#21262d",
-            border: "1px solid #30363d",
-            borderRadius: "4px",
-            padding: "1px 6px",
-            fontFamily: "monospace"
-          }}>
-            /
-          </span>
-        </div>
-        
-        <div className="nav-links hidden md:flex" style={{ marginLeft: "auto" }}>
-          <a href="#markets-section" className="nav-link active">Markets</a>
-          <button onClick={() => setShowAgentsModal(true)} className="nav-link" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>Agents</button>
+        {/* Center: Clean Navigation Links */}
+        <div className="hidden md:flex" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+          <a href="#markets-section" style={{ color: '#f0f6fc', fontWeight: '600', fontSize: '13px', textDecoration: 'none' }}>
+            Markets
+          </a>
+          <button 
+            onClick={() => setShowAgentsModal(true)} 
+            style={{ background: 'none', border: 'none', color: '#8b949e', fontWeight: '600', fontSize: '13px', cursor: 'pointer', padding: 0 }}
+            onMouseOver={(e) => e.currentTarget.style.color = '#f0f6fc'}
+            onMouseOut={(e) => e.currentTarget.style.color = '#8b949e'}
+          >
+            Agents Directory
+          </button>
           <button 
             onClick={() => {
               if (!isConnected) connectWallet();
               else setShowPortfolioModal(true);
             }} 
-            className="nav-link" 
-            style={{ 
-              background: 'none', 
-              border: 'none', 
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px',
-              color: 'var(--glow-cyan)'
-            }}
+            style={{ background: 'none', border: 'none', color: '#8b949e', fontWeight: '600', fontSize: '13px', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '4px' }}
+            onMouseOver={(e) => e.currentTarget.style.color = '#f0f6fc'}
+            onMouseOut={(e) => e.currentTarget.style.color = '#8b949e'}
           >
-            <Briefcase size={13} /> Portfolio
+            Portfolio
           </button>
-          <button onClick={() => setShowContractsModal(true)} className="nav-link" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>Contracts</button>
-          <button onClick={() => setShowDocsModal(true)} className="nav-link" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>Docs</button>
+          <button 
+            onClick={() => setShowDocsModal(true)} 
+            style={{ background: 'none', border: 'none', color: '#8b949e', fontWeight: '600', fontSize: '13px', cursor: 'pointer', padding: 0 }}
+            onMouseOver={(e) => e.currentTarget.style.color = '#f0f6fc'}
+            onMouseOut={(e) => e.currentTarget.style.color = '#8b949e'}
+          >
+            Docs & Contracts
+          </button>
         </div>
-        
-        <div className="flex items-center gap-3">
+
+        {/* Right: Unified Account Capsule */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {isConnected && address ? (
-            <div className="flex items-center gap-3">
-              {!isCorrectNetwork ? (
-                <button 
-                  onClick={switchToXLayer}
-                  className="flex items-center gap-1 text-xs px-3 py-1.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 hover:bg-amber-500/30 transition-all font-mono"
-                >
-                  <AlertTriangle size={13} /> Switch to X Layer
-                </button>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setShowPortfolioModal(true)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                      background: 'rgba(88, 166, 255, 0.12)',
-                      border: '1px solid rgba(88, 166, 255, 0.35)',
-                      borderRadius: '6px',
-                      padding: '5px 10px',
-                      color: '#58a6ff',
-                      fontSize: '12px',
-                      fontWeight: '700',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s'
-                    }}
-                    title="View your active shares and claim winnings"
-                  >
-                    <Briefcase size={13} />
-                    <span>My Positions</span>
-                  </button>
-
-                  <div className="flex items-center gap-2 font-mono text-sm border border-[var(--border-subtle)] px-3 py-1.5 rounded bg-[rgba(255,255,255,0.03)]">
-                    <span className="text-[var(--text-muted)] text-xs">USDC:</span>
-                    <span className="text-[var(--glow-green)] font-bold">${usdcBalance}</span>
-                  </div>
-                  <FaucetButton signerAddress={address} onBalanceRefresh={fetchBalance} />
+            !isCorrectNetwork ? (
+              <button 
+                onClick={switchToXLayer}
+                style={{
+                  background: 'rgba(245, 158, 11, 0.15)',
+                  color: '#fbbf24',
+                  border: '1px solid rgba(245, 158, 11, 0.35)',
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <AlertTriangle size={13} /> Switch to X Layer
+              </button>
+            ) : (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: '#161b22',
+                border: '1px solid #30363d',
+                borderRadius: '24px',
+                padding: '4px 6px 4px 12px'
+              }}>
+                {/* Balance */}
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', fontSize: '12px' }}>
+                  <span style={{ color: '#8b949e', fontSize: '10px', fontWeight: '700' }}>USDC</span>
+                  <span style={{ color: '#39d353', fontWeight: '800', fontFamily: 'monospace' }}>${usdcBalance}</span>
                 </div>
-              )}
-              
-              <div className="flex items-center gap-2 px-3 py-1 rounded bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.15)] font-mono text-xs text-white">
-                <span className="w-2 h-2 rounded-full bg-[var(--glow-green)] animate-pulse"></span>
-                {formatAddress(address)}
-              </div>
 
-              <button 
-                onClick={disconnectWallet}
-                title="Disconnect Wallet"
-                className="p-1.5 rounded hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-colors"
-              >
-                <LogOut size={16} />
-              </button>
-            </div>
+                {/* Compact Faucet Pill */}
+                <FaucetButton signerAddress={address} onBalanceRefresh={fetchBalance} />
+
+                {/* Vertical Divider */}
+                <div style={{ width: '1px', height: '14px', background: '#30363d' }} />
+
+                {/* Address & Green Network Dot */}
+                <div 
+                  onClick={() => setShowPortfolioModal(true)}
+                  title="Open Portfolio & Active Positions"
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#f0f6fc', fontWeight: '600', cursor: 'pointer', padding: '2px 4px' }}
+                >
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#39d353' }} />
+                  <span style={{ fontFamily: 'monospace' }}>{formatAddress(address)}</span>
+                </div>
+
+                {/* Disconnect Button */}
+                <button 
+                  onClick={disconnectWallet}
+                  title="Disconnect Wallet"
+                  style={{ background: 'none', border: 'none', color: '#8b949e', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }}
+                  onMouseOver={(e) => e.currentTarget.style.color = '#f85149'}
+                  onMouseOut={(e) => e.currentTarget.style.color = '#8b949e'}
+                >
+                  <LogOut size={13} />
+                </button>
+              </div>
+            )
           ) : (
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={connectWallet}
-                disabled={connecting}
-                className="btn-primary flex items-center gap-2 text-sm font-semibold"
-              >
-                <Wallet size={15} />
-                {connecting ? 'CONNECTING...' : 'CONNECT WALLET'}
-              </button>
-            </div>
+            <button 
+              onClick={connectWallet}
+              disabled={connecting}
+              style={{
+                background: '#f0f6fc',
+                color: '#0d1117',
+                border: 'none',
+                padding: '7px 16px',
+                borderRadius: '8px',
+                fontSize: '12px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.15s'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.background = '#ffffff'}
+              onMouseOut={(e) => e.currentTarget.style.background = '#f0f6fc'}
+            >
+              <Wallet size={14} />
+              <span>{connecting ? 'Connecting...' : 'Connect Wallet'}</span>
+            </button>
           )}
         </div>
       </nav>
@@ -432,169 +423,205 @@ export default function Home() {
         {/* Markets Workspace Section */}
         <section id="markets-section" className="mb-12">
           
-          {/* Main Category Tabs & Controls Bar */}
+          {/* Main Controls & Search Bar (Roomy Google Workspace Style) */}
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '12px',
-            marginBottom: '16px',
+            gap: '14px',
+            marginBottom: '20px',
             background: '#0d1117',
-            padding: '16px',
+            padding: '16px 20px',
             border: '1px solid #21262d',
-            borderRadius: '10px'
+            borderRadius: '12px'
           }}>
-            {/* Top Row: Category Pills & View Switcher */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+            {/* Top Bar: Search + Status Filters + Sort + View Switcher */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
               
-              {/* Clean Category Navigation Tabs */}
-              <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px' }}>
-                {categoryDefs.map((cat) => {
-                  const isSelected = selectedCategory === cat.id;
-                  const count = getCategoryCount(cat.id);
-                  return (
-                    <button
-                      key={cat.id}
-                      onClick={() => setSelectedCategory(cat.id)}
-                      style={{
-                        background: isSelected ? '#21262d' : '#161b22',
-                        color: isSelected ? '#58a6ff' : '#8b949e',
-                        border: isSelected ? '1px solid #58a6ff' : '1px solid #30363d',
-                        padding: '6px 14px',
-                        borderRadius: '20px',
-                        fontSize: '12px',
-                        fontWeight: '700',
-                        cursor: 'pointer',
-                        whiteSpace: 'nowrap',
-                        transition: 'all 0.15s',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px'
-                      }}
-                    >
-                      <span>{cat.label}</span>
-                      <span style={{
-                        background: isSelected ? 'rgba(88, 166, 255, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                        color: isSelected ? '#58a6ff' : '#8b949e',
-                        padding: '1px 6px',
-                        borderRadius: '10px',
-                        fontSize: '10px'
-                      }}>
-                        {count}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* View Switcher (Grid vs Table) */}
+              {/* Roomy Search Input */}
               <div style={{
                 display: 'flex',
+                alignItems: 'center',
                 background: '#161b22',
                 border: '1px solid #30363d',
-                borderRadius: '6px',
-                padding: '2px'
+                borderRadius: '8px',
+                padding: '8px 14px',
+                gap: '10px',
+                flex: '1',
+                maxWidth: '440px',
+                minWidth: '260px'
               }}>
-                <button
-                  onClick={() => setViewMode("GRID")}
+                <Search size={15} color="#8b949e" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Search 21 agents, market metrics, categories..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   style={{
-                    background: viewMode === "GRID" ? '#21262d' : 'transparent',
+                    background: 'transparent',
                     border: 'none',
-                    color: viewMode === "GRID" ? '#fff' : '#8b949e',
-                    padding: '5px 10px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    fontSize: '11px',
-                    fontWeight: '600'
+                    color: '#f0f6fc',
+                    fontSize: '13px',
+                    outline: 'none',
+                    width: '100%'
                   }}
-                  title="Card Grid View"
-                >
-                  <LayoutGrid size={13} /> Grid
-                </button>
-                <button
-                  onClick={() => setViewMode("TABLE")}
-                  style={{
-                    background: viewMode === "TABLE" ? '#21262d' : 'transparent',
-                    border: 'none',
-                    color: viewMode === "TABLE" ? '#fff' : '#8b949e',
-                    padding: '5px 10px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    fontSize: '11px',
-                    fontWeight: '600'
-                  }}
-                  title="Dense Table View"
-                >
-                  <List size={13} /> Table
-                </button>
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    style={{ background: 'none', border: 'none', color: '#8b949e', cursor: 'pointer', fontSize: '11px', padding: 0 }}
+                  >
+                    ✕
+                  </button>
+                )}
+                <span style={{
+                  fontSize: '11px',
+                  color: '#8b949e',
+                  background: '#21262d',
+                  border: '1px solid #30363d',
+                  borderRadius: '4px',
+                  padding: '1px 6px',
+                  fontFamily: 'monospace'
+                }}>
+                  /
+                </span>
+              </div>
+
+              {/* Status Tabs, Sort, and View Switcher */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                {/* Status Filter Tabs */}
+                <div style={{ display: 'flex', gap: '4px', background: '#161b22', padding: '3px', borderRadius: '8px', border: '1px solid #30363d' }}>
+                  {[
+                    { id: "ALL", label: `All (${markets.length})` },
+                    { id: "LIVE", label: `Live (${markets.filter(m => m.outcome === 0).length})` },
+                    { id: "RESOLVED", label: `Resolved (${markets.filter(m => m.outcome !== 0).length})` }
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setStatusFilter(tab.id)}
+                      style={{
+                        background: statusFilter === tab.id ? '#21262d' : 'transparent',
+                        border: 'none',
+                        color: statusFilter === tab.id ? '#58a6ff' : '#8b949e',
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s'
+                      }}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Sort Dropdown */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <ArrowUpDown size={13} color="#8b949e" />
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    style={{
+                      background: '#161b22',
+                      border: '1px solid #30363d',
+                      color: '#f0f6fc',
+                      borderRadius: '6px',
+                      padding: '5px 8px',
+                      fontSize: '12px',
+                      outline: 'none',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <option value="LIQUIDITY_DESC">Highest Pool</option>
+                    <option value="EXPIRY_ASC">Ending Soonest</option>
+                    <option value="ODDS_DESC">Highest YES Odds</option>
+                    <option value="ODDS_ASC">Lowest YES Odds</option>
+                  </select>
+                </div>
+
+                {/* View Switcher (Grid vs Table) */}
+                <div style={{ display: 'flex', background: '#161b22', border: '1px solid #30363d', borderRadius: '8px', padding: '3px', gap: '2px' }}>
+                  <button
+                    onClick={() => setViewMode("GRID")}
+                    style={{
+                      background: viewMode === "GRID" ? '#21262d' : 'transparent',
+                      border: 'none',
+                      color: viewMode === "GRID" ? '#58a6ff' : '#8b949e',
+                      padding: '5px 10px',
+                      borderRadius: '5px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '11px',
+                      fontWeight: '700'
+                    }}
+                    title="Card Grid View"
+                  >
+                    <LayoutGrid size={13} /> Grid
+                  </button>
+                  <button
+                    onClick={() => setViewMode("TABLE")}
+                    style={{
+                      background: viewMode === "TABLE" ? '#21262d' : 'transparent',
+                      border: 'none',
+                      color: viewMode === "TABLE" ? '#58a6ff' : '#8b949e',
+                      padding: '5px 10px',
+                      borderRadius: '5px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '11px',
+                      fontWeight: '700'
+                    }}
+                    title="Dense Table View"
+                  >
+                    <List size={13} /> Table
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Bottom Row: Status Tabs, Search, and Sort */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: '12px',
-              borderTop: '1px solid #21262d',
-              paddingTop: '12px'
-            }}>
-              
-              {/* Status Filter Tabs (All, Live, Resolved) */}
-              <div style={{ display: 'flex', gap: '8px' }}>
-                {[
-                  { id: "ALL", label: `All (${markets.length})` },
-                  { id: "LIVE", label: `Live (${markets.filter(m => m.outcome === 0).length})` },
-                  { id: "RESOLVED", label: `Resolved (${markets.filter(m => m.outcome !== 0).length})` }
-                ].map(tab => (
+            {/* Bottom Row: Category Navigation Pills */}
+            <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px', borderTop: '1px solid #21262d', paddingTop: '12px' }}>
+              {categoryDefs.map((cat) => {
+                const isSelected = selectedCategory === cat.id;
+                const count = getCategoryCount(cat.id);
+                return (
                   <button
-                    key={tab.id}
-                    onClick={() => setStatusFilter(tab.id)}
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(cat.id)}
                     style={{
-                      background: 'transparent',
-                      border: 'none',
-                      color: statusFilter === tab.id ? 'var(--glow-cyan)' : '#8b949e',
-                      borderBottom: statusFilter === tab.id ? '2px solid var(--glow-cyan)' : '2px solid transparent',
-                      padding: '4px 6px',
+                      background: isSelected ? '#21262d' : '#161b22',
+                      color: isSelected ? '#58a6ff' : '#8b949e',
+                      border: isSelected ? '1px solid #58a6ff' : '1px solid #30363d',
+                      padding: '5px 12px',
+                      borderRadius: '20px',
                       fontSize: '12px',
                       fontWeight: '600',
                       cursor: 'pointer',
-                      transition: 'all 0.15s'
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.15s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
                     }}
                   >
-                    {tab.label}
+                    <span>{cat.label}</span>
+                    <span style={{
+                      background: isSelected ? 'rgba(88, 166, 255, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                      color: isSelected ? '#58a6ff' : '#8b949e',
+                      padding: '1px 6px',
+                      borderRadius: '10px',
+                      fontSize: '10px'
+                    }}>
+                      {count}
+                    </span>
                   </button>
-                ))}
-              </div>
-
-              {/* Sort Dropdown */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <ArrowUpDown size={13} color="#8b949e" />
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  style={{
-                    background: '#161b22',
-                    border: '1px solid #30363d',
-                    color: '#f0f6fc',
-                    borderRadius: '6px',
-                    padding: '5px 8px',
-                    fontSize: '12px',
-                    outline: 'none',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <option value="LIQUIDITY_DESC" style={{ background: '#161b22' }}>Highest Liquidity</option>
-                  <option value="YES_DESC" style={{ background: '#161b22' }}>Highest YES Chance</option>
-                  <option value="NAME_ASC" style={{ background: '#161b22' }}>Agent Name (A-Z)</option>
-                </select>
-              </div>
+                );
+              })}
             </div>
           </div>
 
