@@ -351,6 +351,28 @@ export default function Home() {
                 </button>
               ) : (
                 <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowPortfolioModal(true)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      background: 'rgba(88, 166, 255, 0.12)',
+                      border: '1px solid rgba(88, 166, 255, 0.35)',
+                      borderRadius: '6px',
+                      padding: '5px 10px',
+                      color: '#58a6ff',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s'
+                    }}
+                    title="View your active shares and claim winnings"
+                  >
+                    <Briefcase size={13} />
+                    <span>My Positions</span>
+                  </button>
+
                   <div className="flex items-center gap-2 font-mono text-sm border border-[var(--border-subtle)] px-3 py-1.5 rounded bg-[rgba(255,255,255,0.03)]">
                     <span className="text-[var(--text-muted)] text-xs">USDC:</span>
                     <span className="text-[var(--glow-green)] font-bold">${usdcBalance}</span>
@@ -623,6 +645,7 @@ export default function Home() {
           onClose={() => setModalMarket(null)}
           signerAddress={isConnected ? address : null}
           usdcBalance={usdcBalance}
+          onTradeComplete={() => fetchBalance()}
         />
       )}
 

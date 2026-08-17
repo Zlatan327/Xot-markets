@@ -1,10 +1,29 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Clock, CheckCircle2, Info, ChevronDown, ChevronUp, ExternalLink, TrendingUp, TrendingDown, ArrowUpRight, Loader2, Sparkles } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { 
+  Clock, 
+  CheckCircle2, 
+  Info, 
+  ChevronDown, 
+  ChevronUp, 
+  ExternalLink, 
+  TrendingUp, 
+  TrendingDown, 
+  ArrowUpRight, 
+  Loader2, 
+  Sparkles,
+  Share2,
+  BarChart3,
+  ShieldCheck,
+  Award,
+  Wallet
+} from "lucide-react";
 import { getPublicProvider, getContracts } from "../lib/contracts";
 import { ethers } from "ethers";
 import { useWeb3 } from "../context/Web3Context";
 import { useToast } from "./Toast";
+import ProbabilityChart from "./ProbabilityChart";
+import ResolutionStepper from "./ResolutionStepper";
 
 export default function MarketCard({ market, signerAddress, onOpenResearch }) {
   const [approving, setApproving] = useState(false);
@@ -13,7 +32,8 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
   const [claiming, setClaiming] = useState(false);
   const [betAmount, setBetAmount] = useState("25");
   const [selectedSide, setSelectedSide] = useState("YES"); // YES or NO
-  const [showRules, setShowRules] = useState(false);
+  const [showChart, setShowChart] = useState(false);
+  const [showStepper, setShowStepper] = useState(false);
   
   // User position & eligibility state
   const [userPosition, setUserPosition] = useState({
@@ -24,7 +44,8 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
     pnl: 0,
     pnlPercent: 0,
     hasClaimed: false,
-    canClaim: false
+    canClaim: false,
+    isLoaded: false
   });
 
   const { signer, isConnected, connectWallet, isCorrectNetwork, switchToXLayer, address } = useWeb3();
@@ -51,69 +72,73 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
   const activePayout = selectedSide === "YES" ? estYesPayout : estNoPayout;
   const activeProfit = Math.max(0, activePayout - numBet);
   const activeRoi = numBet > 0 ? ((activeProfit / numBet) * 100).toFixed(1) : "0.0";
-  const estSharesReceived = selectedSide === "YES"
-    ? (yesProb > 0 ? (numBet / yesProb).toFixed(2) : numBet.toFixed(2))
-    : (noProb > 0 ? (numBet / noProb).toFixed(2) : numBet.toFixed(2));
 
-  // Live user position & PnL scanner
-  useEffect(() => {
-    const fetchPosition = async () => {
-      const activeUser = signerAddress || address;
-      if (!activeUser || !market.marketAddress) return;
+  // Dedicated position fetcher with instant execution & polling
+  const fetchPosition = useCallback(async () => {
+    const activeUser = signerAddress || address;
+    if (!activeUser || !market.marketAddress) {
+      setUserPosition(prev => ({ ...prev, isLoaded: false, yesShares: 0, noShares: 0 }));
+      return;
+    }
 
-      try {
-        const provider = getPublicProvider();
-        const { marketAbi } = await getContracts(provider);
-        const contract = new ethers.Contract(market.marketAddress, marketAbi, provider);
+    try {
+      const provider = getPublicProvider();
+      const { marketAbi } = await getContracts(provider);
+      const contract = new ethers.Contract(market.marketAddress, marketAbi, provider);
 
-        const [yesSharesBN, noSharesBN, claimed] = await Promise.all([
-          contract.yesShares(activeUser),
-          contract.noShares(activeUser),
-          contract.hasClaimed(activeUser)
-        ]);
+      const [yesSharesBN, noSharesBN, claimed] = await Promise.all([
+        contract.yesShares(activeUser),
+        contract.noShares(activeUser),
+        contract.hasClaimed(activeUser)
+      ]);
 
-        const yesShares = parseFloat(ethers.formatEther(yesSharesBN));
-        const noShares = parseFloat(ethers.formatEther(noSharesBN));
+      const yesShares = parseFloat(ethers.formatEther(yesSharesBN));
+      const noShares = parseFloat(ethers.formatEther(noSharesBN));
 
-        // Value based on live market probability
-        const currentValue = (yesShares * yesProb) + (noShares * noProb);
-        const costBasis = yesShares + noShares; // In pari-mutuel, 1 share initially cost 1 USDC proportional stake
-        const pnl = currentValue - costBasis;
-        const pnlPercent = costBasis > 0 ? ((pnl / costBasis) * 100) : 0;
+      // Value based on live market probability
+      const currentValue = (yesShares * yesProb) + (noShares * noProb);
+      const costBasis = yesShares + noShares;
+      const pnl = currentValue - costBasis;
+      const pnlPercent = costBasis > 0 ? ((pnl / costBasis) * 100) : 0;
 
-        let canClaim = false;
-        let estPayout = 0;
+      let canClaim = false;
+      let estPayout = 0;
 
-        if (market.outcome === 1 && yesShares > 0 && !claimed) {
-          canClaim = true;
-          estPayout = (yesShares * totalPool) / (market.poolYes || 1);
-        } else if (market.outcome === 2 && noShares > 0 && !claimed) {
-          canClaim = true;
-          estPayout = (noShares * totalPool) / (market.poolNo || 1);
-        } else if (market.outcome === 3 && !claimed) {
-          canClaim = true;
-          estPayout = yesShares + noShares;
-        } else if (market.outcome === 0) {
-          estPayout = (yesShares * (totalPool / (market.poolYes || 1))) + (noShares * (totalPool / (market.poolNo || 1)));
-        }
-
-        setUserPosition({
-          yesShares,
-          noShares,
-          currentValue,
-          estPayout,
-          pnl,
-          pnlPercent,
-          hasClaimed: claimed,
-          canClaim
-        });
-      } catch (e) {
-        console.error("Error fetching card position:", e);
+      if (market.outcome === 1 && yesShares > 0 && !claimed) {
+        canClaim = true;
+        estPayout = (yesShares * totalPool) / (market.poolYes || 1);
+      } else if (market.outcome === 2 && noShares > 0 && !claimed) {
+        canClaim = true;
+        estPayout = (noShares * totalPool) / (market.poolNo || 1);
+      } else if (market.outcome === 3 && !claimed) {
+        canClaim = true;
+        estPayout = yesShares + noShares;
+      } else if (market.outcome === 0) {
+        estPayout = (yesShares * (totalPool / (market.poolYes || 1))) + (noShares * (totalPool / (market.poolNo || 1)));
       }
-    };
 
-    fetchPosition();
+      setUserPosition({
+        yesShares,
+        noShares,
+        currentValue,
+        estPayout,
+        pnl,
+        pnlPercent,
+        hasClaimed: claimed,
+        canClaim,
+        isLoaded: true
+      });
+    } catch (e) {
+      console.error("Error fetching card position:", e);
+    }
   }, [signerAddress, address, market.marketAddress, market.outcome, market.poolYes, market.poolNo, totalPool, yesProb, noProb]);
+
+  // Run on mount, wallet change, and set up 6-second polling interval
+  useEffect(() => {
+    fetchPosition();
+    const interval = setInterval(fetchPosition, 6000);
+    return () => clearInterval(interval);
+  }, [fetchPosition]);
 
   const ensureWalletReady = async () => {
     if (!isConnected || !signer) {
@@ -226,13 +251,13 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
       updateToast(toastId, {
         type: "success",
         title: "Prediction Executed!",
-        message: `Successfully acquired ${isYes ? 'YES' : 'NO'} shares!`,
+        message: `Successfully acquired ${isYes ? 'YES' : 'NO'} shares! Positions updated.`,
         txHash: tx.hash,
         duration: 6000
       });
 
-      // Reload state after short delay
-      setTimeout(() => window.location.reload(), 1500);
+      // Instantly refresh user positions onchain without waiting
+      await fetchPosition();
     } catch (e) {
       console.error(e);
       updateToast(toastId, {
@@ -278,7 +303,7 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
         duration: 6000
       });
 
-      setTimeout(() => window.location.reload(), 1500);
+      await fetchPosition();
     } catch (e) {
       console.error(e);
       updateToast(toastId, {
@@ -290,8 +315,22 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
     setClaiming(false);
   };
 
+  const shareToTwitter = () => {
+    const agentName = agent.name || market.agentName || "AI Agent";
+    const oddsStr = `${yesPercent}% YES`;
+    const text = encodeURIComponent(
+      `I'm trading the @${agentName} AI prediction market on @XLayerOfficial!\n\n` +
+      `🎯 Question: "${agent.question || market.metric}"\n` +
+      `📊 Live Odds: ${oddsStr} (${yesPriceCents}¢)\n` +
+      `⚡ Powered by @XotMarkets #OKXAI #XLayer #AIAgents\n\n`
+    );
+    const url = `https://twitter.com/intent/tweet?text=${text}`;
+    window.open(url, "_blank");
+  };
+
   const agent = market.agentDetails || {};
   const hasUserPosition = userPosition.yesShares > 0 || userPosition.noShares > 0;
+  const isWalletActive = isConnected && (signerAddress || address);
 
   return (
     <div style={{
@@ -339,19 +378,43 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
             </div>
           </div>
 
-          <div style={{
-            fontSize: "11px",
-            padding: "3px 8px",
-            borderRadius: "12px",
-            background: market.outcome === 0 ? "rgba(57, 211, 83, 0.1)" : "rgba(255, 255, 255, 0.05)",
-            border: market.outcome === 0 ? "1px solid rgba(57, 211, 83, 0.3)" : "1px solid #30363d",
-            color: market.outcome === 0 ? "#39d353" : "#8b949e",
-            fontWeight: "600",
-            display: "flex",
-            alignItems: "center",
-            gap: "4px"
-          }}>
-            <Clock size={11} /> {market.expiresIn}
+          <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+            <button
+              onClick={shareToTwitter}
+              title="Share to X"
+              style={{
+                background: "#161b22",
+                border: "1px solid #30363d",
+                color: "#8b949e",
+                borderRadius: "8px",
+                padding: "4px 8px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+                fontSize: "11px",
+                transition: "color 0.15s"
+              }}
+              onMouseOver={(e) => e.currentTarget.style.color = "#58a6ff"}
+              onMouseOut={(e) => e.currentTarget.style.color = "#8b949e"}
+            >
+              <Share2 size={12} />
+            </button>
+
+            <div style={{
+              fontSize: "11px",
+              padding: "4px 8px",
+              borderRadius: "12px",
+              background: market.outcome === 0 ? "rgba(57, 211, 83, 0.1)" : "rgba(255, 255, 255, 0.05)",
+              border: market.outcome === 0 ? "1px solid rgba(57, 211, 83, 0.3)" : "1px solid #30363d",
+              color: market.outcome === 0 ? "#39d353" : "#8b949e",
+              fontWeight: "600",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px"
+            }}>
+              <Clock size={11} /> {market.expiresIn}
+            </div>
           </div>
         </div>
 
@@ -359,7 +422,7 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
         <h3
           onClick={() => onOpenResearch && onOpenResearch(market)}
           style={{
-            margin: "0 0 8px 0",
+            margin: "0 0 10px 0",
             fontSize: "15px",
             fontWeight: "600",
             lineHeight: "1.4",
@@ -376,7 +439,7 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
           borderRadius: "8px",
           border: "1px solid #21262d",
           padding: "12px",
-          marginBottom: "14px"
+          marginBottom: "12px"
         }}>
           {/* Chance Heading */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
@@ -423,38 +486,80 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
 
           {/* Volume & Research Link */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "8px", fontSize: "11px", color: "#8b949e" }}>
-            <span>Liquidity: <strong style={{ color: "#f0f6fc" }}>${totalPool.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</strong></span>
-            <button
-              onClick={() => onOpenResearch && onOpenResearch(market)}
-              style={{ background: "none", border: "none", color: "var(--glow-cyan)", cursor: "pointer", fontSize: "11px", fontWeight: "600", padding: 0 }}
-            >
-              🔬 Research Dossier →
-            </button>
+            <span>Pool: <strong style={{ color: "#f0f6fc" }}>${totalPool.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</strong></span>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button
+                onClick={() => setShowChart(!showChart)}
+                style={{ background: "none", border: "none", color: showChart ? "#58a6ff" : "#8b949e", cursor: "pointer", fontSize: "11px", fontWeight: "600", padding: 0, display: "flex", alignItems: "center", gap: "3px" }}
+              >
+                <BarChart3 size={11} /> {showChart ? "Hide Chart" : "Trend Chart"}
+              </button>
+              <button
+                onClick={() => onOpenResearch && onOpenResearch(market)}
+                style={{ background: "none", border: "none", color: "var(--glow-cyan)", cursor: "pointer", fontSize: "11px", fontWeight: "600", padding: 0 }}
+              >
+                Alpha Dossier →
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Live User Position Banner (if shares held) */}
-        {hasUserPosition && (
-          <div style={{
-            background: "rgba(57, 211, 83, 0.08)",
-            border: "1px solid rgba(57, 211, 83, 0.25)",
-            borderRadius: "8px",
-            padding: "10px 12px",
-            marginBottom: "14px",
-            fontSize: "12px"
-          }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-              <span style={{ color: "#8b949e" }}>Your Position:</span>
-              <strong style={{ color: "#f0f6fc" }}>
-                {userPosition.yesShares > 0 ? `${userPosition.yesShares.toFixed(1)} YES` : `${userPosition.noShares.toFixed(1)} NO`}
-              </strong>
+        {/* Collapsible Polymarket SVG Probability Chart */}
+        {showChart && (
+          <div style={{ marginBottom: "12px", animation: "fadeIn 0.2s ease-out" }}>
+            <ProbabilityChart currentYesProb={yesProb} marketId={market.marketAddress} height={120} />
+          </div>
+        )}
+
+        {/* ALWAYS-VISIBLE USER POSITION STATUS STRIP */}
+        {isWalletActive ? (
+          hasUserPosition ? (
+            <div style={{
+              background: "linear-gradient(135deg, rgba(57, 211, 83, 0.12) 0%, rgba(88, 166, 255, 0.08) 100%)",
+              border: "1px solid rgba(57, 211, 83, 0.35)",
+              borderRadius: "8px",
+              padding: "10px 12px",
+              marginBottom: "12px",
+              boxShadow: "0 0 15px rgba(57, 211, 83, 0.05)"
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                <span style={{ color: "#39d353", fontSize: "11px", fontWeight: "700", display: "flex", alignItems: "center", gap: "4px" }}>
+                  <Sparkles size={12} /> YOUR POSITION
+                </span>
+                <strong style={{ color: "#f0f6fc", fontSize: "13px" }}>
+                  {userPosition.yesShares > 0 ? `${userPosition.yesShares.toFixed(1)} YES` : `${userPosition.noShares.toFixed(1)} NO`}
+                </strong>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px" }}>
+                <span style={{ color: "#8b949e" }}>Current Value: <strong style={{ color: "#f0f6fc" }}>${userPosition.currentValue.toFixed(2)} USDC</strong></span>
+                <span style={{ color: userPosition.pnl >= 0 ? "#39d353" : "#f85149", fontWeight: "700" }}>
+                  {userPosition.pnl >= 0 ? "+" : ""}${userPosition.pnl.toFixed(2)} ({userPosition.pnlPercent.toFixed(1)}%)
+                </span>
+              </div>
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px" }}>
-              <span style={{ color: "#8b949e" }}>Est. Value: <strong style={{ color: "#39d353" }}>${userPosition.currentValue.toFixed(2)} USDC</strong></span>
-              <span style={{ color: userPosition.pnl >= 0 ? "#39d353" : "#f85149", fontWeight: "700" }}>
-                {userPosition.pnl >= 0 ? "+" : ""}${userPosition.pnl.toFixed(2)} ({userPosition.pnlPercent.toFixed(1)}%)
-              </span>
+          ) : (
+            <div style={{
+              background: "#161b22",
+              border: "1px dashed #30363d",
+              borderRadius: "8px",
+              padding: "6px 12px",
+              marginBottom: "12px",
+              fontSize: "11px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              color: "#8b949e"
+            }}>
+              <span>Your Position: <strong style={{ color: "#c9d1d9" }}>0 Shares</strong></span>
+              <span style={{ fontSize: "10px", color: "#58a6ff" }}>Select YES or NO below to enter</span>
             </div>
+          )
+        ) : null}
+
+        {/* Collapsible Oracle Resolution Stepper */}
+        {showStepper && (
+          <div style={{ marginBottom: "12px", animation: "fadeIn 0.2s ease-out" }}>
+            <ResolutionStepper outcome={market.outcome} expiresIn={market.expiresIn} />
           </div>
         )}
       </div>
@@ -477,7 +582,8 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
                   borderRadius: "6px",
                   fontWeight: "700",
                   fontSize: "12px",
-                  cursor: "pointer"
+                  cursor: "pointer",
+                  transition: "all 0.15s"
                 }}
               >
                 YES {yesPriceCents}¢
@@ -495,7 +601,8 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
                   borderRadius: "6px",
                   fontWeight: "700",
                   fontSize: "12px",
-                  cursor: "pointer"
+                  cursor: "pointer",
+                  transition: "all 0.15s"
                 }}
               >
                 NO {noPriceCents}¢
@@ -587,6 +694,16 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
                 }}
               >
                 {(selectedSide === "YES" ? buyingYes : buyingNo) ? "Executing..." : `2. Buy ${selectedSide}`}
+              </button>
+            </div>
+
+            {/* Stepper Toggle */}
+            <div style={{ textAlign: "center", marginTop: "2px" }}>
+              <button
+                onClick={() => setShowStepper(!showStepper)}
+                style={{ background: "none", border: "none", color: "#8b949e", cursor: "pointer", fontSize: "10px", textDecoration: "underline" }}
+              >
+                {showStepper ? "Hide Oracle Pipeline" : "View Oracle Resolution Pipeline"}
               </button>
             </div>
           </div>

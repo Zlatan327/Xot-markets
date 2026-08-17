@@ -1,8 +1,53 @@
 "use client";
-import React from 'react';
-import { ExternalLink, CheckCircle2, Clock, ArrowUpRight, TrendingUp, TrendingDown } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ExternalLink, CheckCircle2, Clock, ArrowUpRight, TrendingUp, TrendingDown, Sparkles } from 'lucide-react';
+import { getPublicProvider, getContracts } from "../lib/contracts";
+import { ethers } from "ethers";
 
 export default function MarketTable({ markets, onSelectMarket, onOpenResearch, signerAddress }) {
+  const [positionsMap, setPositionsMap] = useState({});
+
+  useEffect(() => {
+    if (!signerAddress || !markets || markets.length === 0) {
+      setPositionsMap({});
+      return;
+    }
+
+    const fetchAllPositions = async () => {
+      try {
+        const provider = getPublicProvider();
+        const { marketAbi } = await getContracts(provider);
+
+        const results = {};
+        await Promise.all(
+          markets.map(async (market) => {
+            try {
+              const contract = new ethers.Contract(market.marketAddress, marketAbi, provider);
+              const [yesBN, noBN] = await Promise.all([
+                contract.yesShares(signerAddress),
+                contract.noShares(signerAddress)
+              ]);
+              const yes = parseFloat(ethers.formatEther(yesBN));
+              const no = parseFloat(ethers.formatEther(noBN));
+              if (yes > 0 || no > 0) {
+                results[market.marketAddress] = { yes, no };
+              }
+            } catch (err) {
+              // ignore single market errors
+            }
+          })
+        );
+        setPositionsMap(results);
+      } catch (e) {
+        console.error("Error reading table positions:", e);
+      }
+    };
+
+    fetchAllPositions();
+    const interval = setInterval(fetchAllPositions, 8000);
+    return () => clearInterval(interval);
+  }, [signerAddress, markets]);
+
   return (
     <div style={{
       width: '100%',
@@ -31,6 +76,7 @@ export default function MarketTable({ markets, onSelectMarket, onOpenResearch, s
             <th style={{ padding: '12px 16px' }}>Proposition Market</th>
             <th style={{ padding: '12px 16px', textAlign: 'center' }}>Live Chance</th>
             <th style={{ padding: '12px 16px', textAlign: 'center' }}>Share Prices</th>
+            <th style={{ padding: '12px 16px', textAlign: 'center' }}>Your Position</th>
             <th style={{ padding: '12px 16px', textAlign: 'right' }}>Liquidity</th>
             <th style={{ padding: '12px 16px', textAlign: 'center' }}>Status</th>
             <th style={{ padding: '12px 16px', textAlign: 'right' }}>Action</th>
@@ -46,6 +92,7 @@ export default function MarketTable({ markets, onSelectMarket, onOpenResearch, s
             const noPercent = 100 - yesPercent;
             const yesPriceCents = (yesProb * 100).toFixed(0);
             const noPriceCents = (noProb * 100).toFixed(0);
+            const pos = positionsMap[market.marketAddress];
 
             return (
               <tr 
@@ -123,6 +170,28 @@ export default function MarketTable({ markets, onSelectMarket, onOpenResearch, s
                       NO {noPriceCents}¢
                     </span>
                   </div>
+                </td>
+
+                {/* Dedicated Your Position Column */}
+                <td style={{ padding: '14px 16px', textAlign: 'center', verticalAlign: 'middle' }}>
+                  {pos && (pos.yes > 0 || pos.no > 0) ? (
+                    <span style={{
+                      background: 'rgba(57, 211, 83, 0.12)',
+                      border: '1px solid rgba(57, 211, 83, 0.35)',
+                      color: '#39d353',
+                      padding: '4px 8px',
+                      borderRadius: '6px',
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <Sparkles size={11} /> {pos.yes > 0 ? `${pos.yes.toFixed(1)} YES` : `${pos.no.toFixed(1)} NO`}
+                    </span>
+                  ) : (
+                    <span style={{ color: '#484f58', fontSize: '12px' }}>—</span>
+                  )}
                 </td>
 
                 {/* TVL */}
