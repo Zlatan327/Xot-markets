@@ -21,7 +21,7 @@ contract Resolver {
     address public arbitrationCouncil;
 
     uint256 public constant CHALLENGE_WINDOW = 4 hours;
-    uint256 public constant MIN_CHALLENGE_BOND = 500 * 10**18; // 500 USDC (18 decimals)
+    uint256 public minChallengeBond;
 
     enum ResolutionState { PENDING, AUTO_RESOLVED, CHALLENGED, ARBITRATION, FINALIZED }
 
@@ -40,10 +40,11 @@ contract Resolver {
     event Challenged(address indexed market, address indexed challenger, uint256 bond);
     event Finalized(address indexed market, BinaryMarket.Outcome outcome);
 
-    constructor(address _registryAddress, address _reputationAddress, address _arbitrationCouncil) {
+    constructor(address _registryAddress, address _reputationAddress, address _arbitrationCouncil, uint256 _minChallengeBond) {
         registryAddress = _registryAddress;
         reputationAddress = _reputationAddress;
         arbitrationCouncil = _arbitrationCouncil;
+        minChallengeBond = _minChallengeBond;
     }
 
     // Layer 1: Auto-Resolution
@@ -66,18 +67,18 @@ contract Resolver {
                     outcome = BinaryMarket.Outcome.NO;
                 }
             } catch {
-                // If registry query fails, default to oracle threshold comparison
-                outcome = threshold > 0 ? BinaryMarket.Outcome.YES : BinaryMarket.Outcome.NO;
+                // If registry query fails, refund participants — never assume an outcome
+                outcome = BinaryMarket.Outcome.VOID;
             }
         } else if (metricType == 2) { // APY / Yield Metric (2)
             try IReputationEngine(reputationAddress).getReputationScore(targetAgent) returns (uint256 score) {
-                if (score >= threshold || score > 500) {
+                if (score >= threshold) {
                     outcome = BinaryMarket.Outcome.YES;
                 } else {
                     outcome = BinaryMarket.Outcome.NO;
                 }
             } catch {
-                outcome = BinaryMarket.Outcome.YES;
+                outcome = BinaryMarket.Outcome.VOID;
             }
         } else if (metricType == 3) { // Executions / Orders Metric (3)
             try IAgentRegistry(registryAddress).getAgentPaidVolume(targetAgent) returns (uint256 count) {
@@ -87,7 +88,7 @@ contract Resolver {
                     outcome = BinaryMarket.Outcome.NO;
                 }
             } catch {
-                outcome = BinaryMarket.Outcome.YES;
+                outcome = BinaryMarket.Outcome.VOID;
             }
         }
 
@@ -113,7 +114,7 @@ contract Resolver {
         
         uint256 totalPool = market.totalYesPool() + market.totalNoPool();
         uint256 calculatedBond = totalPool / 200; // 0.5%
-        uint256 bondAmount = calculatedBond > MIN_CHALLENGE_BOND ? calculatedBond : MIN_CHALLENGE_BOND;
+        uint256 bondAmount = calculatedBond > minChallengeBond ? calculatedBond : minChallengeBond;
 
         collateral.safeTransferFrom(msg.sender, address(this), bondAmount);
         lockedBonds[address(collateral)] += bondAmount;

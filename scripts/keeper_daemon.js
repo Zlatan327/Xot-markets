@@ -38,12 +38,20 @@ async function checkAndAutoSettleMarkets() {
   const currentBlock = await provider.getBlockNumber();
   console.log(`[Keeper] Current X Layer Block: ${currentBlock}`);
 
-  for (let i = 0; i < 50; i++) {
+  let count = 0;
+  try {
+    count = Number(await factory.getMarketCount());
+  } catch (err) {
+    console.error("[Keeper] Error reading market count:", err.message);
+    return;
+  }
+
+  for (let i = 0; i < count; i++) {
     let marketAddr;
     try {
       marketAddr = await factory.deployedMarkets(i);
     } catch {
-      break;
+      continue;
     }
 
     try {

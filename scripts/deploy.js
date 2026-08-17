@@ -14,7 +14,7 @@ async function main() {
   // 1. Deploy Mocks (For Testnet MVP)
   console.log("\n--- Deploying Mocks ---");
   const MockERC20 = await hre.ethers.getContractFactory("MockERC20");
-  const usdc = await MockERC20.deploy("Test USDC", "USDC");
+  const usdc = await MockERC20.deploy("Test USDC", "USDC", 18);
   await usdc.waitForDeployment();
   const usdcAddress = await usdc.getAddress();
   console.log("Mock USDC deployed to:", usdcAddress);
@@ -63,7 +63,8 @@ async function main() {
   const resolver = await Resolver.deploy(
     registryAddress,
     reputationAddress,
-    deployer.address // Arbitration Council
+    deployer.address, // Arbitration Council
+    hre.ethers.parseEther("500") // minChallengeBond: 500 tokens (18 decimals for testnet MockERC20)
   );
   await resolver.waitForDeployment();
   const resolverAddress = await resolver.getAddress();
@@ -81,13 +82,22 @@ async function main() {
 
   const mcpDir = path.join(__dirname, "../mcp-server");
   if (!fs.existsSync(mcpDir)) {
-    fs.mkdirSync(mcpDir);
+    fs.mkdirSync(mcpDir, { recursive: true });
   }
   fs.writeFileSync(
     path.join(mcpDir, "addresses.json"),
     JSON.stringify(addresses, null, 2)
   );
-  console.log("Addresses saved to mcp-server/addresses.json");
+
+  const frontendDir = path.join(__dirname, "../frontend/src/lib");
+  if (!fs.existsSync(frontendDir)) {
+    fs.mkdirSync(frontendDir, { recursive: true });
+  }
+  fs.writeFileSync(
+    path.join(frontendDir, "addresses.json"),
+    JSON.stringify({ ...addresses, markets: [] }, null, 2)
+  );
+  console.log("Addresses saved to mcp-server/addresses.json and frontend/src/lib/addresses.json");
 }
 
 main().catch((error) => {

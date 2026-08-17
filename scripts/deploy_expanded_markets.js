@@ -143,11 +143,11 @@ async function main() {
     await approveTx.wait();
 
     // Buy YES
-    const yesTx = await marketContract.buyShares(1, ethers.parseUnits(item.seedYes.toString(), 18));
+    const yesTx = await marketContract.buyShares(true, ethers.parseUnits(item.seedYes.toString(), 18));
     await yesTx.wait();
 
     // Buy NO
-    const noTx = await marketContract.buyShares(2, ethers.parseUnits(item.seedNo.toString(), 18));
+    const noTx = await marketContract.buyShares(false, ethers.parseUnits(item.seedNo.toString(), 18));
     await noTx.wait();
 
     console.log(`  Seeded $${item.seedYes} YES / $${item.seedNo} NO liquidity.`);

@@ -12,15 +12,14 @@ async function main() {
   const factory = new ethers.Contract(addresses.factory, factoryArtifact.abi, provider);
 
   const allMarkets = [];
-  let index = 0;
-  while (true) {
-    try {
-      const marketAddr = await factory.deployedMarkets(index);
+  try {
+    const count = Number(await factory.getMarketCount());
+    for (let i = 0; i < count; i++) {
+      const marketAddr = await factory.deployedMarkets(i);
       allMarkets.push(marketAddr);
-      index++;
-    } catch (e) {
-      break;
     }
+  } catch (e) {
+    console.error("Error fetching market count:", e.message);
   }
 
   console.log(`Found ${allMarkets.length} deployed markets on MarketFactory:`);

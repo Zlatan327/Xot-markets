@@ -37,6 +37,7 @@ contract BinaryMarket is ReentrancyGuard {
     event SharesBought(address indexed buyer, bool isYes, uint256 amount);
     event MarketResolved(Outcome outcome);
     event WinningsClaimed(address indexed user, uint256 amount);
+    event PayoutCapped(address indexed user, uint256 requested, uint256 available);
     event InvestedToAave(uint256 amount);
     event WithdrawnFromAave(uint256 amount);
     event YieldHarvested(uint256 amount);
@@ -134,6 +135,11 @@ contract BinaryMarket is ReentrancyGuard {
         hasClaimed[msg.sender] = true;
         
         if (payout > 0) {
+            uint256 available = collateralToken.balanceOf(address(this));
+            if (payout > available) {
+                emit PayoutCapped(msg.sender, payout, available);
+                payout = available;
+            }
             collateralToken.safeTransfer(msg.sender, payout);
             emit WinningsClaimed(msg.sender, payout);
         }

@@ -74,7 +74,13 @@ export default function Home() {
       const { factory, marketAbi } = await getContracts(provider);
       
       const liveMarkets = [];
-      for (let i = 0; i < 50; i++) {
+      let marketCount;
+      try {
+        marketCount = Number(await factory.getMarketCount());
+      } catch {
+        marketCount = 0;
+      }
+      for (let i = 0; i < marketCount; i++) {
         try {
           const marketAddress = await factory.deployedMarkets(i);
           const marketContract = new ethers.Contract(marketAddress, marketAbi, provider);
@@ -103,7 +109,8 @@ export default function Home() {
             expiresIn: Number(outcome) === 0 ? "Live" : "Resolved"
           });
         } catch (e) {
-          break;
+          // Skip individual market fetch errors (transient RPC failures)
+          continue;
         }
       }
       setMarkets(liveMarkets);
