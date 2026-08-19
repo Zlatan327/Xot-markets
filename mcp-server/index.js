@@ -106,13 +106,26 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "trade",
-        description: "Buys YES or NO shares in a market. Requires USDC.",
+        description: "Buys YES or NO shares in a specific prediction market using USDC.",
         inputSchema: {
           type: "object",
           properties: {
             marketAddress: { type: "string" },
-            isYes: { type: "boolean" },
-            amountEther: { type: "string" }
+            isYes: { type: "boolean", description: "true for YES, false for NO" },
+            amountEther: { type: "string", description: "Amount of USDC to bet (e.g. '10.5')" }
+          },
+          required: ["marketAddress", "isYes", "amountEther"]
+        }
+      },
+      {
+        name: "sell_shares",
+        description: "Sells YES or NO shares back to the market.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            marketAddress: { type: "string" },
+            isYes: { type: "boolean", description: "true to sell YES shares, false to sell NO shares" },
+            amountEther: { type: "string", description: "Amount of shares to sell (e.g. '10.5')" }
           },
           required: ["marketAddress", "isYes", "amountEther"]
         }
@@ -216,6 +229,23 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const tx = await market.buyShares(request.params.arguments.isYes, amount);
         const receipt = await tx.wait();
         return { content: [{ type: "text", text: `Trade executed. Tx: ${receipt.hash}` }] };
+      } catch (e) {
+        return { content: [{ type: "text", text: `Error: ${e.message}` }] };
+      }
+    }
+
+    case "sell_shares": {
+      const funding = await checkWalletFunding();
+      if (!funding.hasFunds) {
+        return { content: [{ type: "text", text: `Error: Agent wallet ${wallet.address} has 0 OKB for gas. Please fund it first. Balances: ${funding.okb} OKB, ${funding.usdc} USDC` }] };
+      }
+      const market = new ethers.Contract(request.params.arguments.marketAddress, getAbi("BinaryMarket"), wallet);
+      const amount = ethers.parseEther(request.params.arguments.amountEther);
+      
+      try {
+        const tx = await market.sellShares(request.params.arguments.isYes, amount);
+        const receipt = await tx.wait();
+        return { content: [{ type: "text", text: `Sell executed. Tx: ${receipt.hash}` }] };
       } catch (e) {
         return { content: [{ type: "text", text: `Error: ${e.message}` }] };
       }

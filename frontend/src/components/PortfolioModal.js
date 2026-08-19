@@ -344,7 +344,7 @@ export default function PortfolioModal({ markets, signerAddress, onClose, onSele
                           gap: "4px"
                         }}
                       >
-                        Trade More <ArrowUpRight size={13} />
+                        Manage / Trade <ArrowUpRight size={13} />
                       </button>
                     )}
                   </div>

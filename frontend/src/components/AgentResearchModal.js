@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { ethers } from "ethers";
 import ProbabilityChart from "./ProbabilityChart";
 import ResolutionStepper from "./ResolutionStepper";
+import LiveAgentReasoningFeed from "./LiveAgentReasoningFeed";
 import { ExternalLink, CheckCircle2, ShieldCheck, Activity, Share2 } from "lucide-react";
 
 export default function AgentResearchModal({ market, agentData, onClose, onTradeClick }) {
@@ -128,7 +129,8 @@ export default function AgentResearchModal({ market, agentData, onClose, onTrade
         <div style={{ display: "flex", gap: "8px", borderBottom: "1px solid #21262d", marginBottom: "24px", paddingBottom: "12px", overflowX: "auto" }}>
           {[
             { id: "METRICS", label: "📊 Proven Track Record & Charts" },
-            { id: "STRATEGY", label: "🧠 Strategy & Intelligence Thesis" },
+            { id: "LIVE_REASONING", label: "🧠 Live AI Execution Feed" },
+            { id: "STRATEGY", label: "⚙️ Strategy & Intelligence Thesis" },
             { id: "VOLUME_BREAKDOWN", label: "📈 Venue Execution Depth" },
             { id: "ONCHAIN", label: "🔗 Resolution & Oracle Specs" }
           ].map(tab => (
@@ -158,27 +160,27 @@ export default function AgentResearchModal({ market, agentData, onClose, onTrade
           <div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px", marginBottom: "20px" }}>
               <div style={{ background: "#161b22", padding: "16px", borderRadius: "10px", border: "1px solid #21262d" }}>
-                <div style={{ fontSize: "11px", color: "#8b949e", textTransform: "uppercase", fontWeight: "600" }}>All-Time Incurred Volume</div>
+                <div style={{ fontSize: "11px", color: "#8b949e", textTransform: "uppercase", fontWeight: "600" }}>Current Market Liquidity</div>
                 <div style={{ fontSize: "22px", fontWeight: "700", color: "#39d353", marginTop: "4px" }}>
-                  {agentData.research?.allTimeVolume || "$48,250,000"}
+                  ${totalPool.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                 </div>
-                <div style={{ fontSize: "11px", color: "#8b949e", marginTop: "4px" }}>Across OKX DEX & X Layer</div>
+                <div style={{ fontSize: "11px", color: "#8b949e", marginTop: "4px" }}>Total Staked on X Layer</div>
               </div>
 
               <div style={{ background: "#161b22", padding: "16px", borderRadius: "10px", border: "1px solid #21262d" }}>
-                <div style={{ fontSize: "11px", color: "#8b949e", textTransform: "uppercase", fontWeight: "600" }}>Execution Win Rate</div>
+                <div style={{ fontSize: "11px", color: "#8b949e", textTransform: "uppercase", fontWeight: "600" }}>Market Consensus (YES)</div>
                 <div style={{ fontSize: "22px", fontWeight: "700", color: "#58a6ff", marginTop: "4px" }}>
-                  {agentData.research?.winRate || "94.8%"}
+                  {yesPercent}%
                 </div>
-                <div style={{ fontSize: "11px", color: "#8b949e", marginTop: "4px" }}>{agentData.research?.totalExecutions || "19,430 fills"}</div>
+                <div style={{ fontSize: "11px", color: "#8b949e", marginTop: "4px" }}>Based on Live AMM Depth</div>
               </div>
 
               <div style={{ background: "#161b22", padding: "16px", borderRadius: "10px", border: "1px solid #21262d" }}>
-                <div style={{ fontSize: "11px", color: "#8b949e", textTransform: "uppercase", fontWeight: "600" }}>Net Profit Generated</div>
+                <div style={{ fontSize: "11px", color: "#8b949e", textTransform: "uppercase", fontWeight: "600" }}>Expected Value (YES)</div>
                 <div style={{ fontSize: "22px", fontWeight: "700", color: "#39d353", marginTop: "4px" }}>
-                  {agentData.research?.netProfit || "+$1,420,000"}
+                  {totalPool > 0 ? (yesProb > 0.5 ? "+" : "") + ((yesProb - 0.5) * 100).toFixed(1) + "%" : "0.0%"}
                 </div>
-                <div style={{ fontSize: "11px", color: "#8b949e", marginTop: "4px" }}>Sharpe Ratio: {agentData.research?.sharpeRatio || "3.84"}</div>
+                <div style={{ fontSize: "11px", color: "#8b949e", marginTop: "4px" }}>Implied Return Edge</div>
               </div>
 
               <div style={{ background: "#161b22", padding: "16px", borderRadius: "10px", border: "1px solid #21262d" }}>
@@ -196,6 +198,19 @@ export default function AgentResearchModal({ market, agentData, onClose, onTrade
                 📈 Real-Time Probability Price Action & Momentum
               </div>
               <ProbabilityChart currentYesProb={yesProb} marketId={market.marketAddress} height={160} />
+            </div>
+          </div>
+        )}
+
+        {/* Tab 1.5: LIVE REASONING */}
+        {activeTab === "LIVE_REASONING" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div style={{ background: "#161b22", padding: "20px", borderRadius: "12px", border: "1px solid #21262d" }}>
+              <h4 style={{ margin: "0 0 12px 0", fontSize: "14px", color: "#39d353" }}>🤖 Autonomous Trading Feed (Real-Time EV Calc)</h4>
+              <p style={{ margin: "0 0 16px 0", fontSize: "13px", color: "#8b949e", lineHeight: "1.5" }}>
+                Live evaluation logic generated by the agent while optimizing its portfolio position against this prediction market based on on-chain state.
+              </p>
+              <LiveAgentReasoningFeed agentName={agentData.name} marketAddress={market.marketAddress} />
             </div>
           </div>
         )}

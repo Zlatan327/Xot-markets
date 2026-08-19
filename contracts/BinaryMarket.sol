@@ -24,8 +24,12 @@ contract BinaryMarket is ReentrancyGuard {
     
     Outcome public finalOutcome = Outcome.PENDING;
     
+    uint256 public createdBlock;
+    
     uint256 public totalYesPool;
     uint256 public totalNoPool;
+    uint256 public totalYesShares;
+    uint256 public totalNoShares;
     
     mapping(address => uint256) public yesShares;
     mapping(address => uint256) public noShares;
@@ -34,7 +38,8 @@ contract BinaryMarket is ReentrancyGuard {
     uint256 public constant FEE_PERCENT = 150; // 1.5% fee
     uint256 public constant FEE_DENOMINATOR = 10000;
     
-    event SharesBought(address indexed buyer, bool isYes, uint256 amount);
+    event SharesBought(address indexed buyer, bool isYes, uint256 amount, uint256 sharesMinted);
+    event SharesSold(address indexed seller, bool isYes, uint256 sharesSold, uint256 payout);
     event MarketResolved(Outcome outcome);
     event WinningsClaimed(address indexed user, uint256 amount);
     event PayoutCapped(address indexed user, uint256 requested, uint256 available);
@@ -71,6 +76,17 @@ contract BinaryMarket is ReentrancyGuard {
         resolver = _resolver;
         aavePool = IAavePool(_aavePool);
         yieldRouter = _yieldRouter;
+        createdBlock = block.number;
+    }
+
+    function _getTimeMultiplier() internal view returns (uint256) {
+        if (block.number >= expiryBlock) return 100; // 1.0x at expiry
+        uint256 blocksLeft = expiryBlock - block.number;
+        uint256 totalDuration = expiryBlock - createdBlock;
+        if (totalDuration == 0) return 100;
+        // Linear: 1.5x at creation -> 1.0x at expiry
+        // Early bettors get up to 50% more shares per dollar
+        return 100 + ((blocksLeft * 50) / totalDuration);
     }
 
     function buyShares(bool isYes, uint256 amount) external nonReentrant {
@@ -81,23 +97,61 @@ contract BinaryMarket is ReentrancyGuard {
         collateralToken.safeTransferFrom(msg.sender, address(this), amount);
 
         // Deduct 1.5% fee on entry
-        // NOTE: Multiplying by FEE_PERCENT before dividing by FEE_DENOMINATOR 
-        // ensures this math is safe and agnostic to token decimals (e.g. 6-decimal USDC).
         uint256 fee = (amount * FEE_PERCENT) / FEE_DENOMINATOR;
         uint256 netAmount = amount - fee;
+        
+        // Calculate shares using time multiplier
+        uint256 multiplier = _getTimeMultiplier();
+        uint256 shares = (netAmount * multiplier) / 100;
         
         // Route fee to factory/treasury
         collateralToken.safeTransfer(factory, fee);
 
         if (isYes) {
-            yesShares[msg.sender] += netAmount;
+            yesShares[msg.sender] += shares;
+            totalYesShares += shares;
             totalYesPool += netAmount;
         } else {
-            noShares[msg.sender] += netAmount;
+            noShares[msg.sender] += shares;
+            totalNoShares += shares;
             totalNoPool += netAmount;
         }
 
-        emit SharesBought(msg.sender, isYes, netAmount);
+        emit SharesBought(msg.sender, isYes, netAmount, shares);
+    }
+
+    function sellShares(bool isYes, uint256 shareAmount) external nonReentrant {
+        require(finalOutcome == Outcome.PENDING, "Market is already resolved");
+        require(shareAmount > 0, "Amount must be greater than 0");
+        
+        uint256 userShares = isYes ? yesShares[msg.sender] : noShares[msg.sender];
+        require(userShares >= shareAmount, "Insufficient shares");
+        
+        uint256 totalShares = isYes ? totalYesShares : totalNoShares;
+        uint256 pool = isYes ? totalYesPool : totalNoPool;
+        
+        // Proportional value of the shares being sold
+        uint256 rawPayout = (shareAmount * pool) / totalShares;
+        
+        // 2% exit spread (to treasury)
+        uint256 exitFee = (rawPayout * 200) / 10000;
+        uint256 payout = rawPayout - exitFee;
+        
+        if (isYes) {
+            yesShares[msg.sender] -= shareAmount;
+            totalYesShares -= shareAmount;
+            totalYesPool -= rawPayout;
+        } else {
+            noShares[msg.sender] -= shareAmount;
+            totalNoShares -= shareAmount;
+            totalNoPool -= rawPayout;
+        }
+        
+        // Route fee to factory/treasury
+        collateralToken.safeTransfer(factory, exitFee);
+        collateralToken.safeTransfer(msg.sender, payout);
+        
+        emit SharesSold(msg.sender, isYes, shareAmount, payout);
     }
 
     function resolveMarket(Outcome _outcome) external onlyResolver {
@@ -114,21 +168,24 @@ contract BinaryMarket is ReentrancyGuard {
         uint256 payout = 0;
         
         if (finalOutcome == Outcome.VOID) {
-            // Refund minus fees already taken
-            payout = yesShares[msg.sender] + noShares[msg.sender];
+            // Refund proportionally based on pool sizes
+            if (yesShares[msg.sender] > 0 && totalYesShares > 0) {
+                payout += (yesShares[msg.sender] * totalYesPool) / totalYesShares;
+            }
+            if (noShares[msg.sender] > 0 && totalNoShares > 0) {
+                payout += (noShares[msg.sender] * totalNoPool) / totalNoShares;
+            }
         } else if (finalOutcome == Outcome.YES) {
             uint256 userShares = yesShares[msg.sender];
-            if (userShares > 0 && totalYesPool > 0) {
-                // Pari-mutuel payout calculation
+            if (userShares > 0 && totalYesShares > 0) {
                 uint256 totalPool = totalYesPool + totalNoPool;
-                payout = (userShares * totalPool) / totalYesPool;
+                payout = (userShares * totalPool) / totalYesShares;
             }
         } else if (finalOutcome == Outcome.NO) {
             uint256 userShares = noShares[msg.sender];
-            if (userShares > 0 && totalNoPool > 0) {
-                // Pari-mutuel payout calculation
+            if (userShares > 0 && totalNoShares > 0) {
                 uint256 totalPool = totalYesPool + totalNoPool;
-                payout = (userShares * totalPool) / totalNoPool;
+                payout = (userShares * totalPool) / totalNoShares;
             }
         }
 

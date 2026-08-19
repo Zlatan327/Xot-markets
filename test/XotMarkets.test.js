@@ -649,7 +649,8 @@ describe("Xot Markets Protocol", function () {
       const net = amount - fee;
 
       expect(await market6.totalYesPool()).to.equal(net);
-      expect(await market6.yesShares(addr1.address)).to.equal(net);
+      const shares = await market6.yesShares(addr1.address);
+      expect(shares).to.be.gte(net); // Time-weighted shares multiplier
     });
 
     it("Should allow challenge with 6-decimal bond amount", async function () {

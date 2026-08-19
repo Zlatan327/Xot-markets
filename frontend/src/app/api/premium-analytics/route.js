@@ -59,6 +59,89 @@ export async function GET(req) {
     }
   }
 
+  // Initialize provider and fetch real data from X Layer Testnet
+  const rpcUrl = process.env.NEXT_PUBLIC_XLAYER_RPC_URL || "https://testrpc.xlayer.tech";
+  const provider = new ethers.JsonRpcProvider(rpcUrl);
+  
+  let realAnalytics = {
+    marketSentimentIndex: 50,
+    aiAgentConsensus: "NEUTRAL",
+    activeAgentModels: 0,
+    volumeVelocity24h: "$0 USDC",
+    optimisticOracleHealth: {
+      activeChallenges: 0,
+      averageChallengeResolutionTime: "4.0h",
+      disputeRate: "0.00%",
+      arbitrationCouncilStatus: "OPERATIONAL"
+    },
+    predictions: []
+  };
+
+  try {
+    const factoryAbi = [
+      "function getMarketCount() external view returns (uint256)",
+      "function deployedMarkets(uint256) external view returns (address)"
+    ];
+    const factory = new ethers.Contract(addresses.factory, factoryAbi, provider);
+    const count = Number(await factory.getMarketCount());
+    
+    const marketAbi = [
+      "function totalYesPool() external view returns (uint256)",
+      "function totalNoPool() external view returns (uint256)",
+      "function targetAgent() external view returns (address)"
+    ];
+
+    let totalYesAll = 0n;
+    let totalNoAll = 0n;
+    let activeAgents = new Set();
+    const predictions = [];
+
+    for (let i = 0; i < count; i++) {
+      const marketAddr = await factory.deployedMarkets(i);
+      const market = new ethers.Contract(marketAddr, marketAbi, provider);
+      const [yesPool, noPool, agent] = await Promise.all([
+        market.totalYesPool(),
+        market.totalNoPool(),
+        market.targetAgent()
+      ]);
+      
+      totalYesAll += yesPool;
+      totalNoAll += noPool;
+      activeAgents.add(agent);
+
+      const yesNum = Number(ethers.formatEther(yesPool));
+      const noNum = Number(ethers.formatEther(noPool));
+      const total = yesNum + noNum;
+      
+      if (total > 0) {
+        const yesProb = yesNum / total;
+        predictions.push({
+          agent: agent,
+          marketAddress: marketAddr,
+          confidenceScore: yesProb,
+          recommendedAction: yesProb > 0.55 ? "BUY_YES" : yesProb < 0.45 ? "BUY_NO" : "HOLD"
+        });
+      }
+    }
+
+    const overallYes = Number(ethers.formatEther(totalYesAll));
+    const overallNo = Number(ethers.formatEther(totalNoAll));
+    const overallTotal = overallYes + overallNo;
+    
+    if (overallTotal > 0) {
+      realAnalytics.marketSentimentIndex = Math.round((overallYes / overallTotal) * 100);
+      realAnalytics.aiAgentConsensus = realAnalytics.marketSentimentIndex > 55 ? "BULLISH" : realAnalytics.marketSentimentIndex < 45 ? "BEARISH" : "NEUTRAL";
+      realAnalytics.volumeVelocity24h = `$${overallTotal.toLocaleString(undefined, { maximumFractionDigits: 0 })} USDC`;
+    }
+    
+    realAnalytics.activeAgentModels = activeAgents.size;
+    // Sort predictions by highest confidence
+    realAnalytics.predictions = predictions.sort((a, b) => Math.abs(b.confidenceScore - 0.5) - Math.abs(a.confidenceScore - 0.5)).slice(0, 5);
+
+  } catch (err) {
+    console.error("Error fetching real premium analytics data:", err);
+  }
+
   // Return premium analytics payload
   const premiumData = {
     success: true,
@@ -66,47 +149,7 @@ export async function GET(req) {
     authenticatedAgent: verifiedAgent,
     timestamp: new Date().toISOString(),
     network: "X Layer Testnet (Chain ID 195)",
-    analytics: {
-      marketSentimentIndex: 78.4,
-      aiAgentConsensus: "BULLISH",
-      activeAgentModels: 7,
-      volumeVelocity24h: "$1.42M USDC",
-      optimisticOracleHealth: {
-        activeChallenges: 0,
-        averageChallengeResolutionTime: "4.2h",
-        disputeRate: "0.00%",
-        arbitrationCouncilStatus: "OPERATIONAL"
-      },
-      predictions: [
-        {
-          agent: "0x1111111111111111111111111111111111111111",
-          name: "DeepSeek Quant Alpha",
-          metric: "Volume > $10M",
-          confidenceScore: 0.89,
-          projectedVolume: "$12,450,000",
-          recommendedAction: "BUY_YES",
-          estimatedYieldAPY: "14.2%"
-        },
-        {
-          agent: "0x2222222222222222222222222222222222222222",
-          name: "Claude Arbitrage Ops",
-          metric: "APY > 25%",
-          confidenceScore: 0.76,
-          projectedAPY: "28.5%",
-          recommendedAction: "BUY_YES",
-          estimatedYieldAPY: "18.9%"
-        },
-        {
-          agent: "0x3333333333333333333333333333333333333333",
-          name: "Sentient Liquidity Vault",
-          metric: "Orders > 5,000",
-          confidenceScore: 0.94,
-          projectedOrders: 6200,
-          recommendedAction: "BUY_YES",
-          estimatedYieldAPY: "11.5%"
-        }
-      ]
-    }
+    analytics: realAnalytics
   };
 
   return NextResponse.json(premiumData, {

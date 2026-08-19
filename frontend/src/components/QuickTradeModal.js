@@ -9,6 +9,7 @@ import { useToast } from './Toast';
 export default function QuickTradeModal({ market, onClose, signerAddress, usdcBalance, onTradeComplete }) {
   const [betAmount, setBetAmount] = useState("25");
   const [selectedSide, setSelectedSide] = useState(true); // true = YES, false = NO
+  const [tradeMode, setTradeMode] = useState("BUY"); // "BUY" | "SELL"
   const [approving, setApproving] = useState(false);
   const [trading, setTrading] = useState(false);
   const [userHoldings, setUserHoldings] = useState({ yesShares: 0, noShares: 0 });
@@ -191,6 +192,68 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
     setTrading(false);
   };
 
+  const sellShares = async () => {
+    const ready = await ensureWalletReady();
+    if (!ready || !signer) return;
+
+    setTrading(true);
+    const toastId = addToast({
+      type: "loading",
+      title: `Selling ${selectedSide ? 'YES' : 'NO'} Shares...`,
+      message: `Executing sell order on X Layer.`,
+      duration: 0
+    });
+
+    try {
+      const { marketAbi } = await getContracts(signer);
+      const marketContract = new ethers.Contract(market.marketAddress, marketAbi, signer);
+      const amount = ethers.parseUnits(betAmount.toString() || "0", 18);
+      if (amount <= 0n) {
+        updateToast(toastId, {
+          type: "error",
+          title: "Invalid Amount",
+          message: "Please enter a valid amount of shares to sell."
+        });
+        setTrading(false);
+        return;
+      }
+      
+      const tx = await marketContract.sellShares(selectedSide, amount);
+      updateToast(toastId, {
+        type: "loading",
+        title: "Sell Order Submitted",
+        message: "Confirming on X Layer Testnet...",
+        txHash: tx.hash,
+        duration: 0
+      });
+
+      await tx.wait();
+      updateToast(toastId, {
+        type: "success",
+        title: "Shares Sold Successfully!",
+        message: `Exited ${selectedSide ? 'YES' : 'NO'} position. USDC returned to wallet.`,
+        txHash: tx.hash,
+        duration: 6000
+      });
+
+      // Update local holdings immediately
+      setUserHoldings(prev => ({
+        yesShares: selectedSide ? Math.max(0, prev.yesShares - parseFloat(betAmount)) : prev.yesShares,
+        noShares: !selectedSide ? Math.max(0, prev.noShares - parseFloat(betAmount)) : prev.noShares
+      }));
+
+      if (onTradeComplete) onTradeComplete();
+    } catch (e) {
+      console.error(e);
+      updateToast(toastId, {
+        type: "error",
+        title: "Sell Failed",
+        message: e.reason || e.message || "Transaction failed."
+      });
+    }
+    setTrading(false);
+  };
+
   const shareToTwitter = () => {
     const agentName = agent.name || market.agentName || "AI Agent";
     const text = encodeURIComponent(
@@ -302,6 +365,44 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
             </div>
           )}
 
+          {/* Action Tabs: BUY / SELL */}
+          {hasHoldings && (
+            <div style={{ display: 'flex', gap: '4px', background: '#161b22', padding: '4px', borderRadius: '8px', border: '1px solid #30363d' }}>
+              <button
+                onClick={() => setTradeMode("BUY")}
+                style={{
+                  flex: 1,
+                  background: tradeMode === "BUY" ? '#21262d' : 'transparent',
+                  color: tradeMode === "BUY" ? '#f0f6fc' : '#8b949e',
+                  border: 'none',
+                  padding: '6px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  cursor: 'pointer'
+                }}
+              >
+                BUY SHARES
+              </button>
+              <button
+                onClick={() => setTradeMode("SELL")}
+                style={{
+                  flex: 1,
+                  background: tradeMode === "SELL" ? '#21262d' : 'transparent',
+                  color: tradeMode === "SELL" ? '#f0f6fc' : '#8b949e',
+                  border: 'none',
+                  padding: '6px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  cursor: 'pointer'
+                }}
+              >
+                SELL SHARES
+              </button>
+            </div>
+          )}
+
           {/* Outcome Choice (YES / NO Toggle) */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
             <button
@@ -318,10 +419,11 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontWeight: 700, fontSize: '1.1rem', color: '#58a6ff' }}>BUY YES</span>
+                <span style={{ fontWeight: 700, fontSize: '1.1rem', color: '#58a6ff' }}>YES</span>
                 <span style={{ fontWeight: 700, fontSize: '1.1rem', color: '#f0f6fc' }}>{yesPercent}%</span>
               </div>
               <span style={{ fontSize: '0.75rem', color: '#8b949e' }}>Share Price: {yesPercent}¢</span>
+              {tradeMode === "SELL" && <div style={{ fontSize: '0.75rem', color: '#39d353', marginTop: '4px' }}>Owned: {userHoldings.yesShares.toFixed(1)}</div>}
             </button>
 
             <button
@@ -338,23 +440,24 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontWeight: 700, fontSize: '1.1rem', color: '#c9d1d9' }}>BUY NO</span>
+                <span style={{ fontWeight: 700, fontSize: '1.1rem', color: '#c9d1d9' }}>NO</span>
                 <span style={{ fontWeight: 700, fontSize: '1.1rem', color: '#f0f6fc' }}>{noPercent}%</span>
               </div>
               <span style={{ fontSize: '0.75rem', color: '#8b949e' }}>Share Price: {noPercent}¢</span>
+              {tradeMode === "SELL" && <div style={{ fontSize: '0.75rem', color: '#39d353', marginTop: '4px' }}>Owned: {userHoldings.noShares.toFixed(1)}</div>}
             </button>
           </div>
 
           {/* Amount Selector */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#8b949e', marginBottom: '0.5rem' }}>
-              <span>ORDER AMOUNT</span>
-              <span>USDC Balance: ${usdcBalance || "0.00"}</span>
+              <span>{tradeMode === "BUY" ? "ORDER AMOUNT (USDC)" : "SHARES TO SELL"}</span>
+              <span>{tradeMode === "BUY" ? `USDC Balance: $${usdcBalance || "0.00"}` : `Max: ${(selectedSide ? userHoldings.yesShares : userHoldings.noShares).toFixed(1)}`}</span>
             </div>
 
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '0.5rem 0.75rem', background: '#161b22', border: '1px solid #30363d', borderRadius: '6px' }}>
-                <span style={{ color: 'var(--glow-cyan)', fontWeight: '700' }}>$</span>
+                <span style={{ color: 'var(--glow-cyan)', fontWeight: '700' }}>{tradeMode === "BUY" ? "$" : ""}</span>
                 <input 
                   type="number"
                   value={betAmount}
@@ -362,27 +465,45 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
                   style={{ background: 'transparent', border: 'none', color: '#fff', outline: 'none', width: '100%', marginLeft: '6px', fontSize: '1rem', fontWeight: '600' }}
                   placeholder="25"
                 />
-                <span style={{ color: '#8b949e', fontSize: '0.8rem' }}>USDC</span>
+                <span style={{ color: '#8b949e', fontSize: '0.8rem' }}>{tradeMode === "BUY" ? "USDC" : "SHARES"}</span>
               </div>
 
-              {["10", "50", "100", "500"].map((amt) => (
+              {tradeMode === "BUY" ? (
+                ["10", "50", "100", "500"].map((amt) => (
+                  <button
+                    key={amt}
+                    onClick={() => setBetAmount(amt)}
+                    style={{
+                      background: betAmount === amt ? '#21262d' : '#161b22',
+                      border: betAmount === amt ? '1px solid #58a6ff' : '1px solid #30363d',
+                      borderRadius: '6px',
+                      color: betAmount === amt ? '#58a6ff' : '#8b949e',
+                      padding: '0 12px',
+                      fontSize: '0.75rem',
+                      fontWeight: '600',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ${amt}
+                  </button>
+                ))
+              ) : (
                 <button
-                  key={amt}
-                  onClick={() => setBetAmount(amt)}
+                  onClick={() => setBetAmount((selectedSide ? userHoldings.yesShares : userHoldings.noShares).toString())}
                   style={{
-                    background: betAmount === amt ? '#21262d' : '#161b22',
-                    border: betAmount === amt ? '1px solid #58a6ff' : '1px solid #30363d',
+                    background: '#161b22',
+                    border: '1px solid #30363d',
                     borderRadius: '6px',
-                    color: betAmount === amt ? '#58a6ff' : '#8b949e',
+                    color: '#58a6ff',
                     padding: '0 12px',
                     fontSize: '0.75rem',
                     fontWeight: '600',
                     cursor: 'pointer'
                   }}
                 >
-                  ${amt}
+                  MAX
                 </button>
-              ))}
+              )}
             </div>
           </div>
 
@@ -397,56 +518,97 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
             gap: '0.4rem',
             fontSize: '0.8rem'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: '#8b949e' }}>Estimated Payout</span>
-              <span style={{ fontWeight: 700, color: '#39d353' }}>${estPayout} USDC</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: '#8b949e' }}>Potential Profit</span>
-              <span style={{ color: '#39d353', fontWeight: 700 }}>+${potentialProfit} ({returnPercentage}%)</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: '#8b949e' }}>Settlement & Yield</span>
-              <span style={{ color: 'var(--glow-cyan)' }}>Aave V3 Interest-Bearing Pool</span>
-            </div>
+            {tradeMode === "BUY" ? (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#8b949e' }}>Estimated Payout</span>
+                  <span style={{ fontWeight: 700, color: '#39d353' }}>${estPayout} USDC</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#8b949e' }}>Potential Profit</span>
+                  <span style={{ color: '#39d353', fontWeight: 700 }}>+${potentialProfit} ({returnPercentage}%)</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#8b949e' }}>Early Bonus</span>
+                  <span style={{ color: 'var(--glow-cyan)' }}>Up to 1.5x Multiplier</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#8b949e' }}>Shares to Sell</span>
+                  <span style={{ fontWeight: 700, color: '#f0f6fc' }}>{numBet} {selectedSide ? 'YES' : 'NO'}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#8b949e' }}>Exit Fee (Spread)</span>
+                  <span style={{ color: '#f85149' }}>2.0%</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#8b949e' }}>Estimated Return</span>
+                  <span style={{ color: '#39d353', fontWeight: 700 }}>${(numBet * (selectedSide ? (market.poolYes/totalPool || 0.5) : (market.poolNo/totalPool || 0.5)) * 0.98).toFixed(2)} USDC</span>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Action Buttons */}
           <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.25rem' }}>
-            <button 
-              onClick={approveUSDC} 
-              disabled={approving}
-              style={{
-                flex: 1,
-                padding: '0.75rem',
-                background: '#21262d',
-                color: '#c9d1d9',
-                border: '1px solid #30363d',
-                borderRadius: '6px',
-                fontSize: '12px',
-                fontWeight: '700',
-                cursor: approving ? 'not-allowed' : 'pointer'
-              }}
-            >
-              {approving ? 'APPROVING...' : '1. APPROVE USDC'}
-            </button>
-            <button 
-              onClick={buyShares} 
-              disabled={trading}
-              style={{
-                flex: 1.5,
-                padding: '0.75rem',
-                background: selectedSide ? '#1f6feb' : '#30363d',
-                color: '#ffffff',
-                border: 'none',
-                borderRadius: '6px',
-                fontSize: '12px',
-                fontWeight: '700',
-                cursor: trading ? 'not-allowed' : 'pointer'
-              }}
-            >
-              {trading ? 'CONFIRMING...' : `2. BUY ${selectedSide ? 'YES' : 'NO'}`}
-            </button>
+            {tradeMode === "BUY" ? (
+              <>
+                <button 
+                  onClick={approveUSDC} 
+                  disabled={approving}
+                  style={{
+                    flex: 1,
+                    padding: '0.75rem',
+                    background: '#21262d',
+                    color: '#c9d1d9',
+                    border: '1px solid #30363d',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    cursor: approving ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {approving ? 'APPROVING...' : '1. APPROVE USDC'}
+                </button>
+                <button 
+                  onClick={buyShares} 
+                  disabled={trading}
+                  style={{
+                    flex: 1.5,
+                    padding: '0.75rem',
+                    background: selectedSide ? '#1f6feb' : '#30363d',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    cursor: trading ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {trading ? 'CONFIRMING...' : `2. BUY ${selectedSide ? 'YES' : 'NO'}`}
+                </button>
+              </>
+            ) : (
+              <button 
+                onClick={sellShares} 
+                disabled={trading}
+                style={{
+                  flex: 1,
+                  padding: '0.75rem',
+                  background: '#238636',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  cursor: trading ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {trading ? 'SELLING...' : `SELL ${selectedSide ? 'YES' : 'NO'} SHARES`}
+              </button>
+            )}
           </div>
         </div>
       </div>

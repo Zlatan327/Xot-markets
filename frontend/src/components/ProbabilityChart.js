@@ -9,55 +9,90 @@ export default function ProbabilityChart({
   showControls = true,
   showSummary = true
 }) {
-  const [timeframe, setTimeframe] = useState("24H"); // 1H, 24H, 7D, ALL
+  const [timeframe, setTimeframe] = useState("ALL");
   const [hoverPoint, setHoverPoint] = useState(null);
+  const [chartData, setChartData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const targetYes = Math.max(0.05, Math.min(0.95, currentYesProb));
+  // Fetch real on-chain events
+  useEffect(() => {
+    let isMounted = true;
+    const fetchEvents = async () => {
+      try {
+        const { getPublicProvider, getContracts } = await import("../lib/contracts");
+        const { ethers } = await import("ethers");
+        
+        const provider = getPublicProvider();
+        const { marketAbi } = await getContracts(provider);
+        const contract = new ethers.Contract(marketId, marketAbi, provider);
 
-  // Generate deterministic time-series curve based on marketId and current odds
-  const chartData = useMemo(() => {
-    // Generate pseudo-random seed from marketId string
-    let seed = 0;
-    for (let i = 0; i < marketId.length; i++) {
-      seed = (seed << 5) - seed + marketId.charCodeAt(i);
-      seed |= 0;
-    }
+        const filterBought = contract.filters.SharesBought();
+        const filterSold = contract.filters.SharesSold();
 
-    const pointsCount = timeframe === "1H" ? 12 : timeframe === "24H" ? 24 : timeframe === "7D" ? 28 : 30;
-    const now = Date.now();
-    const durationMs = timeframe === "1H" ? 3600000 : timeframe === "24H" ? 86400000 : timeframe === "7D" ? 604800000 : 2592000000;
-    const stepMs = durationMs / (pointsCount - 1);
+        const [boughtEvents, soldEvents] = await Promise.all([
+          contract.queryFilter(filterBought, -100000, "latest"),
+          contract.queryFilter(filterSold, -100000, "latest")
+        ]);
 
-    const points = [];
-    // Start probability with slight variance around 0.50
-    let currentVal = 0.50 + (((Math.abs(seed) % 20) - 10) / 100);
-    currentVal = Math.max(0.20, Math.min(0.80, currentVal));
+        let events = [...boughtEvents, ...soldEvents].sort((a, b) => a.blockNumber - b.blockNumber);
+        
+        let poolYes = 0n;
+        let poolNo = 0n;
+        const points = [];
 
-    for (let i = 0; i < pointsCount; i++) {
-      const t = now - (pointsCount - 1 - i) * stepMs;
-      const progress = i / (pointsCount - 1);
+        for (const ev of events) {
+          const block = await provider.getBlock(ev.blockNumber);
+          const t = block.timestamp * 1000;
+          
+          if (ev.fragment.name === "SharesBought") {
+            const amount = ev.args.amount;
+            if (ev.args.isYes) poolYes += amount;
+            else poolNo += amount;
+          } else if (ev.fragment.name === "SharesSold") {
+            // Simplified: selling removes from pool proportionally. 
+            // We just fetch the exact pool state at this block for accuracy.
+            const marketState = new ethers.Contract(marketId, marketAbi, provider);
+            poolYes = await marketState.totalYesPool({ blockTag: ev.blockNumber });
+            poolNo = await marketState.totalNoPool({ blockTag: ev.blockNumber });
+          }
 
-      // Smooth drift toward current real onchain probability
-      const drift = (targetYes - currentVal) * (0.15 + progress * 0.4);
-      const noise = ((Math.sin(seed * (i + 1)) * 43758.5453) % 1) * 0.04 - 0.02;
-      
-      currentVal = currentVal + drift + noise;
-      currentVal = Math.max(0.04, Math.min(0.96, currentVal));
+          const yesNum = Number(ethers.formatEther(poolYes));
+          const noNum = Number(ethers.formatEther(poolNo));
+          const total = yesNum + noNum;
+          
+          const prob = total === 0 ? 0.5 : (yesNum / total);
 
-      if (i === pointsCount - 1) {
-        currentVal = targetYes; // Final point is exact onchain probability
+          points.push({
+            time: t,
+            prob: prob,
+            probPercent: Math.round(prob * 100),
+            label: new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            dateLabel: new Date(t).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+          });
+        }
+
+        // Add the current live state as the final point
+        points.push({
+          time: Date.now(),
+          prob: currentYesProb,
+          probPercent: Math.round(currentYesProb * 100),
+          label: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          dateLabel: new Date().toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+        });
+
+        if (isMounted) {
+          setChartData(points);
+          setLoading(false);
+        }
+
+      } catch (e) {
+        console.error("Error fetching chart events:", e);
+        if (isMounted) setLoading(false);
       }
-
-      points.push({
-        time: t,
-        prob: currentVal,
-        probPercent: Math.round(currentVal * 100),
-        label: new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        dateLabel: new Date(t).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-      });
-    }
-    return points;
-  }, [marketId, targetYes, timeframe]);
+    };
+    fetchEvents();
+    return () => { isMounted = false; };
+  }, [marketId, currentYesProb]);
 
   // SVG Geometry Calculations
   const paddingX = 10;
@@ -65,27 +100,27 @@ export default function ProbabilityChart({
   const svgWidth = 360;
   const svgHeight = height;
 
-  const minProb = Math.min(...chartData.map(d => d.prob)) * 0.9;
-  const maxProb = Math.max(...chartData.map(d => d.prob)) * 1.1;
+  if (loading || chartData.length === 0) {
+    return <div style={{ height: svgHeight, display: "flex", alignItems: "center", justifyContent: "center", color: "#8b949e", fontSize: "12px" }}>Loading on-chain chart data...</div>;
+  }
+
+  // Use chartData for everything else...
+  const minProb = Math.min(0, Math.min(...chartData.map(d => d.prob)) * 0.9);
+  const maxProb = Math.max(1, Math.max(...chartData.map(d => d.prob)) * 1.1);
   const probRange = Math.max(0.1, maxProb - minProb);
 
   const getCoordinates = (point, index) => {
-    const x = paddingX + (index / (chartData.length - 1)) * (svgWidth - paddingX * 2);
+    const x = chartData.length > 1 ? paddingX + (index / (chartData.length - 1)) * (svgWidth - paddingX * 2) : svgWidth / 2;
     const y = svgHeight - paddingY - ((point.prob - minProb) / probRange) * (svgHeight - paddingY * 2);
     return { x, y };
   };
 
   const coords = chartData.map((d, i) => getCoordinates(d, i));
 
-  // Build SVG Path with smooth curves
-  const linePath = coords.reduce((acc, curr, i, arr) => {
+  // Build SVG Path with straight lines (since it's discrete trades)
+  const linePath = coords.reduce((acc, curr, i) => {
     if (i === 0) return `M ${curr.x} ${curr.y}`;
-    const prev = arr[i - 1];
-    const cp1x = prev.x + (curr.x - prev.x) / 2;
-    const cp1y = prev.y;
-    const cp2x = prev.x + (curr.x - prev.x) / 2;
-    const cp2y = curr.y;
-    return `${acc} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${curr.x} ${curr.y}`;
+    return `${acc} L ${curr.x} ${curr.y}`;
   }, "");
 
   const areaPath = `${linePath} L ${coords[coords.length - 1].x} ${svgHeight} L ${coords[0].x} ${svgHeight} Z`;
