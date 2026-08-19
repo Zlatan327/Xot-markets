@@ -167,16 +167,20 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
           duration: 0
         });
         const approveTx = await usdc.approve(market.marketAddress, amount);
-        await approveTx.wait();
+        await approveTx.wait(1); // wait for 1 confirmation
         updateToast(toastId, {
           type: "loading",
           title: "Executing Trade",
-          message: "Approval complete. Now placing prediction...",
+          message: "Approval complete. Please sign the buy transaction...",
           duration: 0
         });
+        
+        // Add a small delay to let the RPC node sync the allowance state
+        await new Promise(resolve => setTimeout(resolve, 2000));
       }
       
-      const tx = await marketContract.buyShares(selectedSide, amount);
+      // Pass manual gasLimit to bypass Ethers estimateGas which fails if RPC is slightly out of sync
+      const tx = await marketContract.buyShares(selectedSide, amount, { gasLimit: 500000 });
       updateToast(toastId, {
         type: "loading",
         title: "Trade Submitted",
@@ -238,7 +242,7 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
         return;
       }
       
-      const tx = await marketContract.sellShares(selectedSide, amount);
+      const tx = await marketContract.sellShares(selectedSide, amount, { gasLimit: 500000 });
       updateToast(toastId, {
         type: "loading",
         title: "Sell Order Submitted",
