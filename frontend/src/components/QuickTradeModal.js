@@ -156,6 +156,26 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
         return;
       }
       
+      const { usdc } = await getContracts(signer);
+      const currentAllowance = await usdc.allowance(activeUser, market.marketAddress);
+      
+      if (currentAllowance < amount) {
+        updateToast(toastId, {
+          type: "loading",
+          title: "Approving USDC",
+          message: "Please sign the approval transaction in your wallet...",
+          duration: 0
+        });
+        const approveTx = await usdc.approve(market.marketAddress, amount);
+        await approveTx.wait();
+        updateToast(toastId, {
+          type: "loading",
+          title: "Executing Trade",
+          message: "Approval complete. Now placing prediction...",
+          duration: 0
+        });
+      }
+      
       const tx = await marketContract.buyShares(selectedSide, amount);
       updateToast(toastId, {
         type: "loading",
@@ -554,42 +574,23 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
           {/* Action Buttons */}
           <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.25rem' }}>
             {tradeMode === "BUY" ? (
-              <>
-                <button 
-                  onClick={approveUSDC} 
-                  disabled={approving}
-                  style={{
-                    flex: 1,
-                    padding: '0.75rem',
-                    background: '#21262d',
-                    color: '#c9d1d9',
-                    border: '1px solid #30363d',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '700',
-                    cursor: approving ? 'not-allowed' : 'pointer'
-                  }}
-                >
-                  {approving ? 'APPROVING...' : '1. APPROVE USDC'}
-                </button>
-                <button 
-                  onClick={buyShares} 
-                  disabled={trading}
-                  style={{
-                    flex: 1.5,
-                    padding: '0.75rem',
-                    background: selectedSide ? '#1f6feb' : '#30363d',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '700',
-                    cursor: trading ? 'not-allowed' : 'pointer'
-                  }}
-                >
-                  {trading ? 'CONFIRMING...' : `2. BUY ${selectedSide ? 'YES' : 'NO'}`}
-                </button>
-              </>
+              <button 
+                onClick={buyShares} 
+                disabled={trading}
+                style={{
+                  flex: 1,
+                  padding: '0.85rem',
+                  background: selectedSide ? '#1f6feb' : '#30363d',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '700',
+                  cursor: trading ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {trading ? 'PROCESSING...' : `PLACE PREDICTION (${selectedSide ? 'YES' : 'NO'})`}
+              </button>
             ) : (
               <button 
                 onClick={sellShares} 
