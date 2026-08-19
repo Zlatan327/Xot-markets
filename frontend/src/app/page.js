@@ -407,6 +407,7 @@ export default function Home() {
         <Hero3D
           totalTvl={totalTvl}
           activeAgentsCount={activeAgentsCount || 8}
+          markets={markets}
           onExploreClick={() => {
             const el = document.getElementById("markets-section");
             if (el) el.scrollIntoView({ behavior: "smooth" });

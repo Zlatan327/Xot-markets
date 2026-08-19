@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Sparkles, ArrowRight, TrendingUp, ShieldCheck, Zap, Cpu, Activity, DollarSign, Layers } from "lucide-react";
 
-export default function Hero3D({ totalTvl = 290350, activeAgentsCount = 8, onExploreClick, onOpenPortfolio }) {
+export default function Hero3D({ totalTvl = 290350, activeAgentsCount = 8, markets = [], onExploreClick, onOpenPortfolio }) {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
@@ -256,9 +256,9 @@ export default function Hero3D({ totalTvl = 290350, activeAgentsCount = 8, onExp
           <div style={{ width: "1px", height: "30px", background: "#21262d" }} />
 
           <div>
-            <div style={{ fontSize: "11px", color: "#8b949e", textTransform: "uppercase" }}>Aave Yield Compounding</div>
+            <div style={{ fontSize: "11px", color: "#8b949e", textTransform: "uppercase" }}>Global Protocol Consensus</div>
             <div style={{ fontSize: "17px", fontWeight: "800", color: "#39d353" }}>
-              +14.8% APY
+              {markets?.length > 0 ? ((markets.reduce((acc, m) => acc + (m.poolYes || 0), 0) / (totalTvl || 1)) * 100).toFixed(1) + "% YES" : "Neutral"}
             </div>
           </div>
         </div>
@@ -273,33 +273,41 @@ export default function Hero3D({ totalTvl = 290350, activeAgentsCount = 8, onExp
         gap: "14px",
         perspective: "1000px"
       }}>
-        {/* Floating Card 1: Top Arbitrage Agent Node */}
-        <div style={{
-          background: "rgba(22, 27, 34, 0.85)",
-          backdropFilter: "blur(12px)",
-          border: "1px solid #30363d",
-          borderRadius: "12px",
-          padding: "16px",
-          boxShadow: "0 16px 36px rgba(0, 0, 0, 0.6)",
-          transform: `rotateY(${mousePos.x * 12}deg) rotateX(${-mousePos.y * 12}deg) translateZ(20px)`,
-          transition: "transform 0.15s ease-out",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center"
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "#1f6feb", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Zap size={18} color="#fff" />
+        {/* Floating Card 1: Top Arbitrage Agent Node (DYNAMIC) */}
+        {(() => {
+          const topMarket = markets?.length > 0 ? [...markets].sort((a,b) => (b.poolYes+b.poolNo)-(a.poolYes+a.poolNo))[0] : null;
+          const topYesProb = topMarket && (topMarket.poolYes+topMarket.poolNo) > 0 ? Math.round((topMarket.poolYes / (topMarket.poolYes+topMarket.poolNo)) * 100) : 50;
+          return (
+            <div style={{
+              background: "rgba(22, 27, 34, 0.85)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid #30363d",
+              borderRadius: "12px",
+              padding: "16px",
+              boxShadow: "0 16px 36px rgba(0, 0, 0, 0.6)",
+              transform: `rotateY(${mousePos.x * 12}deg) rotateX(${-mousePos.y * 12}deg) translateZ(20px)`,
+              transition: "transform 0.15s ease-out",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center"
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "#1f6feb", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Zap size={18} color="#fff" />
+                </div>
+                <div>
+                  <div style={{ fontWeight: "700", fontSize: "13px", color: "#f0f6fc" }}>{topMarket ? topMarket.agentName : "Syncing live markets..."}</div>
+                  <div style={{ fontSize: "11px", color: "#8b949e" }}>Top Active Prediction Market</div>
+                </div>
+              </div>
+              {topMarket && (
+                <span style={{ background: "rgba(57, 211, 83, 0.15)", color: "#39d353", padding: "4px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: "700" }}>
+                  {topYesProb}% YES ({topYesProb}¢)
+                </span>
+              )}
             </div>
-            <div>
-              <div style={{ fontWeight: "700", fontSize: "13px", color: "#f0f6fc" }}>Zerebro DEX Flash Arbitrage</div>
-              <div style={{ fontSize: "11px", color: "#8b949e" }}>Volume: <strong style={{ color: "#39d353" }}>$48.25M</strong> • Win Rate: <strong style={{ color: "#58a6ff" }}>95.4%</strong></div>
-            </div>
-          </div>
-          <span style={{ background: "rgba(57, 211, 83, 0.15)", color: "#39d353", padding: "4px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: "700" }}>
-            74% YES (74¢)
-          </span>
-        </div>
+          );
+        })()}
 
         {/* Floating Card 2: Aave Yield Harvest Node */}
         <div style={{
@@ -325,8 +333,8 @@ export default function Hero3D({ totalTvl = 290350, activeAgentsCount = 8, onExp
             </div>
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: "13px", fontWeight: "800", color: "#39d353" }}>+$1,420.00</div>
-            <div style={{ fontSize: "10px", color: "#8b949e" }}>Harvested</div>
+            <div style={{ fontSize: "13px", fontWeight: "800", color: "#39d353" }}>Active</div>
+            <div style={{ fontSize: "10px", color: "#8b949e" }}>Integration</div>
           </div>
         </div>
 
