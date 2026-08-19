@@ -37,19 +37,18 @@ export function Web3Provider({ children }) {
   }, []);
 
   // Switch or Add X Layer Network
-  const switchToXLayer = async () => {
-    if (typeof window === 'undefined' || !window.ethereum) return false;
+  const switchToXLayer = async (providerObj) => {
+    if (typeof window === 'undefined' || !providerObj) return false;
     try {
-      await window.ethereum.request({
+      await providerObj.request({
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: XLAYER_CHAIN_ID_HEX }],
       });
       return true;
     } catch (switchError) {
-      // 4902 indicates that the chain has not been added to the wallet
       if (switchError.code === 4902 || switchError?.data?.originalError?.code === 4902) {
         try {
-          await window.ethereum.request({
+          await providerObj.request({
             method: 'wallet_addEthereumChain',
             params: [XLAYER_NETWORK_CONFIG],
           });
@@ -59,14 +58,15 @@ export function Web3Provider({ children }) {
           return false;
         }
       }
-      console.error('Failed to switch to X Layer Testnet:', switchError);
       return false;
     }
   };
 
   // Connect Wallet
   const connectWallet = async () => {
-    if (typeof window === 'undefined' || !window.ethereum) {
+    const injectedProvider = typeof window !== 'undefined' ? (window.ethereum || window.okxwallet) : null;
+    
+    if (!injectedProvider) {
       alert('No Web3 wallet found! Please install MetaMask or OKX Web3 Wallet.');
       return;
     }
@@ -75,8 +75,7 @@ export function Web3Provider({ children }) {
     setError(null);
 
     try {
-      // 1. Request account access
-      const browserProvider = new ethers.BrowserProvider(window.ethereum);
+      const browserProvider = new ethers.BrowserProvider(injectedProvider);
       const accounts = await browserProvider.send('eth_requestAccounts', []);
 
       if (!accounts || accounts.length === 0) {
@@ -89,7 +88,7 @@ export function Web3Provider({ children }) {
       setChainId(currentChainId);
 
       if (currentChainId !== XLAYER_CHAIN_ID) {
-        const switched = await switchToXLayer();
+        const switched = await switchToXLayer(injectedProvider);
         if (!switched) {
           setError('Please switch your wallet to X Layer Testnet (Chain ID 195)');
         }
@@ -121,13 +120,14 @@ export function Web3Provider({ children }) {
 
   // Listen for account / chain changes
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.ethereum) return;
+    const injectedProvider = typeof window !== 'undefined' ? (window.ethereum || window.okxwallet) : null;
+    if (!injectedProvider) return;
 
     const handleAccountsChanged = async (accounts) => {
       if (accounts.length === 0) {
         disconnectWallet();
       } else if (address && accounts[0].toLowerCase() !== address.toLowerCase()) {
-        const browserProvider = new ethers.BrowserProvider(window.ethereum);
+        const browserProvider = new ethers.BrowserProvider(injectedProvider);
         const userSigner = await browserProvider.getSigner();
         setAddress(accounts[0]);
         setSigner(userSigner);
@@ -141,14 +141,14 @@ export function Web3Provider({ children }) {
       window.location.reload();
     };
 
-    window.ethereum.on?.('accountsChanged', handleAccountsChanged);
-    window.ethereum.on?.('chainChanged', handleChainChanged);
+    injectedProvider.on?.('accountsChanged', handleAccountsChanged);
+    injectedProvider.on?.('chainChanged', handleChainChanged);
 
     // Check if already authorized
-    window.ethereum.request?.({ method: 'eth_accounts' }).then(async (accounts) => {
+    injectedProvider.request?.({ method: 'eth_accounts' }).then(async (accounts) => {
       if (accounts && accounts.length > 0) {
         try {
-          const browserProvider = new ethers.BrowserProvider(window.ethereum);
+          const browserProvider = new ethers.BrowserProvider(injectedProvider);
           const network = await browserProvider.getNetwork();
           setChainId(Number(network.chainId));
           const userSigner = await browserProvider.getSigner();
@@ -162,8 +162,8 @@ export function Web3Provider({ children }) {
     }).catch(() => {});
 
     return () => {
-      window.ethereum.removeListener?.('accountsChanged', handleAccountsChanged);
-      window.ethereum.removeListener?.('chainChanged', handleChainChanged);
+      injectedProvider.removeListener?.('accountsChanged', handleAccountsChanged);
+      injectedProvider.removeListener?.('chainChanged', handleChainChanged);
     };
   }, [address]);
 
