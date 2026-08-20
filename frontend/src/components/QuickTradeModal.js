@@ -168,15 +168,34 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
         });
         const approveTx = await usdc.approve(market.marketAddress, amount);
         await approveTx.wait(1); // wait for 1 confirmation
+        
         updateToast(toastId, {
           type: "loading",
           title: "Executing Trade",
-          message: "Approval complete. Please sign the buy transaction...",
+          message: "Approval complete. Syncing network state...",
           duration: 0
         });
         
-        // Add a small delay to let the RPC node sync the allowance state
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Actively poll the RPC node until the allowance is correctly updated
+        // This prevents the wallet's internal estimateGas from failing if the node is slightly behind
+        let syncedAllowance = await usdc.allowance(activeUser, market.marketAddress);
+        let retries = 0;
+        while (syncedAllowance < amount && retries < 20) {
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            syncedAllowance = await usdc.allowance(activeUser, market.marketAddress);
+            retries++;
+        }
+        
+        if (syncedAllowance < amount) {
+            throw new Error("RPC synchronization failed. Please try clicking 'Place Prediction' again.");
+        }
+        
+        updateToast(toastId, {
+          type: "loading",
+          title: "Executing Trade",
+          message: "Network synced. Please sign the buy transaction...",
+          duration: 0
+        });
       }
       
       // Pass manual gasLimit to bypass Ethers estimateGas which fails if RPC is slightly out of sync
