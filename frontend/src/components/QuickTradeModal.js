@@ -166,7 +166,7 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
           message: "Please sign the approval transaction in your wallet...",
           duration: 0
         });
-        const approveTx = await usdc.approve(market.marketAddress, amount);
+        const approveTx = await usdc.approve(market.marketAddress, ethers.MaxUint256);
         await approveTx.wait(1); // wait for 1 confirmation
         
         updateToast(toastId, {
@@ -198,8 +198,14 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
         });
       }
       
-      // Pass manual gasLimit to bypass Ethers estimateGas which fails if RPC is slightly out of sync
-      const tx = await marketContract.buyShares(selectedSide, amount, { gasLimit: 500000 });
+      // Construct a raw transaction to physically force OKX Wallet to bypass gas estimation
+      const txData = marketContract.interface.encodeFunctionData("buyShares", [selectedSide, amount]);
+      const tx = await signer.sendTransaction({
+        to: market.marketAddress,
+        data: txData,
+        gasLimit: 600000
+      });
+      
       updateToast(toastId, {
         type: "loading",
         title: "Trade Submitted",
@@ -261,7 +267,12 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
         return;
       }
       
-      const tx = await marketContract.sellShares(selectedSide, amount, { gasLimit: 500000 });
+      const txData = marketContract.interface.encodeFunctionData("sellShares", [selectedSide, amount]);
+      const tx = await signer.sendTransaction({
+        to: market.marketAddress,
+        data: txData,
+        gasLimit: 600000
+      });
       updateToast(toastId, {
         type: "loading",
         title: "Sell Order Submitted",
