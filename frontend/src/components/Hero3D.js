@@ -104,6 +104,7 @@ export default function Hero3D({ totalTvl = 290350, activeAgentsCount = 8, marke
 
   return (
     <section
+      className="hero-dashboard"
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
@@ -138,7 +139,7 @@ export default function Hero3D({ totalTvl = 290350, activeAgentsCount = 8, marke
       />
 
       {/* Left Column: Core Value Proposition */}
-      <div style={{ position: "relative", zIndex: 2 }}>
+      <div className="hero-copy" style={{ position: "relative", zIndex: 2 }}>
         {/* Protocol Trust Badge */}
         <div style={{
           display: "inline-flex",
@@ -236,7 +237,7 @@ export default function Hero3D({ totalTvl = 290350, activeAgentsCount = 8, marke
         </div>
 
         {/* Live TVL & Telemetry Badges */}
-        <div style={{ display: "flex", gap: "18px", borderTop: "1px solid #21262d", paddingTop: "18px" }}>
+        <div className="hero-stats" style={{ display: "flex", gap: "18px", borderTop: "1px solid #21262d", paddingTop: "18px" }}>
           <div>
             <div style={{ fontSize: "11px", color: "#8b949e", textTransform: "uppercase" }}>Total Collateral</div>
             <div style={{ fontSize: "17px", fontWeight: "800", color: "#f0f6fc" }}>
@@ -265,7 +266,7 @@ export default function Hero3D({ totalTvl = 290350, activeAgentsCount = 8, marke
       </div>
 
       {/* Right Column: 3D Floating Interactive Fintech Cards */}
-      <div style={{
+      <div className="hero-cards" style={{
         position: "relative",
         zIndex: 2,
         display: "flex",

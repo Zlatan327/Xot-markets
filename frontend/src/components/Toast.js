@@ -38,7 +38,7 @@ export function ToastProvider({ children }) {
     <ToastContext.Provider value={{ addToast, removeToast, updateToast }}>
       {children}
       {/* Toast Render Container */}
-      <div style={{
+      <div className="toast-container" style={{
         position: "fixed",
         bottom: "24px",
         right: "24px",

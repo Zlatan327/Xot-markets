@@ -255,9 +255,9 @@ export default function Home() {
   return (
     <>
       {/* Top Navigation Bar (Clean Google/Linear Styled) */}
-      <nav className="top-nav" style={{ padding: '0.75rem 2rem' }}>
+      <nav className="top-nav app-nav" style={{ padding: '0.75rem 2rem' }}>
         {/* Left: Brand Identity */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+        <div className="app-brand" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
           <Logo size={26} />
           <span style={{ fontWeight: '800', fontSize: '16px', letterSpacing: '-0.02em', color: '#f0f6fc' }}>
             XOT MARKETS
@@ -276,7 +276,7 @@ export default function Home() {
         </div>
 
         {/* Center: Clean Navigation Links */}
-        <div className="hidden md:flex" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+        <div className="desktop-nav-links" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
           <a href="#markets-section" style={{ color: '#f0f6fc', fontWeight: '600', fontSize: '13px', textDecoration: 'none' }}>
             Markets
           </a>
@@ -310,7 +310,7 @@ export default function Home() {
         </div>
 
         {/* Right: Unified Account Capsule */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="wallet-controls" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {isConnected && address ? (
             !isCorrectNetwork ? (
               <button 
@@ -332,7 +332,7 @@ export default function Home() {
                 <AlertTriangle size={13} /> Switch to X Layer
               </button>
             ) : (
-              <div style={{
+              <div className="wallet-capsule" style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
@@ -342,7 +342,7 @@ export default function Home() {
                 padding: '4px 6px 4px 12px'
               }}>
                 {/* Balance */}
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', fontSize: '12px' }}>
+                <div className="wallet-balance" style={{ display: 'flex', alignItems: 'baseline', gap: '4px', fontSize: '12px' }}>
                   <span style={{ color: '#8b949e', fontSize: '10px', fontWeight: '700' }}>USDC</span>
                   <span style={{ color: '#39d353', fontWeight: '800', fontFamily: 'monospace' }}>${usdcBalance}</span>
                 </div>
@@ -351,10 +351,10 @@ export default function Home() {
                 <FaucetButton signerAddress={address} onBalanceRefresh={fetchBalance} />
 
                 {/* Vertical Divider */}
-                <div style={{ width: '1px', height: '14px', background: '#30363d' }} />
+                <div className="wallet-divider" style={{ width: '1px', height: '14px', background: '#30363d' }} />
 
                 {/* Address & Green Network Dot */}
-                <div 
+                <div className="wallet-address"
                   onClick={() => setShowPortfolioModal(true)}
                   title="Open Portfolio & Active Positions"
                   style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#f0f6fc', fontWeight: '600', cursor: 'pointer', padding: '2px 4px' }}
@@ -428,7 +428,7 @@ export default function Home() {
         <section id="markets-section" className="mb-12">
           
           {/* Main Controls & Search Bar (Roomy Google Workspace Style) */}
-          <div style={{
+          <div className="market-controls" style={{
             display: 'flex',
             flexDirection: 'column',
             gap: '14px',
@@ -439,10 +439,10 @@ export default function Home() {
             borderRadius: '12px'
           }}>
             {/* Top Bar: Search + Status Filters + Sort + View Switcher */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+            <div className="market-controls-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
               
               {/* Roomy Search Input */}
-              <div style={{
+              <div className="market-search" style={{
                 display: 'flex',
                 alignItems: 'center',
                 background: '#161b22',
@@ -492,7 +492,7 @@ export default function Home() {
               </div>
 
               {/* Status Tabs, Sort, and View Switcher */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              <div className="market-filter-controls" style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                 {/* Status Filter Tabs */}
                 <div style={{ display: 'flex', gap: '4px', background: '#161b22', padding: '3px', borderRadius: '8px', border: '1px solid #30363d' }}>
                   {[

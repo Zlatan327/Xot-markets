@@ -37,7 +37,7 @@ export default function AgentsDirectoryModal({ onClose, onSelectAgent, markets }
   ];
 
   return (
-    <div style={{
+    <div className="modal-backdrop" style={{
       position: "fixed",
       top: 0,
       left: 0,
@@ -51,7 +51,7 @@ export default function AgentsDirectoryModal({ onClose, onSelectAgent, markets }
       justifyContent: "center",
       padding: "20px"
     }} onClick={onClose}>
-      <div style={{
+      <div className="modal-panel agents-panel" style={{
         backgroundColor: "#0d1117",
         border: "1px solid #30363d",
         borderRadius: "16px",
@@ -142,7 +142,7 @@ export default function AgentsDirectoryModal({ onClose, onSelectAgent, markets }
         </div>
 
         {/* Agent Grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(270px, 1fr))", gap: "14px" }}>
+        <div className="agents-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(270px, 1fr))", gap: "14px" }}>
           {filteredAgents.map(agent => (
             <div key={agent.address} style={{
               background: "#161b22",

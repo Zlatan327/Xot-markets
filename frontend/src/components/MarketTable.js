@@ -49,7 +49,7 @@ export default function MarketTable({ markets, onSelectMarket, onOpenResearch, s
   }, [signerAddress, markets]);
 
   return (
-    <div style={{
+    <div className="market-table-wrap" style={{
       width: '100%',
       overflowX: 'auto',
       background: '#0d1117',

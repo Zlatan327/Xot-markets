@@ -13,7 +13,7 @@ export default function ProtocolDocsModal({ onClose }) {
   ];
 
   return (
-    <div style={{
+    <div className="modal-backdrop" style={{
       position: "fixed",
       top: 0,
       left: 0,
@@ -27,7 +27,7 @@ export default function ProtocolDocsModal({ onClose }) {
       justifyContent: "center",
       padding: "20px"
     }} onClick={onClose}>
-      <div style={{
+      <div className="modal-panel docs-panel" style={{
         backgroundColor: "#0d1117",
         border: "1px solid #30363d",
         borderRadius: "16px",

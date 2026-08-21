@@ -152,7 +152,7 @@ export default function PortfolioModal({ markets, signerAddress, onClose, onSele
   const totalClaimable = positions.reduce((acc, p) => acc + (p.claimed ? 0 : p.claimable), 0);
 
   return (
-    <div style={{
+    <div className="modal-backdrop" style={{
       position: "fixed",
       top: 0,
       left: 0,
@@ -166,7 +166,7 @@ export default function PortfolioModal({ markets, signerAddress, onClose, onSele
       justifyContent: "center",
       padding: "20px"
     }} onClick={onClose}>
-      <div style={{
+      <div className="modal-panel portfolio-panel" style={{
         backgroundColor: "#0d1117",
         border: "1px solid #30363d",
         borderRadius: "16px",
@@ -213,7 +213,7 @@ export default function PortfolioModal({ markets, signerAddress, onClose, onSele
         </div>
 
         {/* Portfolio Stats Summary */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px", marginBottom: "24px" }}>
+        <div className="portfolio-stats" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px", marginBottom: "24px" }}>
           <div style={{ background: "#161b22", padding: "16px", borderRadius: "10px", border: "1px solid #21262d" }}>
             <div style={{ fontSize: "11px", color: "#8b949e", textTransform: "uppercase", fontWeight: "600" }}>Total Capital Staked</div>
             <div style={{ fontSize: "22px", fontWeight: "700", color: "#f0f6fc", marginTop: "4px" }}>

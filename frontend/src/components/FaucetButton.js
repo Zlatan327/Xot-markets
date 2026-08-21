@@ -158,7 +158,7 @@ export default function FaucetButton({ signerAddress, onBalanceRefresh }) {
 
       {/* Clean Faucets Modal */}
       {showModal && (
-        <div style={{
+        <div className="modal-backdrop" style={{
           position: "fixed",
           inset: 0,
           background: "rgba(0, 0, 0, 0.8)",
@@ -169,7 +169,7 @@ export default function FaucetButton({ signerAddress, onBalanceRefresh }) {
           justifyContent: "center",
           padding: "20px"
         }} onClick={() => setShowModal(false)}>
-          <div style={{
+          <div className="modal-panel faucet-panel" style={{
             background: "#0d1117",
             border: "1px solid #30363d",
             borderRadius: "12px",

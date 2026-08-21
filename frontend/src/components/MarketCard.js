@@ -384,7 +384,7 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
   const isWalletActive = isConnected && (signerAddress || address);
 
   return (
-    <div style={{
+    <div className="market-card" style={{
       background: "#0d1117",
       border: "1px solid #21262d",
       borderRadius: "12px",

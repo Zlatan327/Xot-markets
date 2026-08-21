@@ -328,7 +328,7 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
   const hasHoldings = userHoldings.yesShares > 0 || userHoldings.noShares > 0;
 
   return (
-    <div style={{
+    <div className="modal-backdrop" style={{
       position: 'fixed',
       inset: 0,
       background: 'rgba(0, 0, 0, 0.75)',
@@ -339,7 +339,7 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
       zIndex: 1000,
       padding: '1rem'
     }} onClick={onClose}>
-      <div style={{
+      <div className="modal-panel quick-trade-panel" style={{
         background: '#0d1117',
         border: '1px solid #30363d',
         borderRadius: '12px',
@@ -392,7 +392,7 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
         </div>
 
         {/* Modal Body */}
-        <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div className="quick-trade-body" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {/* Question */}
           <div>
             <span style={{ fontSize: '0.75rem', color: '#8b949e', textTransform: 'uppercase', letterSpacing: '0.05em' }}>PREDICTION MARKET</span>
@@ -515,7 +515,7 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
               <span>{tradeMode === "BUY" ? `USDC Balance: $${usdcBalance || "0.00"}` : `Max: ${(selectedSide ? userHoldings.yesShares : userHoldings.noShares).toFixed(1)}`}</span>
             </div>
 
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <div className="amount-controls" style={{ display: 'flex', gap: '0.5rem' }}>
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '0.5rem 0.75rem', background: '#161b22', border: '1px solid #30363d', borderRadius: '6px' }}>
                 <span style={{ color: 'var(--glow-cyan)', fontWeight: '700' }}>{tradeMode === "BUY" ? "$" : ""}</span>
                 <input 

@@ -27,7 +27,7 @@ export default function AgentResearchModal({ market, agentData, onClose, onTrade
   };
 
   return (
-    <div style={{
+    <div className="modal-backdrop" style={{
       position: "fixed",
       top: 0,
       left: 0,
@@ -41,7 +41,7 @@ export default function AgentResearchModal({ market, agentData, onClose, onTrade
       justifyContent: "center",
       padding: "20px"
     }} onClick={onClose}>
-      <div style={{
+      <div className="modal-panel research-panel" style={{
         backgroundColor: "#0d1117",
         border: "1px solid #30363d",
         borderRadius: "16px",

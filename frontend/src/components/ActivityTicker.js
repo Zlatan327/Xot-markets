@@ -63,7 +63,7 @@ export default function ActivityTicker({ markets = [] }) {
   const activeEvent = events[currentIndex] || events[0];
 
   return (
-    <div style={{
+    <div className="activity-ticker" style={{
       background: "#0d1117",
       border: "1px solid #21262d",
       borderRadius: "8px",
@@ -96,13 +96,13 @@ export default function ActivityTicker({ markets = [] }) {
       </div>
 
       {/* Dynamic Event Stream */}
-      <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "8px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+      <div className="activity-copy" style={{ flex: 1, display: "flex", alignItems: "center", gap: "8px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
         <strong style={{ color: "#f0f6fc", fontWeight: "700" }}>{activeEvent.agent}:</strong>
         <span style={{ color: "#8b949e" }}>{activeEvent.text}</span>
       </div>
 
       {/* On-Chain Contract & Badge */}
-      <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+      <div className="activity-meta" style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
         <span style={{
           fontSize: "11px",
           padding: "2px 8px",

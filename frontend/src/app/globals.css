@@ -27,7 +27,6 @@ body {
   background-color: var(--bg-dark);
   color: var(--text-main);
   min-height: 100vh;
-  overflow-x: hidden;
   font-family: var(--font-space), sans-serif;
   /* Alfrada inspired technical grid background */
   background-image: 
@@ -35,6 +34,25 @@ body {
     linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
   background-size: 50px 50px;
   background-position: center center;
+}
+
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+}
+
+img,
+svg,
+canvas {
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  max-width: 100%;
 }
 
 /* Typography */
@@ -334,3 +352,278 @@ h1, h2, h3, h4 {
 .p-6 { padding: 1.5rem; }
 .w-full { width: 100%; }
 .block { display: block; }
+
+/* Responsive application layout */
+.app-nav > *,
+.wallet-controls,
+.wallet-capsule,
+.market-controls-top > *,
+.market-filter-controls,
+.market-card,
+.hero-dashboard > *,
+.modal-panel,
+.modal-panel > * {
+  min-width: 0;
+}
+
+.market-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.market-table-wrap table {
+  min-width: 760px;
+}
+
+@media (max-width: 900px) {
+  .desktop-nav-links {
+    display: none !important;
+  }
+
+  .hero-dashboard {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .hero-dashboard canvas {
+    right: 0 !important;
+    width: 100% !important;
+    opacity: 0.45 !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .container {
+    width: 100%;
+    padding: 1rem;
+  }
+
+  .app-nav {
+    gap: 0.75rem;
+    padding: 0.75rem 1rem !important;
+  }
+
+  .app-brand > span:last-child {
+    display: none;
+  }
+
+  .wallet-controls {
+    margin-left: auto;
+  }
+
+  .wallet-capsule {
+    max-width: 100%;
+    padding-left: 8px !important;
+  }
+
+  .hero-dashboard {
+    padding: 28px 20px !important;
+    gap: 24px !important;
+    min-height: 0 !important;
+  }
+
+  .hero-copy h1 {
+    font-size: clamp(1.8rem, 9vw, 2.4rem) !important;
+  }
+
+  .hero-stats {
+    flex-wrap: wrap;
+    gap: 14px !important;
+  }
+
+  .hero-stats > div:not(:empty) {
+    min-width: 120px;
+    flex: 1 1 120px;
+  }
+
+  .hero-stats > div[style*="width: 1px"] {
+    display: none;
+  }
+
+  .hero-cards > div {
+    align-items: flex-start !important;
+    gap: 10px;
+    flex-wrap: wrap;
+    transform: none !important;
+  }
+
+  .hero-cards > div > div:first-child {
+    min-width: 0;
+  }
+
+  .hero-cards > div > div:first-child > div:last-child {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .activity-ticker {
+    align-items: flex-start !important;
+    flex-wrap: wrap;
+  }
+
+  .activity-copy {
+    flex-basis: 100% !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+  }
+
+  .activity-meta {
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .market-controls {
+    padding: 14px !important;
+  }
+
+  .market-controls-top,
+  .market-filter-controls {
+    width: 100%;
+    align-items: stretch !important;
+  }
+
+  .market-search {
+    width: 100%;
+    min-width: 0 !important;
+    max-width: none !important;
+    flex-basis: 100% !important;
+  }
+
+  .market-filter-controls > * {
+    max-width: 100%;
+  }
+
+  .market-card {
+    width: 100%;
+    padding: 16px !important;
+    overflow-wrap: anywhere;
+  }
+
+  .modal-backdrop {
+    align-items: flex-start !important;
+    padding: 10px !important;
+    overflow-y: auto;
+  }
+
+  .modal-panel {
+    width: 100% !important;
+    max-width: calc(100vw - 20px) !important;
+    max-height: calc(100dvh - 20px) !important;
+    padding: 20px !important;
+    overflow-x: hidden;
+    overflow-y: auto !important;
+  }
+
+  .quick-trade-panel {
+    padding: 0 !important;
+  }
+
+  .quick-trade-body {
+    padding: 1rem !important;
+  }
+
+  .amount-controls {
+    flex-wrap: wrap;
+  }
+
+  .amount-controls > div:first-child {
+    flex: 1 0 100% !important;
+  }
+
+  .amount-controls > button {
+    min-height: 40px;
+    flex: 1 1 56px;
+    padding: 0 8px !important;
+  }
+
+  .agents-grid,
+  .portfolio-stats {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .toast-container {
+    left: 10px !important;
+    right: 10px !important;
+    bottom: 10px !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+
+  .modal-panel pre,
+  .modal-panel code,
+  .modal-panel a,
+  .modal-panel p,
+  .modal-panel span,
+  .modal-panel strong {
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 430px) {
+  .container {
+    padding: 0.75rem;
+  }
+
+  .app-nav {
+    padding-inline: 0.75rem !important;
+  }
+
+  .app-brand {
+    gap: 7px !important;
+  }
+
+  .app-brand > span:nth-of-type(1) {
+    font-size: 14px !important;
+  }
+
+  .wallet-balance,
+  .wallet-divider,
+  .wallet-address {
+    display: none !important;
+  }
+
+  .hero-dashboard {
+    padding: 24px 16px !important;
+  }
+
+  .hero-stats {
+    flex-direction: column;
+  }
+
+  .hero-stats > div:not(:empty) {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .market-filter-controls {
+    gap: 8px !important;
+  }
+
+  .market-filter-controls > div:first-child {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .modal-panel {
+    padding: 16px !important;
+  }
+
+  .quick-trade-panel {
+    padding: 0 !important;
+  }
+}
+
+@media (max-width: 350px) {
+  .app-brand > span:nth-of-type(1) {
+    display: none;
+  }
+
+  .hero-dashboard {
+    padding-inline: 14px !important;
+  }
+
+  .market-controls {
+    padding-inline: 10px !important;
+  }
+}
