@@ -79,7 +79,7 @@ export default function ContractsModal({ onClose }) {
               <h2 style={{ margin: 0, fontSize: "20px", fontWeight: "700" }}>Live Smart Contracts on X Layer</h2>
             </div>
             <p style={{ margin: "6px 0 0 0", color: "#8b949e", fontSize: "13px" }}>
-              All contracts are deployed and transacting on <strong>X Layer Testnet (Chain ID 195)</strong>.
+              All contracts are deployed and transacting on <strong>X Layer Testnet (Chain ID 1952)</strong>.
             </p>
           </div>
 

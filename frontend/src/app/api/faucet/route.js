@@ -23,7 +23,7 @@ export async function POST(req) {
       );
     }
 
-    const rpcUrl = process.env.NEXT_PUBLIC_XLAYER_RPC_URL || "https://testrpc.xlayer.tech";
+    const rpcUrl = process.env.NEXT_PUBLIC_XLAYER_RPC_URL || "https://testrpc.xlayer.tech/terigon";
     const provider = new ethers.JsonRpcProvider(rpcUrl);
     const relayerWallet = new ethers.Wallet(privateKey, provider);
 

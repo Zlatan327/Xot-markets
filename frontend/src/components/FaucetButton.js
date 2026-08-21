@@ -9,7 +9,7 @@ import { useWeb3 } from "../context/Web3Context";
 export default function FaucetButton({ signerAddress, onBalanceRefresh }) {
   const [minting, setMinting] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const { signer, isConnected, connectWallet, isCorrectNetwork, address } = useWeb3();
+  const { signer, isConnected, connectWallet, isCorrectNetwork, address, sendWalletTransaction } = useWeb3();
   const { addToast, updateToast } = useToast();
 
   const handleClaim = async () => {
@@ -56,7 +56,21 @@ export default function FaucetButton({ signerAddress, onBalanceRefresh }) {
       if (signer && isCorrectNetwork) {
         const { usdc } = await getContracts(signer);
         const mintAmount = ethers.parseUnits("1000", 18);
-        const tx = await usdc.mint(targetAddress, mintAmount);
+
+        const tx = await sendWalletTransaction({
+          to: await usdc.getAddress(),
+          data: usdc.interface.encodeFunctionData("mint", [targetAddress, mintAmount]),
+          gasLimit: 120000,
+        });
+
+        updateToast(toastId, {
+          type: "loading",
+          title: "USDC Mint Submitted",
+          message: "Waiting for X Layer confirmation...",
+          txHash: tx.hash,
+          duration: 0,
+        });
+
         await tx.wait();
 
         updateToast(toastId, {

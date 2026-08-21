@@ -15,7 +15,8 @@ export default {
   networks: {
     hardhat: {},
     xlayer_testnet: {
-      url: "https://testrpc.xlayer.tech", // Assuming standard OKX X Layer testnet RPC
+      url: process.env.XLAYER_RPC_URL || "https://testrpc.xlayer.tech/terigon",
+      chainId: 1952,
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : []
     }
   }

@@ -32,6 +32,7 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
   const [claiming, setClaiming] = useState(false);
   const [betAmount, setBetAmount] = useState("25");
   const [selectedSide, setSelectedSide] = useState("YES"); // YES or NO
+  const [allowance, setAllowance] = useState(0n);
   const [showChart, setShowChart] = useState(false);
   const [showStepper, setShowStepper] = useState(false);
   
@@ -48,8 +49,37 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
     isLoaded: false
   });
 
-  const { signer, isConnected, connectWallet, isCorrectNetwork, switchToXLayer, address } = useWeb3();
+  const { signer, isConnected, connectWallet, isCorrectNetwork, switchToXLayer, address, sendWalletTransaction } = useWeb3();
   const { addToast, updateToast } = useToast();
+
+  let requiredAllowance = 0n;
+  try {
+    requiredAllowance = ethers.parseUnits(betAmount.toString() || "0", 18);
+  } catch {
+    requiredAllowance = 0n;
+  }
+  const hasSufficientAllowance = requiredAllowance > 0n && allowance >= requiredAllowance;
+
+  const fetchAllowance = useCallback(async () => {
+    const activeUser = signerAddress || address;
+    if (!activeUser || !market.marketAddress) {
+      setAllowance(0n);
+      return 0n;
+    }
+    try {
+      const { usdc } = await getContracts(getPublicProvider());
+      const currentAllowance = await usdc.allowance(activeUser, market.marketAddress);
+      setAllowance(currentAllowance);
+      return currentAllowance;
+    } catch (error) {
+      console.error("Error fetching market allowance:", error);
+      return 0n;
+    }
+  }, [signerAddress, address, market.marketAddress]);
+
+  useEffect(() => {
+    fetchAllowance();
+  }, [fetchAllowance]);
 
   const totalPool = (market.poolYes || 0) + (market.poolNo || 0);
   const yesProb = totalPool === 0 ? 0.50 : (market.poolYes / totalPool);
@@ -151,7 +181,7 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
         addToast({
           type: "error",
           title: "Wrong Network",
-          message: "Please switch network to X Layer Testnet (Chain ID 195) in your wallet."
+          message: "Please switch network to X Layer Testnet (Chain ID 1952) in your wallet."
         });
         return false;
       }
@@ -184,7 +214,10 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
         return;
       }
       
-      const tx = await usdc.approve(market.marketAddress, amount);
+      const tx = await sendWalletTransaction({
+        to: await usdc.getAddress(),
+        data: usdc.interface.encodeFunctionData("approve", [market.marketAddress, amount]),
+      });
       updateToast(toastId, {
         type: "loading",
         title: "Approval Submitted",
@@ -194,6 +227,7 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
       });
 
       await tx.wait();
+      await fetchAllowance();
       updateToast(toastId, {
         type: "success",
         title: "USDC Approved!",
@@ -237,8 +271,22 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
         isYes ? setBuyingYes(false) : setBuyingNo(false);
         return;
       }
+
+      const currentAllowance = await fetchAllowance();
+      if (currentAllowance < amount) {
+        updateToast(toastId, {
+          type: "error",
+          title: "Approval Required",
+          message: `Approve ${betAmount} USDC for this market and wait for confirmation before buying.`,
+        });
+        isYes ? setBuyingYes(false) : setBuyingNo(false);
+        return;
+      }
       
-      const tx = await marketContract.buyShares(isYes, amount);
+      const tx = await sendWalletTransaction({
+        to: market.marketAddress,
+        data: marketContract.interface.encodeFunctionData("buyShares", [isYes, amount]),
+      });
       updateToast(toastId, {
         type: "loading",
         title: "Trade Submitted",
@@ -284,7 +332,10 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
     try {
       const { marketAbi } = await getContracts(signer);
       const marketContract = new ethers.Contract(market.marketAddress, marketAbi, signer);
-      const tx = await marketContract.claim();
+      const tx = await sendWalletTransaction({
+        to: market.marketAddress,
+        data: marketContract.interface.encodeFunctionData("claim"),
+      });
 
       updateToast(toastId, {
         type: "loading",
@@ -680,7 +731,7 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
 
               <button
                 onClick={() => executeTrade(selectedSide === "YES")}
-                disabled={selectedSide === "YES" ? buyingYes : buyingNo}
+                disabled={approving || !hasSufficientAllowance || (selectedSide === "YES" ? buyingYes : buyingNo)}
                 style={{
                   flex: 1.4,
                   background: selectedSide === "YES" ? "#1f6feb" : "#30363d",
@@ -690,10 +741,10 @@ export default function MarketCard({ market, signerAddress, onOpenResearch }) {
                   borderRadius: "6px",
                   fontSize: "12px",
                   fontWeight: "700",
-                  cursor: (selectedSide === "YES" ? buyingYes : buyingNo) ? "not-allowed" : "pointer"
+                  cursor: approving || !hasSufficientAllowance || (selectedSide === "YES" ? buyingYes : buyingNo) ? "not-allowed" : "pointer"
                 }}
               >
-                {(selectedSide === "YES" ? buyingYes : buyingNo) ? "Executing..." : `2. Buy ${selectedSide}`}
+                {!hasSufficientAllowance ? "2. Approve First" : (selectedSide === "YES" ? buyingYes : buyingNo) ? "Executing..." : `2. Buy ${selectedSide}`}
               </button>
             </div>
 

@@ -13,7 +13,7 @@ export async function GET(req) {
   const paymentSpec = {
     protocol: "x402",
     version: "2.0",
-    chainId: 195,
+    chainId: 1952,
     network: "X Layer Testnet",
     token: addresses.usdc,
     tokenSymbol: "USDC",
@@ -39,7 +39,7 @@ export async function GET(req) {
           "X-Payment-Token": addresses.usdc,
           "X-Payment-Amount": paymentSpec.amountFormatted,
           "X-Payment-Recipient": paymentSpec.recipient,
-          "X-Payment-ChainId": "195",
+          "X-Payment-ChainId": "1952",
           "Access-Control-Allow-Origin": "*",
         }
       }
@@ -51,7 +51,7 @@ export async function GET(req) {
   if (authHeader.startsWith("Bearer 0x") || authHeader.startsWith("0x")) {
     try {
       const sig = authHeader.replace("Bearer ", "");
-      const message = `x402-payment-auth:/api/premium-analytics:chain-195`;
+      const message = `x402-payment-auth:/api/premium-analytics:chain-1952`;
       verifiedAgent = ethers.verifyMessage(message, sig);
     } catch {
       // Allow valid simulated header proofs as fallback
@@ -60,7 +60,7 @@ export async function GET(req) {
   }
 
   // Initialize provider and fetch real data from X Layer Testnet
-  const rpcUrl = process.env.NEXT_PUBLIC_XLAYER_RPC_URL || "https://testrpc.xlayer.tech";
+  const rpcUrl = process.env.NEXT_PUBLIC_XLAYER_RPC_URL || "https://testrpc.xlayer.tech/terigon";
   const provider = new ethers.JsonRpcProvider(rpcUrl);
   
   let realAnalytics = {
@@ -148,7 +148,7 @@ export async function GET(req) {
     protocol: "x402",
     authenticatedAgent: verifiedAgent,
     timestamp: new Date().toISOString(),
-    network: "X Layer Testnet (Chain ID 195)",
+    network: "X Layer Testnet (Chain ID 1952)",
     analytics: realAnalytics
   };
 

@@ -38,7 +38,7 @@ import { ethers } from 'ethers';
 import { useWeb3 } from '../context/Web3Context';
 
 export default function Home() {
-  const { address, isConnected, isCorrectNetwork, connectWallet, disconnectWallet, switchToXLayer, connecting, signer } = useWeb3();
+  const { address, isConnected, isCorrectNetwork, connectWallet, disconnectWallet, switchToXLayer, connecting, signer, sendWalletTransaction } = useWeb3();
   const [markets, setMarkets] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -158,7 +158,10 @@ export default function Home() {
     try {
       const { usdc } = await getContracts(signer);
       const amount = ethers.parseUnits("500", 18);
-      const tx = await usdc.mint(address, amount);
+      const tx = await sendWalletTransaction({
+        to: await usdc.getAddress(),
+        data: usdc.interface.encodeFunctionData("mint", [address, amount]),
+      });
       await tx.wait();
       alert("Successfully minted 500 Test USDC on X Layer Testnet!");
       await fetchBalance();

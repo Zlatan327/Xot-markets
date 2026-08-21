@@ -4,7 +4,7 @@ import factoryArtifact from "./MarketFactory.json";
 import marketArtifact from "./BinaryMarket.json";
 import usdcArtifact from "./MockERC20.json";
 
-export const XLAYER_RPC = "https://testrpc.xlayer.tech";
+export const XLAYER_RPC = process.env.NEXT_PUBLIC_XLAYER_RPC_URL || "https://testrpc.xlayer.tech/terigon";
 
 export const getPublicProvider = () => {
   return new ethers.JsonRpcProvider(XLAYER_RPC);

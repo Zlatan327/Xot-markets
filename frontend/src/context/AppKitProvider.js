@@ -9,11 +9,11 @@ const projectId = process.env.NEXT_PUBLIC_PROJECT_ID || 'b56e464e724a27a2760205b
 
 // 2. Set the networks
 const xLayerTestnet = {
-  id: 195,
+  id: 1952,
   name: 'X Layer Testnet',
   currency: 'OKB',
-  explorerUrl: 'https://www.okx.com/explorer/xlayer-test',
-  rpcUrl: 'https://testrpc.xlayer.tech'
+  explorerUrl: 'https://www.oklink.com/x-layer-testnet',
+  rpcUrl: process.env.NEXT_PUBLIC_XLAYER_RPC_URL || 'https://testrpc.xlayer.tech/terigon'
 };
 
 const networks = [xLayerTestnet];

@@ -10,7 +10,7 @@ export default function PortfolioModal({ markets, signerAddress, onClose, onSele
   const [positions, setPositions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [claimingAddress, setClaimingAddress] = useState(null);
-  const { signer, isConnected, connectWallet, isCorrectNetwork, switchToXLayer } = useWeb3();
+  const { signer, isConnected, connectWallet, isCorrectNetwork, switchToXLayer, sendWalletTransaction } = useWeb3();
   const { addToast, updateToast } = useToast();
 
   useEffect(() => {
@@ -112,7 +112,10 @@ export default function PortfolioModal({ markets, signerAddress, onClose, onSele
     try {
       const { marketAbi } = await getContracts(signer);
       const contract = new ethers.Contract(marketAddress, marketAbi, signer);
-      const tx = await contract.claim();
+      const tx = await sendWalletTransaction({
+        to: marketAddress,
+        data: contract.interface.encodeFunctionData("claim"),
+      });
 
       updateToast(toastId, {
         type: "loading",

@@ -13,7 +13,7 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
   const [approving, setApproving] = useState(false);
   const [trading, setTrading] = useState(false);
   const [userHoldings, setUserHoldings] = useState({ yesShares: 0, noShares: 0 });
-  const { signer, isConnected, connectWallet, isCorrectNetwork, switchToXLayer, address } = useWeb3();
+  const { signer, isConnected, connectWallet, isCorrectNetwork, switchToXLayer, address, sendWalletTransaction } = useWeb3();
   const { addToast, updateToast } = useToast();
 
   const activeUser = signerAddress || address;
@@ -69,7 +69,7 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
         addToast({
           type: "error",
           title: "Wrong Network",
-          message: "Please switch network to X Layer Testnet (Chain ID 195) in your wallet."
+          message: "Please switch network to X Layer Testnet (Chain ID 1952) in your wallet."
         });
         return false;
       }
@@ -102,7 +102,10 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
         return;
       }
       
-      const tx = await usdc.approve(market.marketAddress, amount);
+      const tx = await sendWalletTransaction({
+        to: await usdc.getAddress(),
+        data: usdc.interface.encodeFunctionData("approve", [market.marketAddress, amount]),
+      });
       updateToast(toastId, {
         type: "loading",
         title: "Approval Submitted",
@@ -166,7 +169,10 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
           message: "Please sign the approval transaction in your wallet...",
           duration: 0
         });
-        const approveTx = await usdc.approve(market.marketAddress, ethers.MaxUint256);
+        const approveTx = await sendWalletTransaction({
+          to: await usdc.getAddress(),
+          data: usdc.interface.encodeFunctionData("approve", [market.marketAddress, ethers.MaxUint256]),
+        });
         await approveTx.wait(1); // wait for 1 confirmation
         
         updateToast(toastId, {
@@ -200,7 +206,7 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
       
       // Construct a raw transaction to physically force OKX Wallet to bypass gas estimation
       const txData = marketContract.interface.encodeFunctionData("buyShares", [selectedSide, amount]);
-      const tx = await signer.sendTransaction({
+      const tx = await sendWalletTransaction({
         to: market.marketAddress,
         data: txData,
         gasLimit: 600000
@@ -268,7 +274,7 @@ export default function QuickTradeModal({ market, onClose, signerAddress, usdcBa
       }
       
       const txData = marketContract.interface.encodeFunctionData("sellShares", [selectedSide, amount]);
-      const tx = await signer.sendTransaction({
+      const tx = await sendWalletTransaction({
         to: market.marketAddress,
         data: txData,
         gasLimit: 600000
